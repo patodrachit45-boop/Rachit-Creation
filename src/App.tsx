@@ -6,6 +6,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
+import { Analytics } from '@vercel/analytics/react';
 import { useStore } from './store';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -55,6 +56,7 @@ export default function App() {
         </main>
         <Footer />
       </div>
+      <Analytics />
     </Router>
   );
 }
