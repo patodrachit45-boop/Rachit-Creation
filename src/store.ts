@@ -22,6 +22,7 @@ import {
   onAuthChanged,
   isSupabaseConfigured,
   seedProductsInSupabase,
+  ensureSiteSettingsRowExists,
 } from './lib/supabaseService';
 import {
   DEFAULT_SITE_SETTINGS,
@@ -216,6 +217,9 @@ export const useStore = create<StoreState>()((set, get) => ({
       const user = await signInAdmin(email, password);
       if (user) {
         set({ isAdmin: true, adminEmail: user.email });
+        
+        // Ensure site settings main row exists in database
+        await ensureSiteSettingsRowExists();
         
         // Auto-seed if database is empty!
         const state = get();

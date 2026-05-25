@@ -215,12 +215,29 @@ export async function updateSiteSettingsInSupabase(
   try {
     const { error } = await supabase
       .from('site_settings')
-      .upsert({ id: 'main', ...settingsToDb(settings) }, { onConflict: 'id' });
+      .update(settingsToDb(settings))
+      .eq('id', 'main');
     if (error) throw error;
     return true;
   } catch (error) {
     console.error('Error updating site settings:', error);
     return false;
+  }
+}
+
+export async function ensureSiteSettingsRowExists(): Promise<void> {
+  if (!supabase) return;
+  try {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('id')
+      .eq('id', 'main')
+      .single();
+    if (error && error.code === 'PGRST116') {
+      await supabase.from('site_settings').insert({ id: 'main' });
+    }
+  } catch (error) {
+    console.error('Error ensuring site settings row exists:', error);
   }
 }
 
