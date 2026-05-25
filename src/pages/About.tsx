@@ -3,14 +3,23 @@ import { useStore } from '../store';
 import { motion } from 'motion/react';
 
 export default function About() {
-  const { siteSettings } = useStore();
+  const { siteSettings, isSettingsLoading } = useStore();
   const paragraphs = siteSettings.aboutText.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 
   return (
     <div className="min-h-screen bg-[#FCEEE9]/30">
       {/* Top Banner */}
-      <section className="relative h-[40vh] min-h-[280px] overflow-hidden">
-        <img src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} alt="About Rachit Creation" className="absolute inset-0 w-full h-full object-cover" />
+      <section className="relative h-[40vh] min-h-[280px] overflow-hidden bg-gray-950">
+        {!isSettingsLoading && (
+          <motion.img 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            transition={{ duration: 0.5 }}
+            src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} 
+            alt="About Rachit Creation" 
+            className="absolute inset-0 w-full h-full object-cover" 
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/70" />
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
           <motion.p initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-[#C5A059] tracking-[0.35em] uppercase text-xs font-sans mb-3">Rachit Creation</motion.p>
@@ -21,7 +30,7 @@ export default function About() {
 
       {/* Main Content Area */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20">
-        {siteSettings.aboutHeroImage && (
+        {!isSettingsLoading && siteSettings.aboutHeroImage && (
           <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-12 rounded-2xl overflow-hidden shadow-lg border border-[#C5A059]/10 aspect-video bg-gray-100">
             <img src={siteSettings.aboutHeroImage} alt="Rachit Creation Heritage Story" className="w-full h-full object-cover" />
           </motion.div>

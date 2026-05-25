@@ -6,7 +6,7 @@ import { motion } from 'motion/react';
 import { useMemo } from 'react';
 
 export default function Home() {
-  const { products, siteSettings } = useStore();
+  const { products, siteSettings, isSettingsLoading } = useStore();
   const categoryData = useMemo(() => CATEGORIES.map((cat) => {
     const cp = products.filter((p) => p.category === cat);
     return { name: cat, count: cp.length, image: cp[0]?.imageUrl || '/images/logo.jpg' };
@@ -16,8 +16,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#FCEEE9]/30">
       {/* Hero */}
-      <section className="relative h-[85vh] min-h-[540px] overflow-hidden">
-        <img src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} alt="Rachit Creation — Luxury Lehengas" className="absolute inset-0 w-full h-full object-cover" />
+      <section className="relative h-[85vh] min-h-[540px] overflow-hidden bg-gray-950">
+        {!isSettingsLoading && (
+          <motion.img 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            transition={{ duration: 0.5 }}
+            src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} 
+            alt="Rachit Creation — Luxury Lehengas" 
+            className="absolute inset-0 w-full h-full object-cover" 
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
           <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-[#C5A059] tracking-[0.35em] uppercase text-xs sm:text-sm font-sans mb-4">Rachit Creation</motion.p>
