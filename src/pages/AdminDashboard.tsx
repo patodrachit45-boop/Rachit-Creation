@@ -1,0 +1,414 @@
+import { useState, useRef, useEffect, useCallback, type FormEvent, type DragEvent } from 'react';
+import { useStore, type Product } from '../store';
+import { isSupabaseConfigured } from '../lib/supabaseService';
+import { CATEGORIES, formatPrice } from '../lib/siteConfig';
+import {
+  Package, Crown, Sparkles, Heart, Gem, Plus, Pencil, Trash2, X,
+  Upload, Save, LogOut, LayoutDashboard, Settings, Image, Search,
+  Loader2, ShieldCheck, AlertTriangle, Check, ChevronDown,
+  Phone, Mail, MapPin, Clock, Instagram, MessageCircle, FileText,
+} from 'lucide-react';
+
+type Tab = 'overview' | 'products' | 'settings';
+type ProductCategory = Product['category'];
+interface Toast { id: number; message: string; type: 'success' | 'error'; }
+let toastCounter = 0;
+
+function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: number) => void }) {
+  return (
+    <div className="fixed top-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none">
+      {toasts.map((t) => (
+        <div key={t.id} className={`pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl backdrop-blur-sm text-sm font-medium ${t.type === 'success' ? 'bg-emerald-900/90 text-emerald-100 border border-emerald-700/50' : 'bg-red-900/90 text-red-100 border border-red-700/50'}`} style={{ animation: 'slideIn 0.3s ease-out' }}>
+          {t.type === 'success' ? <Check size={16} /> : <AlertTriangle size={16} />}
+          {t.message}
+          <button onClick={() => onDismiss(t.id)} className="ml-2 opacity-60 hover:opacity-100"><X size={14} /></button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function AdminDashboard() {
+  const products = useStore((s) => s.products);
+  const siteSettings = useStore((s) => s.siteSettings);
+  const isAdmin = useStore((s) => s.isAdmin);
+  const adminEmail = useStore((s) => s.adminEmail);
+  const login = useStore((s) => s.login);
+  const logout = useStore((s) => s.logout);
+  const addProduct = useStore((s) => s.addProduct);
+  const updateProduct = useStore((s) => s.updateProduct);
+  const deleteProduct = useStore((s) => s.deleteProduct);
+  const updateSiteSettings = useStore((s) => s.updateSiteSettings);
+  const fetchProducts = useStore((s) => s.fetchProducts);
+  const fetchSiteSettings = useStore((s) => s.fetchSiteSettings);
+  const isLoading = useStore((s) => s.isLoading);
+
+  const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  useEffect(() => { fetchProducts(); fetchSiteSettings(); }, [fetchProducts, fetchSiteSettings]);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+    const id = ++toastCounter;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000);
+  }, []);
+  const dismissToast = useCallback((id: number) => setToasts((prev) => prev.filter((t) => t.id !== id)), []);
+
+  if (!isAdmin) return (<><ToastContainer toasts={toasts} onDismiss={dismissToast} /><LoginScreen onLogin={login} showToast={showToast} /></>);
+
+  const navItems: { id: Tab; icon: typeof LayoutDashboard; label: string }[] = [
+    { id: 'overview', icon: LayoutDashboard, label: 'Overview' },
+    { id: 'products', icon: Package, label: 'Products' },
+    { id: 'settings', icon: Settings, label: 'Site Settings' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-950 text-gray-100 flex flex-col lg:flex-row">
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      {/* Mobile top bar */}
+      <div className="lg:hidden flex items-center justify-between bg-gray-900 border-b border-gray-800 px-4 py-3 sticky top-0 z-40">
+        <div className="flex items-center gap-3"><img src="/images/logo.jpg" alt="Logo" className="w-8 h-8 rounded-lg object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} /><span className="font-serif text-sm text-white tracking-widest">RACHIT CREATION</span></div>
+      </div>
+      <div className="lg:hidden flex gap-1 px-4 py-2 bg-gray-900 border-b border-gray-800 overflow-x-auto">
+        {navItems.map((item) => { const Icon = item.icon; return (
+          <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium whitespace-nowrap ${activeTab === item.id ? 'bg-[#C5A059]/10 text-[#C5A059]' : 'text-gray-400'}`}><Icon size={16} />{item.label}</button>
+        ); })}
+        <button onClick={logout} className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs text-red-400 whitespace-nowrap"><LogOut size={16} />Sign Out</button>
+      </div>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-64 bg-gray-900 border-r border-gray-800 z-30">
+        <div className="p-6 border-b border-gray-800">
+          <div className="flex items-center gap-3"><img src="/images/logo.jpg" alt="Logo" className="w-10 h-10 rounded-xl object-cover shadow-md" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} /><div><h2 className="font-serif text-sm text-white tracking-widest leading-tight">RACHIT</h2><h2 className="font-serif text-sm text-[#C5A059] tracking-widest leading-tight">CREATION</h2></div></div>
+          <p className="text-[10px] text-gray-500 mt-3 uppercase tracking-widest">Admin Panel</p>
+        </div>
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map((item) => { const Icon = item.icon; const isActive = activeTab === item.id; return (
+            <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive ? 'bg-[#C5A059]/10 text-[#C5A059] shadow-sm' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}`}><Icon size={18} />{item.label}{isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#C5A059]" />}</button>
+          ); })}
+        </nav>
+        <div className="p-4 border-t border-gray-800">
+          <div className="flex items-center gap-3 px-3 py-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#C5A059] to-[#A8864A] flex items-center justify-center text-white text-xs font-bold uppercase">{adminEmail?.charAt(0) || 'A'}</div>
+            <div className="flex-1 min-w-0"><p className="text-xs text-white font-medium truncate">{adminEmail || 'Admin'}</p><p className="text-[10px] text-gray-500">Administrator</p></div>
+          </div>
+          <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-400 hover:text-red-400 hover:bg-red-900/10 transition-all"><LogOut size={16} /> Sign Out</button>
+        </div>
+      </aside>
+      {/* Main content */}
+      <main className="flex-1 lg:ml-64 min-h-screen">
+        <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
+          {activeTab === 'overview' && <OverviewTab products={products} isLoading={isLoading} />}
+          {activeTab === 'products' && <ProductsTab products={products} isLoading={isLoading} onAdd={addProduct} onUpdate={updateProduct} onDelete={deleteProduct} showToast={showToast} />}
+          {activeTab === 'settings' && <SettingsTab siteSettings={siteSettings} onUpdate={updateSiteSettings} showToast={showToast} />}
+        </div>
+      </main>
+      <style>{`@keyframes slideIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }`}</style>
+    </div>
+  );
+}
+
+// ── LOGIN ──────────────────────────────────────────────────────────────
+function LoginScreen({ onLogin, showToast }: { onLogin: (email: string, password: string) => Promise<void>; showToast: (msg: string, type: 'success' | 'error') => void }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault(); setError(''); setLoading(true);
+    try { await onLogin(email, password); showToast('Welcome back!', 'success'); }
+    catch (err: any) { setError(err?.message || 'Login failed'); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex items-center justify-center px-4">
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#C5A059]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#C5A059] to-[#A8864A] mb-5 shadow-lg shadow-[#C5A059]/20"><ShieldCheck size={28} className="text-white" /></div>
+          <h1 className="font-serif text-3xl text-white tracking-wide">RACHIT CREATION</h1>
+          <p className="text-gray-500 text-sm mt-2 tracking-wide uppercase">Admin Dashboard</p>
+        </div>
+        <form onSubmit={handleSubmit} className="bg-gray-900/80 backdrop-blur-xl border border-gray-800 rounded-2xl p-8 shadow-2xl">
+          <h2 className="text-xl font-semibold text-white mb-1">Sign In</h2>
+          <p className="text-gray-500 text-sm mb-8">Enter your credentials to access the admin panel</p>
+          {error && <div className="mb-6 flex items-center gap-2 p-3.5 rounded-xl bg-red-900/30 border border-red-800/50 text-red-300 text-sm"><AlertTriangle size={16} className="flex-shrink-0" />{error}</div>}
+          <div className="space-y-5">
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Email Address</label><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50 focus:border-[#C5A059] transition-all" placeholder="admin@rachitcreation.com" /></div>
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Password</label><input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50 focus:border-[#C5A059] transition-all" placeholder="••••••••" /></div>
+          </div>
+          <button type="submit" disabled={loading} className="mt-8 w-full bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white py-3.5 rounded-xl text-sm font-semibold uppercase tracking-widest hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#C5A059]/20">
+            {loading ? <><Loader2 size={16} className="animate-spin" />Authenticating...</> : 'Sign In'}
+          </button>
+          {!isSupabaseConfigured && <div className="mt-6 p-3.5 rounded-xl bg-amber-900/20 border border-amber-800/40 text-amber-300/80 text-xs text-center leading-relaxed"><span className="font-semibold">Dev Mode</span> — Supabase not configured. Use any email with password <code className="bg-amber-800/30 px-1.5 py-0.5 rounded font-mono">admin123</code></div>}
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────
+function OverviewTab({ products, isLoading }: { products: Product[]; isLoading: boolean }) {
+  const stats = [
+    { label: 'Total Products', count: products.length, icon: Package, bg: 'bg-violet-500/10' },
+    { label: 'Bridal', count: products.filter((p) => p.category === 'Bridal').length, icon: Crown, bg: 'bg-rose-500/10' },
+    { label: 'Designer', count: products.filter((p) => p.category === 'Designer').length, icon: Sparkles, bg: 'bg-amber-500/10' },
+    { label: 'Girlish', count: products.filter((p) => p.category === 'Girlish').length, icon: Heart, bg: 'bg-pink-500/10' },
+    { label: 'Heavy', count: products.filter((p) => p.category === 'Heavy').length, icon: Gem, bg: 'bg-emerald-500/10' },
+  ];
+  return (
+    <div>
+      <div className="mb-8"><h1 className="text-2xl font-semibold text-white">Dashboard Overview</h1><p className="text-gray-500 text-sm mt-1">Welcome back — here's a summary of your catalog</p></div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
+        {stats.map((stat) => { const Icon = stat.icon; return (
+          <div key={stat.label} className="bg-gray-900 border border-gray-800 rounded-2xl p-5 hover:border-gray-700 transition-all">
+            <div className={`${stat.bg} p-2.5 rounded-xl w-fit mb-4`}><Icon size={20} className="text-gray-300" /></div>
+            {isLoading ? <div className="h-8 w-16 bg-gray-800 rounded-lg animate-pulse" /> : <p className="text-3xl font-bold text-white">{stat.count}</p>}
+            <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">{stat.label}</p>
+          </div>
+        ); })}
+      </div>
+      <div className="mt-10"><h2 className="text-lg font-semibold text-white mb-4">Recent Products</h2>
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+          {products.length === 0 ? <div className="p-12 text-center text-gray-500"><Package size={40} className="mx-auto mb-3 opacity-30" /><p>No products yet.</p></div> : (
+            <div className="divide-y divide-gray-800">{products.slice(0, 8).map((p) => (
+              <div key={p.id} className="flex items-center gap-4 p-4 hover:bg-gray-800/30 transition-colors"><img src={p.imageUrl} alt={p.name} className="w-12 h-14 object-cover rounded-lg flex-shrink-0" /><div className="flex-1 min-w-0"><p className="text-sm font-medium text-white truncate">{p.name}</p><p className="text-xs text-gray-500">{p.category}</p></div><span className="text-sm font-semibold text-[#C5A059]">{formatPrice(p.price)}</span></div>
+            ))}</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PRODUCTS ──────────────────────────────────────────────────────────
+function ProductsTab({ products, isLoading, onAdd, onUpdate, onDelete, showToast }: {
+  products: Product[]; isLoading: boolean;
+  onAdd: (p: Omit<Product, 'id'>, f?: File) => Promise<boolean>;
+  onUpdate: (id: string, f: Partial<Product>, img?: File) => Promise<boolean>;
+  onDelete: (id: string) => Promise<boolean>;
+  showToast: (m: string, t: 'success' | 'error') => void;
+}) {
+  const [categoryFilter, setCategoryFilter] = useState<'All' | ProductCategory>('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const filtered = products.filter((p) => {
+    const matchCat = categoryFilter === 'All' || p.category === categoryFilter;
+    const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchCat && matchSearch;
+  });
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    const success = await onDelete(deleteTarget.id);
+    setDeleteLoading(false);
+    showToast(success ? `"${deleteTarget.name}" deleted` : 'Failed to delete', success ? 'success' : 'error');
+    setDeleteTarget(null);
+  };
+
+  return (
+    <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div><h1 className="text-2xl font-semibold text-white">Products</h1><p className="text-gray-500 text-sm mt-1">{products.length} total products</p></div>
+        <button onClick={() => { setEditingProduct(null); setIsModalOpen(true); }} className="inline-flex items-center gap-2 bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white px-5 py-3 rounded-xl text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-[#C5A059]/20"><Plus size={18} /> Add Product</button>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="flex flex-wrap gap-2 flex-1">
+          {(['All', ...CATEGORIES] as const).map((cat) => (
+            <button key={cat} onClick={() => setCategoryFilter(cat)} className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${categoryFilter === cat ? 'bg-[#C5A059] text-white shadow-md' : 'bg-gray-800 text-gray-400 hover:text-white'}`}>{cat} <span className="ml-1 opacity-70">({cat === 'All' ? products.length : products.filter((p) => p.category === cat).length})</span></button>
+          ))}
+        </div>
+        <div className="relative"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" /><input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full sm:w-64 bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50 transition-all" /></div>
+      </div>
+      {isLoading ? <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">{[...Array(8)].map((_, i) => <div key={i} className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden animate-pulse"><div className="aspect-[3/4] bg-gray-800" /><div className="p-4 space-y-3"><div className="h-4 w-3/4 bg-gray-800 rounded" /><div className="h-3 w-1/2 bg-gray-800 rounded" /></div></div>)}</div>
+      : filtered.length === 0 ? <div className="bg-gray-900 border border-gray-800 rounded-2xl p-16 text-center"><Package size={48} className="mx-auto mb-4 text-gray-700" /><p className="text-gray-400 text-lg font-medium">No products found</p></div>
+      : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filtered.map((product) => (
+            <div key={product.id} className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden group hover:border-gray-700 transition-all">
+              <div className="aspect-[3/4] relative overflow-hidden bg-gray-800">
+                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                  <button onClick={() => { setEditingProduct(product); setIsModalOpen(true); }} className="w-10 h-10 bg-white/90 text-gray-900 rounded-xl flex items-center justify-center hover:bg-[#C5A059] hover:text-white transition-all shadow-lg"><Pencil size={16} /></button>
+                  <button onClick={() => setDeleteTarget(product)} className="w-10 h-10 bg-white/90 text-gray-900 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-lg"><Trash2 size={16} /></button>
+                </div>
+                <span className="absolute top-3 left-3 px-2.5 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest rounded-lg">{product.category}</span>
+              </div>
+              <div className="p-4">
+                <h3 className="text-sm font-medium text-white truncate">{product.name}</h3>
+                <div className="flex items-center justify-between mt-3"><span className="text-lg font-bold text-[#C5A059]">{formatPrice(product.price)}</span>
+                  <div className="flex gap-1"><button onClick={() => { setEditingProduct(product); setIsModalOpen(true); }} className="p-1.5 text-gray-500 hover:text-[#C5A059] transition-colors"><Pencil size={14} /></button><button onClick={() => setDeleteTarget(product)} className="p-1.5 text-gray-500 hover:text-red-400 transition-colors"><Trash2 size={14} /></button></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {isModalOpen && <ProductModal product={editingProduct} onClose={() => { setIsModalOpen(false); setEditingProduct(null); }} onAdd={onAdd} onUpdate={onUpdate} showToast={showToast} />}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <div className="flex items-center gap-3 mb-4"><div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center"><Trash2 size={20} className="text-red-400" /></div><h3 className="text-lg font-semibold text-white">Delete Product</h3></div>
+            <p className="text-gray-400 text-sm mb-2">Are you sure you want to delete <span className="text-white font-medium">"{deleteTarget.name}"</span>?</p>
+            <p className="text-gray-600 text-xs mb-6">This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 rounded-xl bg-gray-800 text-gray-300 text-sm font-medium hover:bg-gray-700 transition-colors">Cancel</button>
+              <button onClick={handleDelete} disabled={deleteLoading} className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-medium hover:bg-red-500 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">{deleteLoading ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />} Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── PRODUCT MODAL ─────────────────────────────────────────────────────
+function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
+  product: Product | null; onClose: () => void;
+  onAdd: (p: Omit<Product, 'id'>, f?: File) => Promise<boolean>;
+  onUpdate: (id: string, f: Partial<Product>, img?: File) => Promise<boolean>;
+  showToast: (m: string, t: 'success' | 'error') => void;
+}) {
+  const isEditing = !!product;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [name, setName] = useState(product?.name || '');
+  const [category, setCategory] = useState<ProductCategory>(product?.category || 'Bridal');
+  const [price, setPrice] = useState<number>(product?.price || 0);
+  const [description, setDescription] = useState(product?.description || '');
+  const [highlights, setHighlights] = useState(product?.highlights || '');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState(product?.imageUrl || '');
+  const [loading, setLoading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const handleImageSelect = (file: File) => { setImageFile(file); const r = new FileReader(); r.onloadend = () => setImagePreview(r.result as string); r.readAsDataURL(file); };
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); setIsDragOver(false); const f = e.dataTransfer.files?.[0]; if (f?.type.startsWith('image/')) handleImageSelect(f); };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault(); setLoading(true);
+    try {
+      const success = isEditing && product
+        ? await onUpdate(product.id, { name, category, price, description, highlights, imageUrl: product.imageUrl }, imageFile || undefined)
+        : await onAdd({ name, category, price, description, highlights, imageUrl: imagePreview }, imageFile || undefined);
+      showToast(success ? `"${name}" ${isEditing ? 'updated' : 'added'}` : `Failed to ${isEditing ? 'update' : 'add'}`, success ? 'success' : 'error');
+      if (success) onClose();
+    } catch { showToast('An error occurred', 'error'); }
+    finally { setLoading(false); }
+  };
+
+  const inputClass = 'w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50 focus:border-[#C5A059] transition-all';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[5vh] bg-black/60 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-2xl shadow-2xl my-8">
+        <div className="flex items-center justify-between p-6 border-b border-gray-800">
+          <div><h2 className="text-xl font-semibold text-white">{isEditing ? 'Edit Product' : 'Add New Product'}</h2><p className="text-gray-500 text-sm mt-0.5">{isEditing ? 'Update the product details' : 'Fill in details to add a new product'}</p></div>
+          <button onClick={onClose} className="text-gray-500 hover:text-white p-1"><X size={22} /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Product Image</label>
+            <div onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }} onDragLeave={() => setIsDragOver(false)} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} className={`relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${isDragOver ? 'border-[#C5A059] bg-[#C5A059]/5' : 'border-gray-700 hover:border-gray-600 bg-gray-800/30'}`}>
+              {imagePreview ? <div className="flex items-center gap-4"><img src={imagePreview} alt="Preview" className="w-20 h-24 object-cover rounded-lg" /><div className="text-left"><p className="text-sm text-white font-medium">{imageFile ? imageFile.name : 'Current image'}</p><p className="text-xs text-gray-500 mt-1">Click or drag to replace</p></div></div>
+              : <div><Upload size={32} className="mx-auto text-gray-600 mb-3" /><p className="text-sm text-gray-400"><span className="text-[#C5A059] font-medium">Click to upload</span> or drag and drop</p></div>}
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageSelect(f); }} />
+            </div>
+          </div>
+          <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Product Name</label><input required type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="e.g., Royal Bridal Lehenga" /></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Category</label><div className="relative"><select value={category} onChange={(e) => setCategory(e.target.value as ProductCategory)} className={`${inputClass} appearance-none`}>{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}</select><ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" /></div></div>
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Price (₹)</label><input required type="number" min={0} value={price || ''} onChange={(e) => setPrice(Number(e.target.value))} className={inputClass} placeholder="15000" /></div>
+          </div>
+          <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Description</label><textarea required rows={3} value={description} onChange={(e) => setDescription(e.target.value)} className={`${inputClass} resize-none`} placeholder="Describe the product..." /></div>
+          <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Highlights <span className="normal-case tracking-normal text-gray-600">(optional)</span></label><textarea rows={3} value={highlights} onChange={(e) => setHighlights(e.target.value)} className={`${inputClass} resize-none`} placeholder="Enter highlights separated by newlines..." /></div>
+          <div className="flex gap-3 pt-3">
+            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-gray-800 text-gray-300 text-sm font-medium hover:bg-gray-700 transition-colors">Cancel</button>
+            <button type="submit" disabled={loading} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white text-sm font-semibold hover:brightness-110 disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#C5A059]/20">{loading ? <><Loader2 size={16} className="animate-spin" />Saving...</> : <><Save size={16} />{isEditing ? 'Save Changes' : 'Add Product'}</>}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────
+function SettingsTab({ siteSettings, onUpdate, showToast }: {
+  siteSettings: ReturnType<typeof useStore.getState>['siteSettings'];
+  onUpdate: (s: Partial<typeof siteSettings>, f?: File) => Promise<boolean>;
+  showToast: (m: string, t: 'success' | 'error') => void;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [whatsappNumber, setWhatsappNumber] = useState(siteSettings.whatsappNumber);
+  const [phone, setPhone] = useState(siteSettings.phone);
+  const [email, setEmail] = useState(siteSettings.email);
+  const [address, setAddress] = useState(siteSettings.address);
+  const [showroomHours, setShowroomHours] = useState(siteSettings.showroomHours);
+  const [instagramUrl, setInstagramUrl] = useState(siteSettings.instagramUrl);
+  const [aboutText, setAboutText] = useState(siteSettings.aboutText);
+  const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
+  const [heroImagePreview, setHeroImagePreview] = useState(siteSettings.heroImage);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setWhatsappNumber(siteSettings.whatsappNumber); setPhone(siteSettings.phone); setEmail(siteSettings.email);
+    setAddress(siteSettings.address); setShowroomHours(siteSettings.showroomHours); setInstagramUrl(siteSettings.instagramUrl);
+    setAboutText(siteSettings.aboutText); setHeroImagePreview(siteSettings.heroImage);
+  }, [siteSettings]);
+
+  const handleHeroImage = (file: File) => { setHeroImageFile(file); const r = new FileReader(); r.onloadend = () => setHeroImagePreview(r.result as string); r.readAsDataURL(file); };
+
+  const handleSave = async (e: FormEvent) => {
+    e.preventDefault(); setLoading(true);
+    const success = await onUpdate({ whatsappNumber, phone, email, address, showroomHours, instagramUrl, aboutText }, heroImageFile || undefined);
+    setLoading(false);
+    showToast(success ? 'Site settings saved' : 'Failed to save', success ? 'success' : 'error');
+    if (success) setHeroImageFile(null);
+  };
+
+  const inputClass = 'w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50 focus:border-[#C5A059] transition-all';
+
+  return (
+    <div>
+      <div className="mb-8"><h1 className="text-2xl font-semibold text-white">Site Settings</h1><p className="text-gray-500 text-sm mt-1">Manage your website content and contact information</p></div>
+      <form onSubmit={handleSave} className="space-y-8 max-w-3xl">
+        <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center"><Image size={18} className="text-violet-400" /></div><div><h3 className="text-sm font-semibold text-white">Hero Image</h3><p className="text-xs text-gray-500">The main banner image on your homepage</p></div></div>
+          <div onClick={() => fileInputRef.current?.click()} className="relative border-2 border-dashed border-gray-700 rounded-xl overflow-hidden cursor-pointer hover:border-gray-600 transition-all group">
+            {heroImagePreview ? <div className="relative"><img src={heroImagePreview} alt="Hero" className="w-full h-48 object-cover" /><div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"><span className="text-white text-sm font-medium flex items-center gap-2"><Upload size={16} /> Change Image</span></div></div>
+            : <div className="p-8 text-center"><Upload size={28} className="mx-auto text-gray-600 mb-2" /><p className="text-sm text-gray-400">Click to upload hero image</p></div>}
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHeroImage(f); }} />
+        </section>
+        <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center"><Phone size={18} className="text-emerald-400" /></div><div><h3 className="text-sm font-semibold text-white">Contact Information</h3><p className="text-xs text-gray-500">How customers can reach you</p></div></div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><MessageCircle size={12} className="inline mr-1.5" />WhatsApp Number</label><input type="text" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} className={inputClass} placeholder="917359747911" /></div>
+              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><Phone size={12} className="inline mr-1.5" />Phone</label><input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} placeholder="+91 73597 47911" /></div>
+            </div>
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><Mail size={12} className="inline mr-1.5" />Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="rachitcreation@gmail.com" /></div>
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><MapPin size={12} className="inline mr-1.5" />Address</label><input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className={inputClass} placeholder="Full address" /></div>
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><Clock size={12} className="inline mr-1.5" />Showroom Hours</label><input type="text" value={showroomHours} onChange={(e) => setShowroomHours(e.target.value)} className={inputClass} placeholder="Mon - Sat: 10:00 AM - 8:00 PM" /></div>
+          </div>
+        </section>
+        <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-pink-500/10 flex items-center justify-center"><Instagram size={18} className="text-pink-400" /></div><div><h3 className="text-sm font-semibold text-white">Social Media</h3><p className="text-xs text-gray-500">Your social media presence</p></div></div>
+          <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Instagram URL</label><input type="url" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} className={inputClass} placeholder="https://www.instagram.com/rachit__creation/" /></div>
+        </section>
+        <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><FileText size={18} className="text-amber-400" /></div><div><h3 className="text-sm font-semibold text-white">About Page</h3><p className="text-xs text-gray-500">Your brand story content</p></div></div>
+          <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">About Text</label><textarea rows={6} value={aboutText} onChange={(e) => setAboutText(e.target.value)} className={`${inputClass} resize-none`} placeholder="Tell your brand story..." /></div>
+        </section>
+        <div className="flex justify-end pb-8">
+          <button type="submit" disabled={loading} className="inline-flex items-center gap-2 bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white px-8 py-3.5 rounded-xl text-sm font-semibold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-[#C5A059]/20">{loading ? <><Loader2 size={16} className="animate-spin" />Saving...</> : <><Save size={16} />Save Settings</>}</button>
+        </div>
+      </form>
+    </div>
+  );
+}
