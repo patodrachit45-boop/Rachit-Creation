@@ -27,6 +27,7 @@ function dbToProduct(row: any): Product {
     images: row.images || [],
     highlights: row.highlights || '',
     createdAt: row.created_at,
+    isSoldOut: row.is_sold_out || false,
   };
 }
 
@@ -40,6 +41,7 @@ function productToDb(p: Partial<Product> & { imageUrl?: string }) {
   if (p.images !== undefined) obj.images = p.images;
   if (p.highlights !== undefined) obj.highlights = p.highlights;
   if (p.createdAt !== undefined) obj.created_at = p.createdAt;
+  if (p.isSoldOut !== undefined) obj.is_sold_out = p.isSoldOut;
   return obj;
 }
 
@@ -109,7 +111,17 @@ export async function addProductToSupabase(
     };
 
     const { data, error } = await supabase.from('products').insert(row).select().single();
-    if (error) throw error;
+    if (error) {
+      if (error.code === '42703' || error.message.includes('is_sold_out')) {
+        console.warn('Database is missing is_sold_out column. Retrying insert without it...');
+        const healedRow = { ...row };
+        delete healedRow.is_sold_out;
+        const { data: retryData, error: retryError } = await supabase.from('products').insert(healedRow).select().single();
+        if (retryError) throw retryError;
+        return dbToProduct(retryData);
+      }
+      throw error;
+    }
     return dbToProduct(data);
   } catch (error) {
     console.error('Error adding product:', error);
@@ -129,11 +141,26 @@ export async function updateProductInSupabase(
       updateFields.imageUrl = await uploadImageToSupabase(imageFile);
     }
 
+    const payload = productToDb(updateFields);
     const { error } = await supabase
       .from('products')
-      .update(productToDb(updateFields))
+      .update(payload)
       .eq('id', id);
-    if (error) throw error;
+      
+    if (error) {
+      if (error.code === '42703' || error.message.includes('is_sold_out')) {
+        console.warn('Database is missing is_sold_out column. Retrying update without it...');
+        const healedPayload = { ...payload };
+        delete healedPayload.is_sold_out;
+        const { error: retryError } = await supabase
+          .from('products')
+          .update(healedPayload)
+          .eq('id', id);
+        if (retryError) throw retryError;
+        return true;
+      }
+      throw error;
+    }
     return true;
   } catch (error) {
     console.error('Error updating product:', error);

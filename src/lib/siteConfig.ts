@@ -76,7 +76,7 @@ export const DEFAULT_TESTIMONIALS: Testimonial[] = [
     id: 't4',
     name: 'Riya Mehta',
     location: 'Surat',
-    text: 'Being local to Surat, I visited their showroom and the collection blew me away. The staff was incredibly helpful and the customization options are wonderful.',
+    text: 'Being local to Surat, I visited their showroom and the collection blew me away. The staff was incredibly helpful.',
     rating: 5,
   },
   {

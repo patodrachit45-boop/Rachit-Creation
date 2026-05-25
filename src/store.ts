@@ -41,6 +41,7 @@ export interface Product {
   images?: string[];
   highlights?: string;
   createdAt?: number;
+  isSoldOut?: boolean;
 }
 
 interface StoreState {

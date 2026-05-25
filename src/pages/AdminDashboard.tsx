@@ -251,7 +251,10 @@ function ProductsTab({ products, isLoading, onAdd, onUpdate, onDelete, showToast
                   <button onClick={() => { setEditingProduct(product); setIsModalOpen(true); }} className="w-10 h-10 bg-white/90 text-gray-900 rounded-xl flex items-center justify-center hover:bg-[#C5A059] hover:text-white transition-all shadow-lg"><Pencil size={16} /></button>
                   <button onClick={() => setDeleteTarget(product)} className="w-10 h-10 bg-white/90 text-gray-900 rounded-xl flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-lg"><Trash2 size={16} /></button>
                 </div>
-                <span className="absolute top-3 left-3 px-2.5 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest rounded-lg">{product.category}</span>
+                <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none">
+                  <span className="px-2.5 py-1 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-widest rounded-lg">{product.category}</span>
+                  {product.isSoldOut && <span className="px-2.5 py-1 bg-red-950/80 border border-red-700/50 backdrop-blur-md text-red-300 text-[10px] font-bold uppercase tracking-widest rounded-lg">Sold Out</span>}
+                </div>
               </div>
               <div className="p-4">
                 <h3 className="text-sm font-medium text-white truncate">{product.name}</h3>
@@ -295,6 +298,7 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
   const [price, setPrice] = useState<number>(product?.price || 0);
   const [description, setDescription] = useState(product?.description || '');
   const [highlights, setHighlights] = useState(product?.highlights || '');
+  const [isSoldOut, setIsSoldOut] = useState(product?.isSoldOut || false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(product?.imageUrl || '');
   const [loading, setLoading] = useState(false);
@@ -307,8 +311,8 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
     e.preventDefault(); setLoading(true);
     try {
       const success = isEditing && product
-        ? await onUpdate(product.id, { name, category, price, description, highlights, imageUrl: product.imageUrl }, imageFile || undefined)
-        : await onAdd({ name, category, price, description, highlights, imageUrl: imagePreview }, imageFile || undefined);
+        ? await onUpdate(product.id, { name, category, price, description, highlights, isSoldOut, imageUrl: product.imageUrl }, imageFile || undefined)
+        : await onAdd({ name, category, price, description, highlights, isSoldOut, imageUrl: imagePreview }, imageFile || undefined);
       showToast(success ? `"${name}" ${isEditing ? 'updated' : 'added'}` : `Failed to ${isEditing ? 'update' : 'add'}`, success ? 'success' : 'error');
       if (success) onClose();
     } catch { showToast('An error occurred', 'error'); }
@@ -336,6 +340,18 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
           <div className="grid grid-cols-2 gap-4">
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Category</label><div className="relative"><select value={category} onChange={(e) => setCategory(e.target.value as ProductCategory)} className={`${inputClass} appearance-none`}>{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}</select><ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" /></div></div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Price (₹)</label><input required type="number" min={0} value={price || ''} onChange={(e) => setPrice(Number(e.target.value))} className={inputClass} placeholder="15000" /></div>
+          </div>
+          <div className="flex items-center gap-3 bg-gray-800/20 border border-gray-800/50 rounded-xl px-4 py-3.5">
+            <input 
+              id="isSoldOut" 
+              type="checkbox" 
+              checked={isSoldOut} 
+              onChange={(e) => setIsSoldOut(e.target.checked)} 
+              className="w-4.5 h-4.5 rounded border-gray-700 bg-gray-850 text-[#C5A059] focus:ring-offset-gray-950 focus:ring-[#C5A059]/50 transition-all cursor-pointer"
+            />
+            <label htmlFor="isSoldOut" className="text-sm font-medium text-gray-300 cursor-pointer select-none">
+              Mark this product as Sold Out
+            </label>
           </div>
           <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Description</label><textarea required rows={3} value={description} onChange={(e) => setDescription(e.target.value)} className={`${inputClass} resize-none`} placeholder="Describe the product..." /></div>
           <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Highlights <span className="normal-case tracking-normal text-gray-600">(optional)</span></label><textarea rows={3} value={highlights} onChange={(e) => setHighlights(e.target.value)} className={`${inputClass} resize-none`} placeholder="Enter highlights separated by newlines..." /></div>
