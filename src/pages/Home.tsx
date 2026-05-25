@@ -17,7 +17,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#FCEEE9]/30">
       {/* Hero */}
       <section className="relative h-[85vh] min-h-[540px] overflow-hidden">
-        <img src={siteSettings.heroImage} alt="Rachit Creation — Luxury Lehengas" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} alt="Rachit Creation — Luxury Lehengas" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
           <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="text-[#C5A059] tracking-[0.35em] uppercase text-xs sm:text-sm font-sans mb-4">Rachit Creation</motion.p>

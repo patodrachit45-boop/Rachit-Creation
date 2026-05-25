@@ -362,6 +362,10 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [aboutImageFile, setAboutImageFile] = useState<File | null>(null);
   const [aboutImagePreview, setAboutImagePreview] = useState(siteSettings.aboutHeroImage);
 
+  const [heroImageRemoved, setHeroImageRemoved] = useState(false);
+  const [logoImageRemoved, setLogoImageRemoved] = useState(false);
+  const [aboutImageRemoved, setAboutImageRemoved] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -369,16 +373,32 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     setAddress(siteSettings.address); setShowroomHours(siteSettings.showroomHours); setInstagramUrl(siteSettings.instagramUrl);
     setAboutText(siteSettings.aboutText); setHeroImagePreview(siteSettings.heroImage);
     setLogoImagePreview(siteSettings.logoImage); setAboutImagePreview(siteSettings.aboutHeroImage);
+    setHeroImageRemoved(false); setLogoImageRemoved(false); setAboutImageRemoved(false);
   }, [siteSettings]);
 
-  const handleHeroImage = (file: File) => { setHeroImageFile(file); const r = new FileReader(); r.onloadend = () => setHeroImagePreview(r.result as string); r.readAsDataURL(file); };
-  const handleLogoImage = (file: File) => { setLogoImageFile(file); const r = new FileReader(); r.onloadend = () => setLogoImagePreview(r.result as string); r.readAsDataURL(file); };
-  const handleAboutImage = (file: File) => { setAboutImageFile(file); const r = new FileReader(); r.onloadend = () => setAboutImagePreview(r.result as string); r.readAsDataURL(file); };
+  const handleHeroImage = (file: File) => { setHeroImageFile(file); setHeroImageRemoved(false); const r = new FileReader(); r.onloadend = () => setHeroImagePreview(r.result as string); r.readAsDataURL(file); };
+  const handleLogoImage = (file: File) => { setLogoImageFile(file); setLogoImageRemoved(false); const r = new FileReader(); r.onloadend = () => setLogoImagePreview(r.result as string); r.readAsDataURL(file); };
+  const handleAboutImage = (file: File) => { setAboutImageFile(file); setAboutImageRemoved(false); const r = new FileReader(); r.onloadend = () => setAboutImagePreview(r.result as string); r.readAsDataURL(file); };
 
   const handleSave = async (e: FormEvent) => {
     e.preventDefault(); setLoading(true);
+    
+    const settingsPayload: Partial<typeof siteSettings> = { 
+      whatsappNumber, 
+      phone, 
+      email, 
+      address, 
+      showroomHours, 
+      instagramUrl, 
+      aboutText 
+    };
+
+    if (heroImageRemoved) settingsPayload.heroImage = '';
+    if (logoImageRemoved) settingsPayload.logoImage = '';
+    if (aboutImageRemoved) settingsPayload.aboutHeroImage = '';
+
     const success = await onUpdate(
-      { whatsappNumber, phone, email, address, showroomHours, instagramUrl, aboutText },
+      settingsPayload,
       heroImageFile || undefined,
       logoImageFile || undefined,
       aboutImageFile || undefined
@@ -389,6 +409,9 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
       setHeroImageFile(null);
       setLogoImageFile(null);
       setAboutImageFile(null);
+      setHeroImageRemoved(false);
+      setLogoImageRemoved(false);
+      setAboutImageRemoved(false);
     }
   };
 
@@ -402,10 +425,22 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
           <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center"><Image size={18} className="text-violet-400" /></div><div><h3 className="text-sm font-semibold text-white">Hero Image</h3><p className="text-xs text-gray-500">The main banner image on your homepage</p></div></div>
-              <div onClick={() => fileInputRef.current?.click()} className="relative border-2 border-dashed border-gray-700 rounded-xl overflow-hidden cursor-pointer hover:border-gray-600 transition-all group h-40 flex items-center justify-center bg-gray-850">
-                {heroImagePreview ? <div className="relative w-full h-full"><img src={heroImagePreview} alt="Hero" className="w-full h-full object-cover" /><div className="absolute inset-0 bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"><span className="text-white text-xs font-medium flex items-center gap-1.5"><Upload size={14} /> Change Image</span></div></div>
-                : <div className="p-4 text-center"><Upload size={24} className="mx-auto text-gray-600 mb-1" /><p className="text-xs text-gray-400">Click to upload hero image</p></div>}
-              </div>
+              {heroImagePreview ? (
+                <div className="relative border-2 border-dashed border-gray-700 rounded-xl overflow-hidden group h-40 bg-gray-850">
+                  <img src={heroImagePreview} alt="Hero" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 transition-all flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="px-3.5 py-2 bg-white/95 text-gray-900 rounded-xl text-xs font-semibold hover:bg-[#C5A059] hover:text-white transition-all flex items-center gap-1.5 shadow-lg"><Upload size={13} /> Change</button>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setHeroImagePreview(''); setHeroImageFile(null); setHeroImageRemoved(true); }} className="px-3.5 py-2 bg-red-650/95 text-white rounded-xl text-xs font-semibold hover:bg-red-500 transition-all flex items-center gap-1.5 shadow-lg"><Trash2 size={13} /> Remove</button>
+                  </div>
+                </div>
+              ) : (
+                <div onClick={() => fileInputRef.current?.click()} className="relative border-2 border-dashed border-gray-700 rounded-xl overflow-hidden cursor-pointer hover:border-gray-600 transition-all group h-40 flex items-center justify-center bg-gray-850">
+                  <div className="p-4 text-center">
+                    <Upload size={24} className="mx-auto text-gray-600 mb-1" />
+                    <p className="text-xs text-gray-400">Click to upload hero image</p>
+                  </div>
+                </div>
+              )}
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHeroImage(f); }} />
             </div>
           </section>
@@ -413,9 +448,21 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
           <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-indigo-500/10 flex items-center justify-center"><Crown size={18} className="text-indigo-400" /></div><div><h3 className="text-sm font-semibold text-white">Brand Logo</h3><p className="text-xs text-gray-500">The logo image displayed in the header</p></div></div>
-              <div onClick={() => logoInputRef.current?.click()} className="relative w-28 h-28 border-2 border-dashed border-gray-700 rounded-full overflow-hidden cursor-pointer hover:border-gray-600 transition-all group mx-auto flex items-center justify-center bg-gray-800/35">
-                {logoImagePreview ? <div className="relative w-full h-full"><img src={logoImagePreview} alt="Logo" className="w-full h-full object-cover" /><div className="absolute inset-0 bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"><Upload size={16} className="text-white" /></div></div>
-                : <div className="p-4 text-center"><Upload size={22} className="mx-auto text-gray-600 mb-1" /><span className="text-xs text-gray-400">Upload</span></div>}
+              <div className="relative w-28 h-28 border-2 border-dashed border-gray-700 rounded-full overflow-hidden group mx-auto flex items-center justify-center bg-gray-800/35">
+                {logoImagePreview ? (
+                  <div className="relative w-full h-full">
+                    <img src={logoImagePreview} alt="Logo" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 transition-all flex flex-col items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100">
+                      <button type="button" onClick={() => logoInputRef.current?.click()} className="text-white hover:text-[#C5A059] transition-colors" title="Change logo"><Upload size={14} /></button>
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setLogoImagePreview(''); setLogoImageFile(null); setLogoImageRemoved(true); }} className="text-red-400 hover:text-red-500 transition-colors" title="Remove logo"><Trash2 size={14} /></button>
+                    </div>
+                  </div>
+                ) : (
+                  <div onClick={() => logoInputRef.current?.click()} className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:border-gray-600 transition-all">
+                    <Upload size={22} className="text-gray-600 mb-1" />
+                    <span className="text-[10px] text-gray-400 font-medium">Upload</span>
+                  </div>
+                )}
               </div>
               <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoImage(f); }} />
             </div>
@@ -444,10 +491,22 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
           <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><FileText size={18} className="text-amber-400" /></div><div><h3 className="text-sm font-semibold text-white">About Page</h3><p className="text-xs text-gray-500">Your brand story content and photo</p></div></div>
           <div className="space-y-5">
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Story Photo</label>
-              <div onClick={() => aboutInputRef.current?.click()} className="relative border-2 border-dashed border-gray-700 rounded-xl overflow-hidden cursor-pointer hover:border-gray-600 transition-all group h-44 flex items-center justify-center bg-gray-850">
-                {aboutImagePreview ? <div className="relative w-full h-full"><img src={aboutImagePreview} alt="Story" className="w-full h-full object-cover" /><div className="absolute inset-0 bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"><span className="text-white text-xs font-medium flex items-center gap-1.5"><Upload size={14} /> Change Photo</span></div></div>
-                : <div className="p-4 text-center"><Upload size={24} className="mx-auto text-gray-600 mb-1" /><p className="text-xs text-gray-400">Click to upload story photo</p></div>}
-              </div>
+              {aboutImagePreview ? (
+                <div className="relative border-2 border-dashed border-gray-700 rounded-xl overflow-hidden group h-44 bg-gray-850">
+                  <img src={aboutImagePreview} alt="Story" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 transition-all flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100">
+                    <button type="button" onClick={() => aboutInputRef.current?.click()} className="px-3.5 py-2 bg-white/95 text-gray-900 rounded-xl text-xs font-semibold hover:bg-[#C5A059] hover:text-white transition-all flex items-center gap-1.5 shadow-lg"><Upload size={13} /> Change</button>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); setAboutImagePreview(''); setAboutImageFile(null); setAboutImageRemoved(true); }} className="px-3.5 py-2 bg-red-650/95 text-white rounded-xl text-xs font-semibold hover:bg-red-500 transition-all flex items-center gap-1.5 shadow-lg"><Trash2 size={13} /> Remove</button>
+                  </div>
+                </div>
+              ) : (
+                <div onClick={() => aboutInputRef.current?.click()} className="relative border-2 border-dashed border-gray-700 rounded-xl overflow-hidden cursor-pointer hover:border-gray-600 transition-all group h-44 flex items-center justify-center bg-gray-850">
+                  <div className="p-4 text-center">
+                    <Upload size={24} className="mx-auto text-gray-600 mb-1" />
+                    <p className="text-xs text-gray-400">Click to upload story photo</p>
+                  </div>
+                </div>
+              )}
               <input ref={aboutInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAboutImage(f); }} />
             </div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">About Text</label><textarea rows={6} value={aboutText} onChange={(e) => setAboutText(e.target.value)} className={`${inputClass} resize-none`} placeholder="Tell your brand story..." /></div>

@@ -201,7 +201,17 @@ export async function fetchSiteSettingsFromSupabase(): Promise<SiteSettings | nu
       .single();
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 = row not found
     if (!data) return null;
-    return dbToSettings(data);
+    
+    const settings = dbToSettings(data);
+    
+    // Fallback for logo if column doesn't exist or is empty
+    if (!settings.logoImage) {
+      const localFallback = localStorage.getItem('rachit_logo_fallback');
+      if (localFallback) {
+        settings.logoImage = localFallback;
+      }
+    }
+    return settings;
   } catch (error) {
     console.error('Error fetching site settings:', error);
     return null;
@@ -213,11 +223,47 @@ export async function updateSiteSettingsInSupabase(
 ): Promise<boolean> {
   if (!supabase) return false;
   try {
+    const payload = settingsToDb(settings);
     const { error } = await supabase
       .from('site_settings')
-      .update(settingsToDb(settings))
+      .update(payload)
       .eq('id', 'main');
-    if (error) throw error;
+      
+    if (error) {
+      // Auto-healing: If logo_image column does not exist, remove it and retry
+      if (error.message.includes('logo_image') || error.code === '42703') {
+        console.warn('Database is missing "logo_image" column. Retrying settings update without logo...');
+        const healedPayload = { ...payload };
+        delete healedPayload.logo_image;
+        
+        const { error: retryError } = await supabase
+          .from('site_settings')
+          .update(healedPayload)
+          .eq('id', 'main');
+          
+        if (retryError) throw retryError;
+        
+        // Save logo to local fallback
+        if (settings.logoImage !== undefined) {
+          if (settings.logoImage === '') {
+            localStorage.removeItem('rachit_logo_fallback');
+          } else {
+            localStorage.setItem('rachit_logo_fallback', settings.logoImage);
+          }
+        }
+        return true;
+      }
+      throw error;
+    }
+    
+    // If logo_image was updated successfully, also update local fallback
+    if (settings.logoImage !== undefined) {
+      if (settings.logoImage === '') {
+        localStorage.removeItem('rachit_logo_fallback');
+      } else {
+        localStorage.setItem('rachit_logo_fallback', settings.logoImage);
+      }
+    }
     return true;
   } catch (error) {
     console.error('Error updating site settings:', error);

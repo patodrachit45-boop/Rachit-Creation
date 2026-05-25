@@ -10,7 +10,7 @@ export default function About() {
     <div className="min-h-screen bg-[#FCEEE9]/30">
       {/* Top Banner */}
       <section className="relative h-[40vh] min-h-[280px] overflow-hidden">
-        <img src={siteSettings.heroImage} alt="About Rachit Creation" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} alt="About Rachit Creation" className="absolute inset-0 w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/70" />
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
           <motion.p initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-[#C5A059] tracking-[0.35em] uppercase text-xs font-sans mb-3">Rachit Creation</motion.p>
