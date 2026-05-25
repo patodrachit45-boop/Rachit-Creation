@@ -21,6 +21,7 @@ import {
   signOutAdmin,
   onAuthChanged,
   isSupabaseConfigured,
+  seedProductsInSupabase,
 } from './lib/supabaseService';
 import {
   DEFAULT_SITE_SETTINGS,
@@ -49,6 +50,7 @@ interface StoreState {
   error: string | null;
   isAdmin: boolean;
   adminEmail: string | null;
+  isDatabaseEmpty: boolean;
   fetchProducts: () => Promise<void>;
   fetchSiteSettings: () => Promise<void>;
   addProduct: (product: Omit<Product, 'id'>, imageFile?: File) => Promise<boolean>;
@@ -91,18 +93,25 @@ export const useStore = create<StoreState>()((set, get) => ({
   error: null,
   isAdmin: false,
   adminEmail: null,
+  isDatabaseEmpty: false,
 
   fetchProducts: async () => {
     set({ isLoading: true, error: null });
     try {
       if (isSupabaseConfigured) {
         const products = await fetchProductsFromSupabase();
-        if (products.length > 0) { set({ products, isLoading: false }); return; }
+        if (products.length > 0) {
+          set({ products, isLoading: false, isDatabaseEmpty: false });
+          return;
+        } else {
+          set({ products: initialProducts, isLoading: false, isDatabaseEmpty: true });
+          return;
+        }
       }
-      set({ products: initialProducts, isLoading: false });
+      set({ products: initialProducts, isLoading: false, isDatabaseEmpty: false });
     } catch (error) {
       console.error('Failed to fetch products:', error);
-      set({ products: initialProducts, isLoading: false, error: 'Failed to load products' });
+      set({ products: initialProducts, isLoading: false, error: 'Failed to load products', isDatabaseEmpty: false });
     }
   },
 
@@ -124,7 +133,10 @@ export const useStore = create<StoreState>()((set, get) => ({
     try {
       if (isSupabaseConfigured) {
         const newProduct = await addProductToSupabase(productInfo as any, imageFile);
-        if (newProduct) { set((s) => ({ products: [newProduct, ...s.products] })); return true; }
+        if (newProduct) {
+          set((s) => ({ products: [newProduct, ...s.products], isDatabaseEmpty: false }));
+          return true;
+        }
         return false;
       }
       const id = Math.random().toString(36).substring(2, 9);
@@ -139,10 +151,15 @@ export const useStore = create<StoreState>()((set, get) => ({
   updateProduct: async (id, fields, imageFile) => {
     try {
       if (isSupabaseConfigured) {
-        const success = await updateProductInSupabase(id, fields as any, imageFile);
+        let imageUrl = fields.imageUrl;
+        if (imageFile) {
+          imageUrl = await uploadImageToSupabase(imageFile);
+        }
+        const success = await updateProductInSupabase(id, { ...fields, imageUrl }, undefined);
         if (success) {
-          const products = await fetchProductsFromSupabase();
-          if (products.length > 0) set({ products });
+          set((s) => ({
+            products: s.products.map((p) => p.id === id ? { ...p, ...fields, ...(imageUrl ? { imageUrl } : {}) } : p)
+          }));
           return true;
         }
         return false;
@@ -185,7 +202,19 @@ export const useStore = create<StoreState>()((set, get) => ({
   login: async (email, password) => {
     if (isSupabaseConfigured) {
       const user = await signInAdmin(email, password);
-      if (user) set({ isAdmin: true, adminEmail: user.email });
+      if (user) {
+        set({ isAdmin: true, adminEmail: user.email });
+        
+        // Auto-seed if database is empty!
+        const state = get();
+        if (state.isDatabaseEmpty) {
+          console.log('Database is empty. Auto-seeding initial products...');
+          const success = await seedProductsInSupabase(initialProducts);
+          if (success) {
+            await get().fetchProducts();
+          }
+        }
+      }
     } else {
       if (password === 'admin123') set({ isAdmin: true, adminEmail: email || 'admin@local' });
       else throw new Error('Invalid credentials');

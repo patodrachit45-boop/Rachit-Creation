@@ -151,6 +151,23 @@ export async function deleteProductFromSupabase(id: string): Promise<boolean> {
   }
 }
 
+export async function seedProductsInSupabase(products: any[]): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const rows = products.map((p) => ({
+      id: p.id,
+      ...productToDb(p),
+      created_at: p.createdAt || Date.now(),
+    }));
+    const { error } = await supabase.from('products').insert(rows);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error seeding products:', error);
+    return false;
+  }
+}
+
 // ── Images ────────────────────────────────────────────────────────────
 
 export async function uploadImageToSupabase(file: File): Promise<string> {
