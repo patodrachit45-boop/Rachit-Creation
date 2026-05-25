@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { useStore } from '../store';
 import { getWhatsAppLink } from '../lib/siteConfig';
@@ -7,13 +8,19 @@ const categories = ['Bridal', 'Designer', 'Girlish', 'Heavy'] as const;
 
 export default function Footer() {
   const { siteSettings } = useStore();
+  const [logoError, setLogoError] = useState(false);
+
+  useEffect(() => { setLogoError(false); }, [siteSettings.logoImage]);
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="max-w-7xl mx-auto px-6 lg:px-10 pt-16 pb-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/" className="flex items-center gap-3 mb-5 group">
-              <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Rachit Creation" className="w-11 h-11 rounded-full object-cover ring-1 ring-[#C5A059]/40 group-hover:ring-[#C5A059] transition-all" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              {!logoError && (
+                <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Rachit Creation" className="w-11 h-11 rounded-full object-cover ring-1 ring-[#C5A059]/40 group-hover:ring-[#C5A059] transition-all" onError={() => setLogoError(true)} />
+              )}
               <span className="font-serif text-xl tracking-[0.1em] uppercase text-white">Rachit <span className="font-semibold">Creation</span></span>
             </Link>
             <p className="text-sm leading-relaxed text-gray-400 max-w-xs">Crafting exquisite lehengas that blend timeless tradition with modern elegance. Every piece tells a story of artistry and passion.</p>

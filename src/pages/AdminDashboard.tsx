@@ -45,7 +45,9 @@ export default function AdminDashboard() {
 
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [logoError, setLogoError] = useState(false);
 
+  useEffect(() => { setLogoError(false); }, [siteSettings.logoImage]);
   useEffect(() => { fetchProducts(); fetchSiteSettings(); }, [fetchProducts, fetchSiteSettings]);
 
   const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
@@ -68,7 +70,12 @@ export default function AdminDashboard() {
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       {/* Mobile top bar */}
       <div className="lg:hidden flex items-center justify-between bg-gray-900 border-b border-gray-800 px-4 py-3 sticky top-0 z-40">
-        <div className="flex items-center gap-3"><img src="/images/logo.jpg" alt="Logo" className="w-8 h-8 rounded-lg object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} /><span className="font-serif text-sm text-white tracking-widest">RACHIT CREATION</span></div>
+        <div className="flex items-center gap-3">
+          {!logoError && (
+            <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Logo" className="w-8 h-8 rounded-lg object-cover" onError={() => setLogoError(true)} />
+          )}
+          <span className="font-serif text-sm text-white tracking-widest">RACHIT CREATION</span>
+        </div>
       </div>
       <div className="lg:hidden flex gap-1 px-4 py-2 bg-gray-900 border-b border-gray-800 overflow-x-auto">
         {navItems.map((item) => { const Icon = item.icon; return (
@@ -79,7 +86,12 @@ export default function AdminDashboard() {
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-64 bg-gray-900 border-r border-gray-800 z-30">
         <div className="p-6 border-b border-gray-800">
-          <div className="flex items-center gap-3"><img src="/images/logo.jpg" alt="Logo" className="w-10 h-10 rounded-xl object-cover shadow-md" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} /><div><h2 className="font-serif text-sm text-white tracking-widest leading-tight">RACHIT</h2><h2 className="font-serif text-sm text-[#C5A059] tracking-widest leading-tight">CREATION</h2></div></div>
+          <div className="flex items-center gap-3">
+            {!logoError && (
+              <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Logo" className="w-10 h-10 rounded-xl object-cover shadow-md" onError={() => setLogoError(true)} />
+            )}
+            <div><h2 className="font-serif text-sm text-white tracking-widest leading-tight">RACHIT</h2><h2 className="font-serif text-sm text-[#C5A059] tracking-widest leading-tight">CREATION</h2></div>
+          </div>
           <p className="text-[10px] text-gray-500 mt-3 uppercase tracking-widest">Admin Panel</p>
         </div>
         <nav className="flex-1 p-4 space-y-1">
