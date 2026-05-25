@@ -56,7 +56,12 @@ interface StoreState {
   addProduct: (product: Omit<Product, 'id'>, imageFile?: File) => Promise<boolean>;
   updateProduct: (id: string, fields: Partial<Product>, imageFile?: File) => Promise<boolean>;
   deleteProduct: (id: string) => Promise<boolean>;
-  updateSiteSettings: (settings: Partial<SiteSettings>, imageFile?: File) => Promise<boolean>;
+  updateSiteSettings: (
+    settings: Partial<SiteSettings>,
+    heroImageFile?: File,
+    logoImageFile?: File,
+    aboutImageFile?: File
+  ) => Promise<boolean>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   setAdmin: (isAdmin: boolean, email: string | null) => void;
@@ -182,13 +187,20 @@ export const useStore = create<StoreState>()((set, get) => ({
     } catch (error) { console.error('Failed to delete product:', error); return false; }
   },
 
-  updateSiteSettings: async (settings, imageFile) => {
+  updateSiteSettings: async (settings, heroImageFile, logoImageFile, aboutImageFile) => {
     try {
       let us = { ...settings };
-      if (imageFile && isSupabaseConfigured) {
-        us.heroImage = await uploadImageToSupabase(imageFile);
-      } else if (imageFile) {
-        us.heroImage = URL.createObjectURL(imageFile);
+      if (heroImageFile) {
+        if (isSupabaseConfigured) us.heroImage = await uploadImageToSupabase(heroImageFile);
+        else us.heroImage = URL.createObjectURL(heroImageFile);
+      }
+      if (logoImageFile) {
+        if (isSupabaseConfigured) us.logoImage = await uploadImageToSupabase(logoImageFile);
+        else us.logoImage = URL.createObjectURL(logoImageFile);
+      }
+      if (aboutImageFile) {
+        if (isSupabaseConfigured) us.aboutHeroImage = await uploadImageToSupabase(aboutImageFile);
+        else us.aboutHeroImage = URL.createObjectURL(aboutImageFile);
       }
       if (isSupabaseConfigured) {
         const success = await updateSiteSettingsInSupabase(us);

@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS site_settings (
   id TEXT PRIMARY KEY DEFAULT 'main',
   hero_image TEXT DEFAULT '',
+  logo_image TEXT DEFAULT '',
   whatsapp_number TEXT DEFAULT '917359747911',
   instagram_url TEXT DEFAULT 'https://www.instagram.com/rachit__creation/',
   email TEXT DEFAULT 'rachitcreation@gmail.com',

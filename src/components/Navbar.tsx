@@ -30,7 +30,7 @@ export default function Navbar() {
       <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-lg shadow-sm' : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto flex items-center justify-between h-18 sm:h-20 px-4 sm:px-6 lg:px-10">
           <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-            <img src="/images/logo.jpg" alt="Rachit Creation" className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-1 ring-[#C5A059]/30 group-hover:ring-[#C5A059] transition-all" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Rachit Creation" className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-1 ring-[#C5A059]/30 group-hover:ring-[#C5A059] transition-all" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             <span className="font-serif text-lg sm:text-xl tracking-[0.12em] uppercase text-[#3D3D3D]">Rachit <span className="font-semibold">Creation</span></span>
           </Link>
           <div className="hidden lg:flex items-center gap-8 text-[11px] font-sans uppercase tracking-[0.18em] text-[#3D3D3D]/70">

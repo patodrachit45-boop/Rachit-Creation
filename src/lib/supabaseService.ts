@@ -46,6 +46,7 @@ function productToDb(p: Partial<Product> & { imageUrl?: string }) {
 function dbToSettings(row: any): SiteSettings {
   return {
     heroImage: row.hero_image || '',
+    logoImage: row.logo_image || '',
     whatsappNumber: row.whatsapp_number || '',
     instagramUrl: row.instagram_url || '',
     email: row.email || '',
@@ -60,6 +61,7 @@ function dbToSettings(row: any): SiteSettings {
 function settingsToDb(s: Partial<SiteSettings>) {
   const obj: any = {};
   if (s.heroImage !== undefined) obj.hero_image = s.heroImage;
+  if (s.logoImage !== undefined) obj.logo_image = s.logoImage;
   if (s.whatsappNumber !== undefined) obj.whatsapp_number = s.whatsappNumber;
   if (s.instagramUrl !== undefined) obj.instagram_url = s.instagramUrl;
   if (s.email !== undefined) obj.email = s.email;
