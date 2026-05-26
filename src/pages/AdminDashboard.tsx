@@ -379,6 +379,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [phone, setPhone] = useState(siteSettings.phone);
   const [email, setEmail] = useState(siteSettings.email);
   const [address, setAddress] = useState(siteSettings.address);
+  const [googleMapsUrl, setGoogleMapsUrl] = useState(siteSettings.googleMapsUrl);
   const [showroomHours, setShowroomHours] = useState(siteSettings.showroomHours);
   const [instagramUrl, setInstagramUrl] = useState(siteSettings.instagramUrl);
   const [aboutText, setAboutText] = useState(siteSettings.aboutText);
@@ -398,7 +399,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
 
   useEffect(() => {
     setWhatsappNumber(siteSettings.whatsappNumber); setPhone(siteSettings.phone); setEmail(siteSettings.email);
-    setAddress(siteSettings.address); setShowroomHours(siteSettings.showroomHours); setInstagramUrl(siteSettings.instagramUrl);
+    setAddress(siteSettings.address); setGoogleMapsUrl(siteSettings.googleMapsUrl); setShowroomHours(siteSettings.showroomHours); setInstagramUrl(siteSettings.instagramUrl);
     setAboutText(siteSettings.aboutText); setHeroImagePreview(siteSettings.heroImage);
     setLogoImagePreview(siteSettings.logoImage); setAboutImagePreview(siteSettings.aboutHeroImage);
     setHeroImageRemoved(false); setLogoImageRemoved(false); setAboutImageRemoved(false);
@@ -416,6 +417,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
       phone, 
       email, 
       address, 
+      googleMapsUrl,
       showroomHours, 
       instagramUrl, 
       aboutText 
@@ -506,6 +508,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
             </div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><Mail size={12} className="inline mr-1.5" />Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="rachitcreation@gmail.com" /></div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><MapPin size={12} className="inline mr-1.5" />Address</label><input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className={inputClass} placeholder="Full address" /></div>
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><MapPin size={12} className="inline mr-1.5" />Google Maps Link (Redirect URL)</label><input type="text" value={googleMapsUrl} onChange={(e) => setGoogleMapsUrl(e.target.value)} className={inputClass} placeholder="https://maps.app.goo.gl/ndARWqQaobT93CUb7" /></div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><Clock size={12} className="inline mr-1.5" />Showroom Hours</label><input type="text" value={showroomHours} onChange={(e) => setShowroomHours(e.target.value)} className={inputClass} placeholder="Mon - Sat: 10:00 AM - 8:00 PM" /></div>
           </div>
         </section>

@@ -21,6 +21,7 @@ export interface SiteSettings {
   showroomHours: string;
   aboutText: string;
   aboutHeroImage: string;
+  googleMapsUrl: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -38,6 +39,7 @@ Each piece is meticulously handcrafted using premium fabrics and adorned with in
 
 From opulent bridal ensembles to contemporary designer pieces, our collections are curated to help every woman feel like royalty on her special day.`,
   aboutHeroImage: '/images/products/regenerated_image_1779377157645.png',
+  googleMapsUrl: 'https://maps.app.goo.gl/ndARWqQaobT93CUb7',
 };
 
 // ── Testimonials ──────────────────────────────────────────────────────

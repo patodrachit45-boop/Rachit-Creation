@@ -83,7 +83,7 @@ export default function Contact() {
               <p className="text-[#3D3D3D]/50 text-sm font-sans mt-1">Visit our showroom at Millennium Textile Market, Surat</p>
             </div>
             <a 
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteSettings.address || 'Rachit Creation, Surat')}`} 
+              href={siteSettings.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteSettings.address || 'Rachit Creation, Surat')}`} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="inline-flex items-center justify-center gap-2 border border-[#C5A059] text-[#C5A059] hover:bg-[#C5A059] hover:text-white px-5 py-2.5 text-xs uppercase tracking-wider font-semibold rounded-full transition-all"
@@ -93,7 +93,7 @@ export default function Contact() {
           </div>
           
           <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteSettings.address || 'Rachit Creation, Surat')}`}
+            href={siteSettings.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteSettings.address || 'Rachit Creation, Surat')}`}
             target="_blank"
             rel="noopener noreferrer"
             title="Click to open in Google Maps"

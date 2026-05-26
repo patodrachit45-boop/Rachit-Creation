@@ -46,7 +46,7 @@ function productToDb(p: Partial<Product> & { imageUrl?: string }) {
 }
 
 function dbToSettings(row: any): SiteSettings {
-  return {
+  const settings: SiteSettings = {
     heroImage: row.hero_image || '',
     logoImage: row.logo_image || '',
     whatsappNumber: row.whatsapp_number || '',
@@ -57,7 +57,26 @@ function dbToSettings(row: any): SiteSettings {
     showroomHours: row.showroom_hours || '',
     aboutText: row.about_text || '',
     aboutHeroImage: row.about_hero_image || '',
+    googleMapsUrl: row.google_maps_url || '',
   };
+
+  // Fallback for logo if column doesn't exist or is empty
+  if (!settings.logoImage) {
+    const localFallback = localStorage.getItem('rachit_logo_fallback');
+    if (localFallback) {
+      settings.logoImage = localFallback;
+    }
+  }
+
+  // Fallback for Google Maps link if column doesn't exist or is empty
+  if (!settings.googleMapsUrl) {
+    const localMapsFallback = localStorage.getItem('rachit_google_maps_url_fallback');
+    if (localMapsFallback) {
+      settings.googleMapsUrl = localMapsFallback;
+    }
+  }
+
+  return settings;
 }
 
 function settingsToDb(s: Partial<SiteSettings>) {
@@ -72,6 +91,7 @@ function settingsToDb(s: Partial<SiteSettings>) {
   if (s.showroomHours !== undefined) obj.showroom_hours = s.showroomHours;
   if (s.aboutText !== undefined) obj.about_text = s.aboutText;
   if (s.aboutHeroImage !== undefined) obj.about_hero_image = s.aboutHeroImage;
+  if (s.googleMapsUrl !== undefined) obj.google_maps_url = s.googleMapsUrl;
   return obj;
 }
 
@@ -257,11 +277,12 @@ export async function updateSiteSettingsInSupabase(
       .eq('id', 'main');
       
     if (error) {
-      // Auto-healing: If logo_image column does not exist, remove it and retry
-      if (error.message.includes('logo_image') || error.code === '42703') {
-        console.warn('Database is missing "logo_image" column. Retrying settings update without logo...');
+      // Auto-healing: If logo_image or google_maps_url column does not exist, remove them and retry
+      if (error.message.includes('logo_image') || error.message.includes('google_maps_url') || error.code === '42703') {
+        console.warn('Database is missing new site settings columns. Retrying update with fallback...');
         const healedPayload = { ...payload };
         delete healedPayload.logo_image;
+        delete healedPayload.google_maps_url;
         
         const { error: retryError } = await supabase
           .from('site_settings')
@@ -270,7 +291,7 @@ export async function updateSiteSettingsInSupabase(
           
         if (retryError) throw retryError;
         
-        // Save logo to local fallback
+        // Save fallbacks to localStorage
         if (settings.logoImage !== undefined) {
           if (settings.logoImage === '') {
             localStorage.removeItem('rachit_logo_fallback');
@@ -278,17 +299,31 @@ export async function updateSiteSettingsInSupabase(
             localStorage.setItem('rachit_logo_fallback', settings.logoImage);
           }
         }
+        if (settings.googleMapsUrl !== undefined) {
+          if (settings.googleMapsUrl === '') {
+            localStorage.removeItem('rachit_google_maps_url_fallback');
+          } else {
+            localStorage.setItem('rachit_google_maps_url_fallback', settings.googleMapsUrl);
+          }
+        }
         return true;
       }
       throw error;
     }
     
-    // If logo_image was updated successfully, also update local fallback
+    // If successfully updated main table, also sync to local storage fallbacks
     if (settings.logoImage !== undefined) {
       if (settings.logoImage === '') {
         localStorage.removeItem('rachit_logo_fallback');
       } else {
         localStorage.setItem('rachit_logo_fallback', settings.logoImage);
+      }
+    }
+    if (settings.googleMapsUrl !== undefined) {
+      if (settings.googleMapsUrl === '') {
+        localStorage.removeItem('rachit_google_maps_url_fallback');
+      } else {
+        localStorage.setItem('rachit_google_maps_url_fallback', settings.googleMapsUrl);
       }
     }
     return true;
