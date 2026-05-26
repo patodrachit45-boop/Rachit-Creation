@@ -67,6 +67,55 @@ export default function Contact() {
           </motion.div>
         </div>
       </div>
+
+      {/* Google Map Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-24">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          viewport={{ once: true }} 
+          transition={{ duration: 0.5 }}
+          className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-[#C5A059]/10"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
+            <div>
+              <h2 className="font-serif text-2xl text-[#3D3D3D]">Find Us on Google Maps</h2>
+              <p className="text-[#3D3D3D]/50 text-sm font-sans mt-1">Visit our showroom at Millennium Textile Market, Surat</p>
+            </div>
+            <a 
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteSettings.address || 'Rachit Creation, Surat')}`} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="inline-flex items-center justify-center gap-2 border border-[#C5A059] text-[#C5A059] hover:bg-[#C5A059] hover:text-white px-5 py-2.5 text-xs uppercase tracking-wider font-semibold rounded-full transition-all"
+            >
+              <MapPin className="w-4 h-4" /> Open in Google Maps
+            </a>
+          </div>
+          
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(siteSettings.address || 'Rachit Creation, Surat')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Click to open in Google Maps"
+            className="block relative w-full h-[350px] md:h-[450px] rounded-xl overflow-hidden border border-gray-100 shadow-inner bg-gray-50 group cursor-pointer"
+          >
+            <iframe
+              title="Rachit Creation Store Location"
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(siteSettings.address || 'Rachit Creation, Surat')}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+              className="absolute inset-0 w-full h-full border-0 pointer-events-none"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+            {/* Elegant glassmorphism click-to-open overlay */}
+            <div className="absolute inset-0 bg-[#3D3D3D]/0 group-hover:bg-[#3D3D3D]/25 transition-all duration-300 flex items-center justify-center">
+              <span className="bg-white/95 backdrop-blur-sm text-[#3D3D3D] border border-[#C5A059]/20 font-sans text-xs uppercase tracking-wider font-semibold px-5 py-3 rounded-full shadow-lg opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-[#C5A059]" /> Open in Google Maps
+              </span>
+            </div>
+          </a>
+        </motion.div>
+      </div>
     </div>
   );
 }
