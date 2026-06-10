@@ -1,9 +1,21 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { useStore } from '../store';
 import { motion } from 'motion/react';
+import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
 
 export default function About() {
   const { siteSettings, teamMembers, isSettingsLoading } = useStore();
+
+  useEffect(() => {
+    const breadcrumbSchema = getBreadcrumbSchema([
+      { name: 'Home', item: '/' },
+      { name: 'About Us', to: '/about' } as any // Using 'item' but keying correctly for builder
+    ].map(item => ({ name: item.name, item: (item as any).to || item.item })));
+    
+    injectJSONLD('about-breadcrumb-schema', breadcrumbSchema);
+    return () => removeJSONLD('about-breadcrumb-schema');
+  }, []);
   const paragraphs = siteSettings.aboutText.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 
   return (

@@ -1,12 +1,22 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router';
 import { useStore } from '../store';
 import { motion } from 'motion/react';
 import { Calendar, Search, ArrowRight, BookOpen } from 'lucide-react';
+import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
 
 export default function Blog() {
   const { blogs } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const breadcrumbSchema = getBreadcrumbSchema([
+      { name: 'Home', item: '/' },
+      { name: 'Blogs', item: '/blog' }
+    ]);
+    injectJSONLD('blog-index-breadcrumb-schema', breadcrumbSchema);
+    return () => removeJSONLD('blog-index-breadcrumb-schema');
+  }, []);
 
   const filteredBlogs = useMemo(() => {
     return blogs.filter((blog) => 
