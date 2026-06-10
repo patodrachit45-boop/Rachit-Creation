@@ -1,6 +1,11 @@
 import { useState, useRef, useEffect, useCallback, type FormEvent, type DragEvent } from 'react';
 import { useStore, type Product } from '../store';
-import { isSupabaseConfigured } from '../lib/supabaseService';
+import { 
+  isSupabaseConfigured,
+  addBlogPostToSupabase,
+  addFaqToSupabase,
+  addTeamMemberToSupabase
+} from '../lib/supabaseService';
 import { CATEGORIES, formatPrice, type BlogPost, type TeamMember, type FAQ } from '../lib/siteConfig';
 import {
   Package, Crown, Sparkles, Heart, Gem, Plus, Pencil, Trash2, X,
@@ -135,7 +140,7 @@ export default function AdminDashboard() {
       {/* Main content */}
       <main className="flex-1 lg:ml-64 min-h-screen">
         <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
-          {activeTab === 'overview' && <OverviewTab products={products} isLoading={isLoading} />}
+          {activeTab === 'overview' && <OverviewTab products={products} isLoading={isLoading} showToast={showToast} />}
           {activeTab === 'products' && <ProductsTab products={products} isLoading={isLoading} onAdd={addProduct} onUpdate={updateProduct} onDelete={deleteProduct} showToast={showToast} />}
           {activeTab === 'blogs' && <BlogsTab blogs={blogs} onAdd={addBlogPost} onUpdate={updateBlogPost} onDelete={deleteBlogPost} showToast={showToast} />}
           {activeTab === 'team' && <TeamTab team={teamMembers} onAdd={addTeamMember} onUpdate={updateTeamMember} onDelete={deleteTeamMember} showToast={showToast} />}
@@ -190,7 +195,141 @@ function LoginScreen({ onLogin, showToast }: { onLogin: (email: string, password
 }
 
 // ── OVERVIEW ──────────────────────────────────────────────────────────
-function OverviewTab({ products, isLoading }: { products: Product[]; isLoading: boolean }) {
+function SyncDatabaseButton({ showToast }: { showToast: (msg: string, type: 'success' | 'error') => void }) {
+  const [syncing, setSyncing] = useState(false);
+  const { updateSiteSettings } = useStore();
+
+  const handleSync = async () => {
+    if (!isSupabaseConfigured) {
+      showToast('Supabase is not configured', 'error');
+      return;
+    }
+    setSyncing(true);
+    try {
+      let syncCount = 0;
+
+      // 1. Sync Site Settings fallbacks
+      const localLogo = localStorage.getItem('rachit_logo_fallback');
+      const localMaps = localStorage.getItem('rachit_google_maps_url_fallback');
+      const localPixel = localStorage.getItem('rachit_facebook_pixel_id_fallback');
+      const localPinterest = localStorage.getItem('rachit_pinterest_url_fallback');
+      const localTwitter = localStorage.getItem('rachit_twitter_url_fallback');
+
+      const settingsPayload: any = {};
+      if (localLogo) settingsPayload.logoImage = localLogo;
+      if (localMaps) settingsPayload.googleMapsUrl = localMaps;
+      if (localPixel) settingsPayload.facebookPixelId = localPixel;
+      if (localPinterest) settingsPayload.pinterestUrl = localPinterest;
+      if (localTwitter) settingsPayload.twitterUrl = localTwitter;
+
+      if (Object.keys(settingsPayload).length > 0) {
+        await updateSiteSettings(settingsPayload);
+        syncCount++;
+      }
+
+      // 2. Sync Blogs
+      const localBlogsStr = localStorage.getItem('rachit_blogs_fallback');
+      if (localBlogsStr) {
+        const localBlogs = JSON.parse(localBlogsStr) as BlogPost[];
+        for (const blog of localBlogs) {
+          try {
+            const res = await addBlogPostToSupabase({
+              title: blog.title,
+              content: blog.content,
+              excerpt: blog.excerpt,
+              imageUrl: blog.imageUrl,
+            });
+            if (res) syncCount++;
+            else throw new Error('Database write failed');
+          } catch (e: any) {
+            console.error('Failed to sync blog post:', blog.title, e);
+            const msg = e?.message || '';
+            if (msg.includes('relation') || msg.includes('find the table') || msg.includes('schema cache')) {
+              throw new Error('Database tables do not exist. Please run the SQL queries in your Supabase Dashboard first.');
+            }
+          }
+        }
+      }
+
+      // 3. Sync FAQs
+      const localFaqsStr = localStorage.getItem('rachit_faqs_fallback');
+      if (localFaqsStr) {
+        const localFaqs = JSON.parse(localFaqsStr) as FAQ[];
+        for (const faq of localFaqs) {
+          try {
+            const res = await addFaqToSupabase({
+              question: faq.question,
+              answer: faq.answer,
+            });
+            if (res) syncCount++;
+            else throw new Error('Database write failed');
+          } catch (e: any) {
+            console.error('Failed to sync FAQ:', faq.question, e);
+            const msg = e?.message || '';
+            if (msg.includes('relation') || msg.includes('find the table') || msg.includes('schema cache')) {
+              throw new Error('Database tables do not exist. Please run the SQL queries in your Supabase Dashboard first.');
+            }
+          }
+        }
+      }
+
+      // 4. Sync Team Members
+      const localTeamStr = localStorage.getItem('rachit_team_members_fallback');
+      if (localTeamStr) {
+        const localTeam = JSON.parse(localTeamStr) as TeamMember[];
+        for (const member of localTeam) {
+          try {
+            const res = await addTeamMemberToSupabase({
+              name: member.name,
+              role: member.role,
+              imageUrl: member.imageUrl,
+              displayOrder: member.displayOrder,
+            });
+            if (res) syncCount++;
+            else throw new Error('Database write failed');
+          } catch (e: any) {
+            console.error('Failed to sync team member:', member.name, e);
+            const msg = e?.message || '';
+            if (msg.includes('relation') || msg.includes('find the table') || msg.includes('schema cache')) {
+              throw new Error('Database tables do not exist. Please run the SQL queries in your Supabase Dashboard first.');
+            }
+          }
+        }
+      }
+
+      showToast(`Successfully synced local updates to database!`, 'success');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err: any) {
+      showToast(`Sync failed: ${err?.message || 'Database error'}`, 'error');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleSync}
+      disabled={syncing}
+      className="flex items-center gap-2 bg-[#C5A059] hover:bg-[#b08d47] disabled:opacity-50 text-white text-xs font-semibold uppercase tracking-wider px-5 py-3 rounded-xl transition-all shadow-md cursor-pointer"
+    >
+      {syncing ? (
+        <>
+          <Loader2 size={14} className="animate-spin" />
+          Syncing to Database...
+        </>
+      ) : (
+        <>
+          <Save size={14} />
+          Sync Local updates to Supabase
+        </>
+      )}
+    </button>
+  );
+}
+
+function OverviewTab({ products, isLoading, showToast }: { products: Product[]; isLoading: boolean; showToast: (msg: string, type: 'success' | 'error') => void }) {
   const stats = [
     { label: 'Total Products', count: products.length, icon: Package, bg: 'bg-violet-500/10' },
     { label: 'Bridal', count: products.filter((p) => p.category === 'Bridal').length, icon: Crown, bg: 'bg-rose-500/10' },
@@ -200,7 +339,13 @@ function OverviewTab({ products, isLoading }: { products: Product[]; isLoading: 
   ];
   return (
     <div>
-      <div className="mb-8"><h1 className="text-2xl font-semibold text-white">Dashboard Overview</h1><p className="text-gray-500 text-sm mt-1">Welcome back — here's a summary of your catalog</p></div>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-white">Dashboard Overview</h1>
+          <p className="text-gray-500 text-sm mt-1">Welcome back — here's a summary of your catalog</p>
+        </div>
+        <SyncDatabaseButton showToast={showToast} />
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-4">
         {stats.map((stat) => { const Icon = stat.icon; return (
           <div key={stat.label} className="bg-gray-900 border border-gray-800 rounded-2xl p-5 hover:border-gray-700 transition-all">
