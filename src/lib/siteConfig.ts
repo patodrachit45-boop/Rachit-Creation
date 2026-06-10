@@ -123,26 +123,18 @@ export interface TeamMember {
 export const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
   {
     id: 'team1',
-    name: 'Rachit Patel',
-    role: 'Founder & Creative Director',
-    imageUrl: '',
+    name: 'Mahesh Patodiya',
+    role: 'FOUNDER & OWNER',
+    imageUrl: 'https://zffuxuykmxnaedjokddm.supabase.co/storage/v1/object/public/product-images/products/1781108838743_e57tpv.png',
     displayOrder: 1,
     createdAt: Date.now(),
   },
   {
     id: 'team2',
-    name: 'Aisha Mehta',
-    role: 'Lead Bridal Designer',
-    imageUrl: '',
+    name: 'Rachit Patodiya',
+    role: 'CO-OWNER & DIGITAL MARKETER',
+    imageUrl: 'https://zffuxuykmxnaedjokddm.supabase.co/storage/v1/object/public/product-images/products/1781108879941_mxmmm6.jpeg',
     displayOrder: 2,
-    createdAt: Date.now(),
-  },
-  {
-    id: 'team3',
-    name: 'Master Ramesh',
-    role: 'Head Artisan (Master Embroiderer)',
-    imageUrl: '',
-    displayOrder: 3,
     createdAt: Date.now(),
   }
 ];
