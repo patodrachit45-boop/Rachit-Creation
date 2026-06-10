@@ -365,7 +365,7 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
             </div>
           </div>
           <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Product Name</label><input required type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="e.g., Royal Bridal Lehenga" /></div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Category</label><div className="relative"><select value={category} onChange={(e) => setCategory(e.target.value as ProductCategory)} className={`${inputClass} appearance-none`}>{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}</select><ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" /></div></div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Price (₹)</label><input required type="number" min={0} value={price || ''} onChange={(e) => setPrice(Number(e.target.value))} className={inputClass} placeholder="15000" /></div>
           </div>

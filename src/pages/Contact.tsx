@@ -4,6 +4,7 @@ import { getWhatsAppLink } from '../lib/siteConfig';
 import { MapPin, Phone, Mail, Clock, Send, MessageCircle, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { injectJSONLD, removeJSONLD, getFAQSchema } from '../lib/seoService';
+import { useLocation } from 'react-router';
 
 const PRODUCT_INTERESTS = ['Bridal Lehenga', 'Designer Lehenga', 'Girlish Lehenga', 'Heavy Lehenga', 'Custom Design', 'Other'];
 
@@ -23,6 +24,20 @@ export default function Contact() {
     }
     return () => removeJSONLD('faq-schema');
   }, [faqs]);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash === '#faqs') {
+      const element = document.getElementById('faqs');
+      if (element) {
+        const timer = setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [location]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +94,7 @@ export default function Contact() {
       </div>
 
       {/* FAQ Section */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-20">
+      <div id="faqs" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-20">
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           whileInView={{ opacity: 1, y: 0 }} 

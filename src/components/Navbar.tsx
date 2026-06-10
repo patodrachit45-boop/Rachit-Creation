@@ -17,7 +17,7 @@ export default function Navbar() {
 
   useEffect(() => { setLogoError(false); }, [siteSettings.logoImage]);
 
-  useEffect(() => { setIsOpen(false); setCollectionsOpen(false); }, [location.pathname]);
+  useEffect(() => { setIsOpen(false); setCollectionsOpen(false); }, [location.pathname, location.hash]);
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', h, { passive: true });
@@ -36,7 +36,7 @@ export default function Navbar() {
             {!logoError && (
               <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Rachit Creation" className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-1 ring-[#C5A059]/30 group-hover:ring-[#C5A059] transition-all" onError={() => setLogoError(true)} />
             )}
-            <span className="font-serif text-lg sm:text-xl tracking-[0.12em] uppercase text-[#3D3D3D]">Rachit <span className="font-semibold">Creation</span></span>
+            <span className="font-serif text-base sm:text-xl tracking-[0.1em] sm:tracking-[0.12em] uppercase text-[#3D3D3D]">Rachit <span className="font-semibold">Creation</span></span>
           </Link>
           <div className="hidden lg:flex items-center gap-8 text-[11px] font-sans uppercase tracking-[0.18em] text-[#3D3D3D]/70">
             <div className="relative group">
@@ -49,6 +49,7 @@ export default function Navbar() {
             </div>
             <Link to="/about" className="hover:text-[#C5A059] transition-colors">The Story</Link>
             <Link to="/blog" className="hover:text-[#C5A059] transition-colors">Blogs</Link>
+            <Link to="/contact#faqs" className="hover:text-[#C5A059] transition-colors">FAQs</Link>
             <Link to="/contact" className="hover:text-[#C5A059] transition-colors">Contact</Link>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
@@ -85,6 +86,7 @@ export default function Navbar() {
             <div className="w-full h-px bg-gray-100 my-2" />
             <Link to="/about" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">The Story</Link>
             <Link to="/blog" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">Blogs</Link>
+            <Link to="/contact#faqs" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">FAQs</Link>
             <Link to="/contact" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">Contact</Link>
             <Link to="/wishlist" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059] flex items-center gap-3">
               <Heart className="w-4 h-4" /> Wishlist {wishlistCount > 0 && <span className="bg-[#C5A059] text-white text-[9px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{wishlistCount}</span>}
