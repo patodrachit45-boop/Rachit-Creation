@@ -1,12 +1,9 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router';
 import type { SiteSettings } from './siteConfig';
 import type { Product } from '../store';
 
 // ── Canonical URL hook ────────────────────────────────────────────────
 export function useCanonicalURL() {
-  const { pathname } = useLocation();
-
   useEffect(() => {
     let link = document.querySelector('link[rel="canonical"]');
     if (!link) {
@@ -14,10 +11,8 @@ export function useCanonicalURL() {
       link.setAttribute('rel', 'canonical');
       document.head.appendChild(link);
     }
-    const base = 'https://raccreation.com';
-    const path = pathname === '/' ? '' : pathname.replace(/\/$/, '');
-    link.setAttribute('href', `${base}${path}`);
-  }, [pathname]);
+    link.setAttribute('href', 'https://raccreation.com/');
+  }, []);
 }
 
 // ── JSON-LD Injection Helpers ─────────────────────────────────────────
