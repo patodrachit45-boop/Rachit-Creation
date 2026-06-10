@@ -147,8 +147,25 @@ export default function BlogPostDetail() {
           {parsedContent}
         </article>
 
+        {/* Recommended Collections Internal Links */}
+        <div className="mt-16 pt-10 border-t border-[#C5A059]/15">
+          <h3 className="font-serif text-2xl text-[#3D3D3D] text-center mb-6">Explore Our Heritage Collections</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {['Bridal', 'Designer', 'Girlish', 'Heavy'].map((cat) => (
+              <Link 
+                key={cat} 
+                to={`/category/${cat}`}
+                className="group border border-[#C5A059]/15 hover:border-[#C5A059] rounded-2xl p-5 text-center bg-[#FCEEE9]/10 hover:bg-[#FCEEE9]/20 transition-all duration-300 shadow-sm"
+              >
+                <span className="block font-serif text-base text-[#3D3D3D] group-hover:text-[#C5A059] transition-colors">{cat}</span>
+                <span className="block text-[10px] uppercase tracking-wider text-[#3D3D3D]/40 mt-1 font-medium">Explore Collection</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* Back Link */}
-        <div className="mt-16 pt-8 border-t border-[#C5A059]/15 text-center">
+        <div className="mt-12 text-center">
           <Link 
             to="/blog" 
             className="inline-flex items-center gap-2 bg-[#C5A059] hover:bg-[#b08d47] text-white px-8 py-3.5 rounded-full text-xs uppercase tracking-wider font-semibold transition-colors duration-300"

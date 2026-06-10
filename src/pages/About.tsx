@@ -83,10 +83,37 @@ export default function About() {
       )}
 
       {/* CTA Section */}
-      <section className="py-16 text-center">
-        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2 }}>
-          <Link to="/category/Bridal" className="inline-flex items-center gap-2 bg-[#C5A059] hover:bg-[#b08d47] text-white font-sans text-sm tracking-wider uppercase px-8 py-3.5 rounded-full transition-colors shadow-md">Explore Our Collection</Link>
+      <section className="py-16 md:py-20 max-w-4xl mx-auto px-4 text-center">
+        <motion.div 
+          initial={{ opacity: 0, y: 16 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          viewport={{ once: true }} 
+          transition={{ duration: 0.5 }}
+          className="mb-8"
+        >
+          <h3 className="font-serif text-2xl md:text-3xl text-[#3D3D3D] mb-2">Explore Our Heritage Collections</h3>
+          <p className="text-[#3D3D3D]/55 text-sm font-sans max-w-md mx-auto mb-8">Begin your bridal journey by exploring our carefully curated categories.</p>
         </motion.div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {['Bridal', 'Designer', 'Girlish', 'Heavy'].map((cat, idx) => (
+            <motion.div
+              key={cat}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: idx * 0.05 }}
+            >
+              <Link 
+                to={`/category/${cat}`}
+                className="group block border border-[#C5A059]/25 rounded-2xl p-6 bg-white hover:border-[#C5A059] hover:bg-[#FCEEE9]/20 transition-all duration-300 shadow-sm hover:shadow-md"
+              >
+                <span className="block font-serif text-lg text-[#3D3D3D] group-hover:text-[#C5A059] transition-colors">{cat}</span>
+                <span className="block text-[10px] uppercase tracking-widest text-[#3D3D3D]/40 mt-1 font-semibold">View Collection</span>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
       </section>
     </div>
   );
