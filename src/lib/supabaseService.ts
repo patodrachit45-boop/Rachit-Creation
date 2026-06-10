@@ -45,7 +45,41 @@ function productToDb(p: Partial<Product> & { imageUrl?: string }) {
   return obj;
 }
 
+const JSON_SEPARATOR = '|||JSON_DATA|||';
+
+export interface ExtraData {
+  googleMapsUrl?: string;
+  facebookPixelId?: string;
+  pinterestUrl?: string;
+  twitterUrl?: string;
+  blogs?: BlogPost[];
+  faqs?: FAQ[];
+  teamMembers?: TeamMember[];
+}
+
+export function parseAboutText(dbAboutText: string): { aboutText: string; extraData: ExtraData } {
+  if (!dbAboutText) return { aboutText: '', extraData: {} };
+  const parts = dbAboutText.split(JSON_SEPARATOR);
+  const aboutText = parts[0].trim();
+  let extraData: ExtraData = {};
+  if (parts.length > 1) {
+    try {
+      extraData = JSON.parse(parts[1].trim());
+    } catch (e) {
+      console.error('Failed to parse extra JSON data from about_text:', e);
+    }
+  }
+  return { aboutText, extraData };
+}
+
+export function buildAboutText(aboutText: string, extraData: ExtraData): string {
+  const cleanAbout = (aboutText || '').split(JSON_SEPARATOR)[0].trim();
+  return `${cleanAbout}\n\n${JSON_SEPARATOR}\n${JSON.stringify(extraData)}`;
+}
+
 function dbToSettings(row: any): SiteSettings {
+  const { aboutText, extraData } = parseAboutText(row.about_text || '');
+
   const settings: SiteSettings = {
     heroImage: row.hero_image || '',
     logoImage: row.logo_image || '',
@@ -55,12 +89,12 @@ function dbToSettings(row: any): SiteSettings {
     phone: row.phone || '',
     address: row.address || '',
     showroomHours: row.showroom_hours || '',
-    aboutText: row.about_text || '',
+    aboutText: aboutText || '',
     aboutHeroImage: row.about_hero_image || '',
-    googleMapsUrl: row.google_maps_url || '',
-    facebookPixelId: row.facebook_pixel_id || '',
-    pinterestUrl: row.pinterest_url || '',
-    twitterUrl: row.twitter_url || '',
+    googleMapsUrl: extraData.googleMapsUrl || row.google_maps_url || '',
+    facebookPixelId: extraData.facebookPixelId || row.facebook_pixel_id || '',
+    pinterestUrl: extraData.pinterestUrl || row.pinterest_url || '',
+    twitterUrl: extraData.twitterUrl || row.twitter_url || '',
   };
 
   // Fallback for logo if column doesn't exist or is empty
@@ -69,25 +103,6 @@ function dbToSettings(row: any): SiteSettings {
     if (localFallback) {
       settings.logoImage = localFallback;
     }
-  }
-
-  // Fallback for Google Maps link if column doesn't exist or is empty
-  if (!settings.googleMapsUrl) {
-    const localMapsFallback = localStorage.getItem('rachit_google_maps_url_fallback');
-    if (localMapsFallback) {
-      settings.googleMapsUrl = localMapsFallback;
-    }
-  }
-
-  // Fallbacks for Pixel and Social URLs
-  if (!settings.facebookPixelId) {
-    settings.facebookPixelId = localStorage.getItem('rachit_facebook_pixel_id_fallback') || '';
-  }
-  if (!settings.pinterestUrl) {
-    settings.pinterestUrl = localStorage.getItem('rachit_pinterest_url_fallback') || '';
-  }
-  if (!settings.twitterUrl) {
-    settings.twitterUrl = localStorage.getItem('rachit_twitter_url_fallback') || '';
   }
 
   return settings;
@@ -105,10 +120,6 @@ function settingsToDb(s: Partial<SiteSettings>) {
   if (s.showroomHours !== undefined) obj.showroom_hours = s.showroomHours;
   if (s.aboutText !== undefined) obj.about_text = s.aboutText;
   if (s.aboutHeroImage !== undefined) obj.about_hero_image = s.aboutHeroImage;
-  if (s.googleMapsUrl !== undefined) obj.google_maps_url = s.googleMapsUrl;
-  if (s.facebookPixelId !== undefined) obj.facebook_pixel_id = s.facebookPixelId;
-  if (s.pinterestUrl !== undefined) obj.pinterest_url = s.pinterestUrl;
-  if (s.twitterUrl !== undefined) obj.twitter_url = s.twitterUrl;
   return obj;
 }
 
@@ -265,20 +276,50 @@ export async function fetchSiteSettingsFromSupabase(): Promise<SiteSettings | nu
       .single();
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 = row not found
     if (!data) return null;
-    
-    const settings = dbToSettings(data);
-    
-    // Fallback for logo if column doesn't exist or is empty
-    if (!settings.logoImage) {
-      const localFallback = localStorage.getItem('rachit_logo_fallback');
-      if (localFallback) {
-        settings.logoImage = localFallback;
-      }
-    }
-    return settings;
+    return dbToSettings(data);
   } catch (error) {
     console.error('Error fetching site settings:', error);
     return null;
+  }
+}
+
+export async function syncExtraDataToSupabase(data: {
+  blogs?: BlogPost[];
+  faqs?: FAQ[];
+  teamMembers?: TeamMember[];
+}): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { data: currentData } = await supabase
+      .from('site_settings')
+      .select('about_text')
+      .eq('id', 'main')
+      .single();
+    
+    let aboutTextVal = '';
+    let existingExtra: ExtraData = {};
+    if (currentData?.about_text) {
+      const parsed = parseAboutText(currentData.about_text);
+      aboutTextVal = parsed.aboutText;
+      existingExtra = parsed.extraData;
+    }
+
+    if (data.blogs !== undefined) existingExtra.blogs = data.blogs;
+    if (data.faqs !== undefined) existingExtra.faqs = data.faqs;
+    if (data.teamMembers !== undefined) existingExtra.teamMembers = data.teamMembers;
+
+    const updatedAboutText = buildAboutText(aboutTextVal, existingExtra);
+
+    const { error } = await supabase
+      .from('site_settings')
+      .update({ about_text: updatedAboutText })
+      .eq('id', 'main');
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error syncing extra data to Supabase:', error);
+    return false;
   }
 }
 
@@ -287,112 +328,38 @@ export async function updateSiteSettingsInSupabase(
 ): Promise<boolean> {
   if (!supabase) return false;
   try {
+    const { data: currentData } = await supabase
+      .from('site_settings')
+      .select('about_text')
+      .eq('id', 'main')
+      .single();
+    
+    let aboutTextVal = '';
+    let existingExtra: ExtraData = {};
+    if (currentData?.about_text) {
+      const parsed = parseAboutText(currentData.about_text);
+      aboutTextVal = parsed.aboutText;
+      existingExtra = parsed.extraData;
+    }
+
+    if (settings.googleMapsUrl !== undefined) existingExtra.googleMapsUrl = settings.googleMapsUrl;
+    if (settings.facebookPixelId !== undefined) existingExtra.facebookPixelId = settings.facebookPixelId;
+    if (settings.pinterestUrl !== undefined) existingExtra.pinterestUrl = settings.pinterestUrl;
+    if (settings.twitterUrl !== undefined) existingExtra.twitterUrl = settings.twitterUrl;
+
+    if (settings.aboutText !== undefined) {
+      aboutTextVal = settings.aboutText;
+    }
+
     const payload = settingsToDb(settings);
+    payload.about_text = buildAboutText(aboutTextVal, existingExtra);
+
     const { error } = await supabase
       .from('site_settings')
       .update(payload)
       .eq('id', 'main');
       
-    if (error) {
-      // Auto-healing: If logo_image, google_maps_url, or other new columns do not exist, remove them and retry
-      if (error.message.includes('logo_image') || 
-          error.message.includes('google_maps_url') || 
-          error.message.includes('facebook_pixel_id') || 
-          error.message.includes('pinterest_url') || 
-          error.message.includes('twitter_url') || 
-          error.code === '42703') {
-        console.warn('Database is missing new site settings columns. Retrying update with fallback...');
-        const healedPayload = { ...payload };
-        delete healedPayload.logo_image;
-        delete healedPayload.google_maps_url;
-        delete healedPayload.facebook_pixel_id;
-        delete healedPayload.pinterest_url;
-        delete healedPayload.twitter_url;
-        
-        const { error: retryError } = await supabase
-          .from('site_settings')
-          .update(healedPayload)
-          .eq('id', 'main');
-          
-        if (retryError) throw retryError;
-        
-        // Save fallbacks to localStorage
-        if (settings.logoImage !== undefined) {
-          if (settings.logoImage === '') {
-            localStorage.removeItem('rachit_logo_fallback');
-          } else {
-            localStorage.setItem('rachit_logo_fallback', settings.logoImage);
-          }
-        }
-        if (settings.googleMapsUrl !== undefined) {
-          if (settings.googleMapsUrl === '') {
-            localStorage.removeItem('rachit_google_maps_url_fallback');
-          } else {
-            localStorage.setItem('rachit_google_maps_url_fallback', settings.googleMapsUrl);
-          }
-        }
-        if (settings.facebookPixelId !== undefined) {
-          if (settings.facebookPixelId === '') {
-            localStorage.removeItem('rachit_facebook_pixel_id_fallback');
-          } else {
-            localStorage.setItem('rachit_facebook_pixel_id_fallback', settings.facebookPixelId);
-          }
-        }
-        if (settings.pinterestUrl !== undefined) {
-          if (settings.pinterestUrl === '') {
-            localStorage.removeItem('rachit_pinterest_url_fallback');
-          } else {
-            localStorage.setItem('rachit_pinterest_url_fallback', settings.pinterestUrl);
-          }
-        }
-        if (settings.twitterUrl !== undefined) {
-          if (settings.twitterUrl === '') {
-            localStorage.removeItem('rachit_twitter_url_fallback');
-          } else {
-            localStorage.setItem('rachit_twitter_url_fallback', settings.twitterUrl);
-          }
-        }
-        return true;
-      }
-      throw error;
-    }
-    
-    // If successfully updated main table, also sync to local storage fallbacks
-    if (settings.logoImage !== undefined) {
-      if (settings.logoImage === '') {
-        localStorage.removeItem('rachit_logo_fallback');
-      } else {
-        localStorage.setItem('rachit_logo_fallback', settings.logoImage);
-      }
-    }
-    if (settings.googleMapsUrl !== undefined) {
-      if (settings.googleMapsUrl === '') {
-        localStorage.removeItem('rachit_google_maps_url_fallback');
-      } else {
-        localStorage.setItem('rachit_google_maps_url_fallback', settings.googleMapsUrl);
-      }
-    }
-    if (settings.facebookPixelId !== undefined) {
-      if (settings.facebookPixelId === '') {
-        localStorage.removeItem('rachit_facebook_pixel_id_fallback');
-      } else {
-        localStorage.setItem('rachit_facebook_pixel_id_fallback', settings.facebookPixelId);
-      }
-    }
-    if (settings.pinterestUrl !== undefined) {
-      if (settings.pinterestUrl === '') {
-        localStorage.removeItem('rachit_pinterest_url_fallback');
-      } else {
-        localStorage.setItem('rachit_pinterest_url_fallback', settings.pinterestUrl);
-      }
-    }
-    if (settings.twitterUrl !== undefined) {
-      if (settings.twitterUrl === '') {
-        localStorage.removeItem('rachit_twitter_url_fallback');
-      } else {
-        localStorage.setItem('rachit_twitter_url_fallback', settings.twitterUrl);
-      }
-    }
+    if (error) throw error;
     return true;
   } catch (error) {
     console.error('Error updating site settings:', error);
@@ -446,27 +413,18 @@ export function onAuthChanged(callback: (user: any) => void): () => void {
 export async function fetchBlogsFromSupabase(): Promise<BlogPost[]> {
   if (!supabase) return [];
   try {
-    const { data, error } = await supabase
-      .from('blogs')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) {
-      if (error.code === '42P01') { // table does not exist
-        console.warn('Supabase blogs table not found. Using local fallback.');
-        return [];
-      }
-      throw error;
+    const { data } = await supabase
+      .from('site_settings')
+      .select('about_text')
+      .eq('id', 'main')
+      .single();
+    if (data?.about_text) {
+      const parsed = parseAboutText(data.about_text);
+      return parsed.extraData.blogs || [];
     }
-    return (data || []).map((row: any) => ({
-      id: row.id,
-      title: row.title,
-      content: row.content,
-      excerpt: row.excerpt,
-      imageUrl: row.image_url,
-      createdAt: Number(row.created_at),
-    }));
+    return [];
   } catch (error) {
-    console.error('Error fetching blogs from Supabase:', error);
+    console.error('Error fetching blogs from Supabase settings:', error);
     return [];
   }
 }
@@ -483,24 +441,20 @@ export async function addBlogPostToSupabase(
     }
     const id = Math.random().toString(36).substring(2, 9);
     const createdAt = Date.now();
-    const row = {
+    const newPost: BlogPost = {
       id,
       title: post.title,
       content: post.content,
       excerpt: post.excerpt,
-      image_url: imageUrl,
-      created_at: createdAt,
+      imageUrl,
+      createdAt,
     };
-    const { data, error } = await supabase.from('blogs').insert(row).select().single();
-    if (error) throw error;
-    return {
-      id: data.id,
-      title: data.title,
-      content: data.content,
-      excerpt: data.excerpt,
-      imageUrl: data.image_url,
-      createdAt: Number(data.created_at),
-    };
+
+    const currentBlogs = await fetchBlogsFromSupabase();
+    const updatedBlogs = [newPost, ...currentBlogs];
+    const success = await syncExtraDataToSupabase({ blogs: updatedBlogs });
+    if (!success) return null;
+    return newPost;
   } catch (error) {
     console.error('Error adding blog post in Supabase:', error);
     return null;
@@ -513,15 +467,9 @@ export async function updateBlogPostInSupabase(
 ): Promise<boolean> {
   if (!supabase) return false;
   try {
-    const payload: any = {};
-    if (fields.title !== undefined) payload.title = fields.title;
-    if (fields.content !== undefined) payload.content = fields.content;
-    if (fields.excerpt !== undefined) payload.excerpt = fields.excerpt;
-    if (fields.imageUrl !== undefined) payload.image_url = fields.imageUrl;
-
-    const { error } = await supabase.from('blogs').update(payload).eq('id', id);
-    if (error) throw error;
-    return true;
+    const currentBlogs = await fetchBlogsFromSupabase();
+    const updatedBlogs = currentBlogs.map((b) => b.id === id ? { ...b, ...fields } : b);
+    return await syncExtraDataToSupabase({ blogs: updatedBlogs });
   } catch (error) {
     console.error('Error updating blog post in Supabase:', error);
     return false;
@@ -531,9 +479,9 @@ export async function updateBlogPostInSupabase(
 export async function deleteBlogPostFromSupabase(id: string): Promise<boolean> {
   if (!supabase) return false;
   try {
-    const { error } = await supabase.from('blogs').delete().eq('id', id);
-    if (error) throw error;
-    return true;
+    const currentBlogs = await fetchBlogsFromSupabase();
+    const updatedBlogs = currentBlogs.filter((b) => b.id !== id);
+    return await syncExtraDataToSupabase({ blogs: updatedBlogs });
   } catch (error) {
     console.error('Error deleting blog post from Supabase:', error);
     return false;
@@ -545,27 +493,18 @@ export async function deleteBlogPostFromSupabase(id: string): Promise<boolean> {
 export async function fetchTeamFromSupabase(): Promise<TeamMember[]> {
   if (!supabase) return [];
   try {
-    const { data, error } = await supabase
-      .from('team_members')
-      .select('*')
-      .order('display_order', { ascending: true });
-    if (error) {
-      if (error.code === '42P01') { // table does not exist
-        console.warn('Supabase team_members table not found. Using local fallback.');
-        return [];
-      }
-      throw error;
+    const { data } = await supabase
+      .from('site_settings')
+      .select('about_text')
+      .eq('id', 'main')
+      .single();
+    if (data?.about_text) {
+      const parsed = parseAboutText(data.about_text);
+      return parsed.extraData.teamMembers || [];
     }
-    return (data || []).map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      role: row.role,
-      imageUrl: row.image_url,
-      displayOrder: Number(row.display_order || 0),
-      createdAt: Number(row.created_at),
-    }));
+    return [];
   } catch (error) {
-    console.error('Error fetching team from Supabase:', error);
+    console.error('Error fetching team from Supabase settings:', error);
     return [];
   }
 }
@@ -582,24 +521,20 @@ export async function addTeamMemberToSupabase(
     }
     const id = Math.random().toString(36).substring(2, 9);
     const createdAt = Date.now();
-    const row = {
+    const newMember: TeamMember = {
       id,
       name: member.name,
       role: member.role,
-      image_url: imageUrl,
-      display_order: member.displayOrder,
-      created_at: createdAt,
+      imageUrl,
+      displayOrder: member.displayOrder,
+      createdAt,
     };
-    const { data, error } = await supabase.from('team_members').insert(row).select().single();
-    if (error) throw error;
-    return {
-      id: data.id,
-      name: data.name,
-      role: data.role,
-      imageUrl: data.image_url,
-      displayOrder: Number(data.display_order || 0),
-      createdAt: Number(data.created_at),
-    };
+
+    const currentTeam = await fetchTeamFromSupabase();
+    const updatedTeam = [...currentTeam, newMember];
+    const success = await syncExtraDataToSupabase({ teamMembers: updatedTeam });
+    if (!success) return null;
+    return newMember;
   } catch (error) {
     console.error('Error adding team member in Supabase:', error);
     return null;
@@ -612,15 +547,9 @@ export async function updateTeamMemberInSupabase(
 ): Promise<boolean> {
   if (!supabase) return false;
   try {
-    const payload: any = {};
-    if (fields.name !== undefined) payload.name = fields.name;
-    if (fields.role !== undefined) payload.role = fields.role;
-    if (fields.imageUrl !== undefined) payload.image_url = fields.imageUrl;
-    if (fields.displayOrder !== undefined) payload.display_order = fields.displayOrder;
-
-    const { error } = await supabase.from('team_members').update(payload).eq('id', id);
-    if (error) throw error;
-    return true;
+    const currentTeam = await fetchTeamFromSupabase();
+    const updatedTeam = currentTeam.map((m) => m.id === id ? { ...m, ...fields } : m);
+    return await syncExtraDataToSupabase({ teamMembers: updatedTeam });
   } catch (error) {
     console.error('Error updating team member in Supabase:', error);
     return false;
@@ -630,9 +559,9 @@ export async function updateTeamMemberInSupabase(
 export async function deleteTeamMemberFromSupabase(id: string): Promise<boolean> {
   if (!supabase) return false;
   try {
-    const { error } = await supabase.from('team_members').delete().eq('id', id);
-    if (error) throw error;
-    return true;
+    const currentTeam = await fetchTeamFromSupabase();
+    const updatedTeam = currentTeam.filter((m) => m.id !== id);
+    return await syncExtraDataToSupabase({ teamMembers: updatedTeam });
   } catch (error) {
     console.error('Error deleting team member from Supabase:', error);
     return false;
@@ -643,25 +572,18 @@ export async function deleteTeamMemberFromSupabase(id: string): Promise<boolean>
 export async function fetchFaqsFromSupabase(): Promise<FAQ[]> {
   if (!supabase) return [];
   try {
-    const { data, error } = await supabase
-      .from('faqs')
-      .select('*')
-      .order('created_at', { ascending: true });
-    if (error) {
-      if (error.code === '42P01') { // table does not exist
-        console.warn('Supabase faqs table not found. Using local fallback.');
-        return [];
-      }
-      throw error;
+    const { data } = await supabase
+      .from('site_settings')
+      .select('about_text')
+      .eq('id', 'main')
+      .single();
+    if (data?.about_text) {
+      const parsed = parseAboutText(data.about_text);
+      return parsed.extraData.faqs || [];
     }
-    return (data || []).map((row: any) => ({
-      id: row.id,
-      question: row.question,
-      answer: row.answer,
-      createdAt: Number(row.created_at)
-    }));
+    return [];
   } catch (error) {
-    console.error('Error fetching FAQs from Supabase:', error);
+    console.error('Error fetching FAQs from Supabase settings:', error);
     return [];
   }
 }
@@ -673,20 +595,18 @@ export async function addFaqToSupabase(
   try {
     const id = Math.random().toString(36).substring(2, 9);
     const createdAt = Date.now();
-    const row = {
+    const newFaq: FAQ = {
       id,
       question: faq.question,
       answer: faq.answer,
-      created_at: createdAt
+      createdAt,
     };
-    const { data, error } = await supabase.from('faqs').insert(row).select().single();
-    if (error) throw error;
-    return {
-      id: data.id,
-      question: data.question,
-      answer: data.answer,
-      createdAt: Number(data.created_at)
-    };
+
+    const currentFaqs = await fetchFaqsFromSupabase();
+    const updatedFaqs = [...currentFaqs, newFaq];
+    const success = await syncExtraDataToSupabase({ faqs: updatedFaqs });
+    if (!success) return null;
+    return newFaq;
   } catch (error) {
     console.error('Error adding FAQ in Supabase:', error);
     return null;
@@ -699,13 +619,9 @@ export async function updateFaqInSupabase(
 ): Promise<boolean> {
   if (!supabase) return false;
   try {
-    const payload: any = {};
-    if (fields.question !== undefined) payload.question = fields.question;
-    if (fields.answer !== undefined) payload.answer = fields.answer;
-
-    const { error } = await supabase.from('faqs').update(payload).eq('id', id);
-    if (error) throw error;
-    return true;
+    const currentFaqs = await fetchFaqsFromSupabase();
+    const updatedFaqs = currentFaqs.map((f) => f.id === id ? { ...f, ...fields } : f);
+    return await syncExtraDataToSupabase({ faqs: updatedFaqs });
   } catch (error) {
     console.error('Error updating FAQ in Supabase:', error);
     return false;
@@ -715,9 +631,9 @@ export async function updateFaqInSupabase(
 export async function deleteFaqFromSupabase(id: string): Promise<boolean> {
   if (!supabase) return false;
   try {
-    const { error } = await supabase.from('faqs').delete().eq('id', id);
-    if (error) throw error;
-    return true;
+    const currentFaqs = await fetchFaqsFromSupabase();
+    const updatedFaqs = currentFaqs.filter((f) => f.id !== id);
+    return await syncExtraDataToSupabase({ faqs: updatedFaqs });
   } catch (error) {
     console.error('Error deleting FAQ from Supabase:', error);
     return false;
