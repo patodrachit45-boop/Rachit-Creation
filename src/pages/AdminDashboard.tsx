@@ -911,7 +911,6 @@ function TeamTab({ team, onAdd, onUpdate, onDelete, showToast }: TeamTabProps) {
               </div>
               <h3 className="font-serif text-white text-base font-semibold">{member.name}</h3>
               <p className="text-xs text-[#C5A059] font-sans mt-0.5">{member.role}</p>
-              <div className="mt-3 bg-gray-800 text-[10px] text-gray-400 px-2 py-0.5 rounded-full font-sans">Order: {member.displayOrder}</div>
             </div>
           ))}
         </div>
@@ -933,10 +932,6 @@ function TeamTab({ team, onAdd, onUpdate, onDelete, showToast }: TeamTabProps) {
               <div>
                 <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Role/Designation *</label>
                 <input type="text" required value={role} onChange={(e) => setRole(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none" placeholder="e.g. Lead Embroiderer" />
-              </div>
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Display Order</label>
-                <input type="number" value={displayOrder} onChange={(e) => setDisplayOrder(Number(e.target.value))} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none" placeholder="e.g. 1" />
               </div>
 
               <div>

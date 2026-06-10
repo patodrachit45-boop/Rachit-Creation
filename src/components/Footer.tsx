@@ -37,7 +37,7 @@ export default function Footer() {
               {[
                 { label: 'Home', to: '/' },
                 { label: 'About Us', to: '/about' },
-                { label: 'Journal', to: '/blog' },
+                { label: 'Blogs', to: '/blog' },
                 { label: 'Contact', to: '/contact' },
                 { label: 'Wishlist', to: '/wishlist' }
               ].map((l) => (

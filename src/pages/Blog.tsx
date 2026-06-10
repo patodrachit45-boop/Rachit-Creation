@@ -26,7 +26,7 @@ export default function Blog() {
             animate={{ opacity: 1, y: 0 }} 
             className="text-[#C5A059] tracking-[0.3em] uppercase text-xs font-sans mb-2"
           >
-            The Atelier Journal
+            The Atelier Blogs
           </motion.p>
           <motion.h1 
             initial={{ opacity: 0, y: 12 }} 

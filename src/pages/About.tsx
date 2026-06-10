@@ -53,8 +53,7 @@ export default function About() {
               transition={{ duration: 0.5 }}
               className="text-center mb-12"
             >
-              <h2 className="font-serif text-2xl md:text-4xl text-[#3D3D3D] mb-3">Our Artisans & Designers</h2>
-              <p className="text-[#3D3D3D]/50 text-sm font-sans max-w-md mx-auto">The masterminds and craftsmen weaving luxury threads into heritage bridal couture.</p>
+              <h2 className="font-serif text-2xl md:text-4xl text-[#3D3D3D]">Our Team</h2>
             </motion.div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">

@@ -87,7 +87,7 @@ export default function BlogPostDetail() {
             to="/blog" 
             className="inline-flex items-center gap-2 text-white/95 hover:text-white bg-black/40 hover:bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full text-xs uppercase tracking-wider font-semibold mb-6 transition-all"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Journal
+            <ArrowLeft className="w-4 h-4" /> Back to Blogs
           </Link>
         </div>
       </div>
@@ -153,7 +153,7 @@ export default function BlogPostDetail() {
             to="/blog" 
             className="inline-flex items-center gap-2 bg-[#C5A059] hover:bg-[#b08d47] text-white px-8 py-3.5 rounded-full text-xs uppercase tracking-wider font-semibold transition-colors duration-300"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Journal Index
+            <ArrowLeft className="w-4 h-4" /> Back to Blogs Index
           </Link>
         </div>
       </div>
