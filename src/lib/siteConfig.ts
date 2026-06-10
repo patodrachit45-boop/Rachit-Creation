@@ -147,6 +147,42 @@ export const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
   }
 ];
 
+// ── FAQs ──────────────────────────────────────────────────────────────
+
+export interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+  createdAt: number;
+}
+
+export const DEFAULT_FAQS: FAQ[] = [
+  {
+    id: 'faq1',
+    question: "Do you offer customization on lehengas?",
+    answer: "Yes! At Rachit Creation, we specialize in high-end customization. We can modify color schemes, embroidery density, sleeve lengths, neckline cuts, and blouse sizes to fit your specific requests.",
+    createdAt: Date.now()
+  },
+  {
+    id: 'faq2',
+    question: "How long does it take to deliver a custom bridal lehenga?",
+    answer: "Custom bridal lehengas take approximately 4 to 8 weeks to craft, depending on the complexity of the hand embroidery (Zari, Zardozi, and hand stone work). We recommend placing orders well in advance of your wedding date.",
+    createdAt: Date.now()
+  },
+  {
+    id: 'faq3',
+    question: "Do you ship worldwide?",
+    answer: "Yes, we ship our luxury lehengas internationally to the US, UK, Canada, Australia, UAE, and other global destinations with trusted express shipping partners.",
+    createdAt: Date.now()
+  },
+  {
+    id: 'faq4',
+    question: "Where is your showroom located in Surat?",
+    answer: "Our physical showroom is located at Millennium Textile Market, Ring Road, Surat, Gujarat, India. You can find detailed directions using the Google Maps section below.",
+    createdAt: Date.now()
+  }
+];
+
 // ── Testimonials ──────────────────────────────────────────────────────
 
 export interface Testimonial {

@@ -7,27 +7,8 @@ import { injectJSONLD, removeJSONLD, getFAQSchema } from '../lib/seoService';
 
 const PRODUCT_INTERESTS = ['Bridal Lehenga', 'Designer Lehenga', 'Girlish Lehenga', 'Heavy Lehenga', 'Custom Design', 'Other'];
 
-const FAQS = [
-  {
-    q: "Do you offer customization on lehengas?",
-    a: "Yes! At Rachit Creation, we specialize in high-end customization. We can modify color schemes, embroidery density, sleeve lengths, neckline cuts, and blouse sizes to fit your specific requests."
-  },
-  {
-    q: "How long does it take to deliver a custom bridal lehenga?",
-    a: "Custom bridal lehengas take approximately 4 to 8 weeks to craft, depending on the complexity of the hand embroidery (Zari, Zardozi, and hand stone work). We recommend placing orders well in advance of your wedding date."
-  },
-  {
-    q: "Do you ship worldwide?",
-    a: "Yes, we ship our luxury lehengas internationally to the US, UK, Canada, Australia, UAE, and other global destinations with trusted express shipping partners."
-  },
-  {
-    q: "Where is your showroom located in Surat?",
-    a: "Our physical showroom is located at Millennium Textile Market, Ring Road, Surat, Gujarat, India. You can find detailed directions using the Google Maps section below."
-  }
-];
-
 export default function Contact() {
-  const { siteSettings } = useStore();
+  const { siteSettings, faqs } = useStore();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
@@ -36,10 +17,12 @@ export default function Contact() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   useEffect(() => {
-    const schema = getFAQSchema(FAQS);
-    injectJSONLD('faq-schema', schema);
+    if (faqs && faqs.length > 0) {
+      const schema = getFAQSchema(faqs.map((f) => ({ q: f.question, a: f.answer })));
+      injectJSONLD('faq-schema', schema);
+    }
     return () => removeJSONLD('faq-schema');
-  }, []);
+  }, [faqs]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,11 +92,11 @@ export default function Contact() {
         </motion.div>
 
         <div className="space-y-4">
-          {FAQS.map((faq, idx) => {
+          {faqs.map((faq, idx) => {
             const isOpen = activeFaq === idx;
             return (
               <motion.div 
-                key={idx}
+                key={faq.id}
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -125,7 +108,7 @@ export default function Contact() {
                   onClick={() => setActiveFaq(isOpen ? null : idx)}
                   className="w-full flex items-center justify-between gap-4 p-5 text-left font-serif text-base md:text-lg text-[#3D3D3D] hover:bg-[#FCEEE9]/10 transition-colors cursor-pointer focus:outline-none"
                 >
-                  <span>{faq.q}</span>
+                  <span>{faq.question}</span>
                   <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
@@ -140,11 +123,11 @@ export default function Contact() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
+                      transition={{ duration: 0.25 }}
                       className="border-t border-[#C5A059]/5 bg-[#FCEEE9]/5"
                     >
                       <div className="p-5 font-sans text-sm text-[#3D3D3D]/70 leading-relaxed">
-                        {faq.a}
+                        {faq.answer}
                       </div>
                     </motion.div>
                   )}

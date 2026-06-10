@@ -1,15 +1,16 @@
 import { useState, useRef, useEffect, useCallback, type FormEvent, type DragEvent } from 'react';
 import { useStore, type Product } from '../store';
 import { isSupabaseConfigured } from '../lib/supabaseService';
-import { CATEGORIES, formatPrice, type BlogPost, type TeamMember } from '../lib/siteConfig';
+import { CATEGORIES, formatPrice, type BlogPost, type TeamMember, type FAQ } from '../lib/siteConfig';
 import {
   Package, Crown, Sparkles, Heart, Gem, Plus, Pencil, Trash2, X,
   Upload, Save, LogOut, LayoutDashboard, Settings, Image, Search,
   Loader2, ShieldCheck, AlertTriangle, Check, ChevronDown,
   Phone, Mail, MapPin, Clock, Instagram, MessageCircle, FileText, Users,
+  HelpCircle,
 } from 'lucide-react';
 
-type Tab = 'overview' | 'products' | 'blogs' | 'team' | 'settings';
+type Tab = 'overview' | 'products' | 'blogs' | 'team' | 'faqs' | 'settings';
 type ProductCategory = Product['category'];
 interface Toast { id: number; message: string; type: 'success' | 'error'; }
 let toastCounter = 0;
@@ -32,6 +33,7 @@ export default function AdminDashboard() {
   const products = useStore((s) => s.products);
   const blogs = useStore((s) => s.blogs);
   const teamMembers = useStore((s) => s.teamMembers);
+  const faqs = useStore((s) => s.faqs);
   const siteSettings = useStore((s) => s.siteSettings);
   const isAdmin = useStore((s) => s.isAdmin);
   const adminEmail = useStore((s) => s.adminEmail);
@@ -46,10 +48,14 @@ export default function AdminDashboard() {
   const addTeamMember = useStore((s) => s.addTeamMember);
   const updateTeamMember = useStore((s) => s.updateTeamMember);
   const deleteTeamMember = useStore((s) => s.deleteTeamMember);
+  const addFaq = useStore((s) => s.addFaq);
+  const updateFaq = useStore((s) => s.updateFaq);
+  const deleteFaq = useStore((s) => s.deleteFaq);
   const updateSiteSettings = useStore((s) => s.updateSiteSettings);
   const fetchProducts = useStore((s) => s.fetchProducts);
   const fetchBlogs = useStore((s) => s.fetchBlogs);
   const fetchTeamMembers = useStore((s) => s.fetchTeamMembers);
+  const fetchFaqs = useStore((s) => s.fetchFaqs);
   const fetchSiteSettings = useStore((s) => s.fetchSiteSettings);
   const isLoading = useStore((s) => s.isLoading);
 
@@ -62,8 +68,9 @@ export default function AdminDashboard() {
     fetchProducts(); 
     fetchBlogs();
     fetchTeamMembers();
+    fetchFaqs();
     fetchSiteSettings(); 
-  }, [fetchProducts, fetchBlogs, fetchTeamMembers, fetchSiteSettings]);
+  }, [fetchProducts, fetchBlogs, fetchTeamMembers, fetchFaqs, fetchSiteSettings]);
 
   const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
     const id = ++toastCounter;
@@ -79,6 +86,7 @@ export default function AdminDashboard() {
     { id: 'products', icon: Package, label: 'Products' },
     { id: 'blogs', icon: FileText, label: 'Blog Posts' },
     { id: 'team', icon: Users, label: 'Our Team' },
+    { id: 'faqs', icon: HelpCircle, label: 'FAQs' },
     { id: 'settings', icon: Settings, label: 'Site Settings' },
   ];
 
@@ -131,6 +139,7 @@ export default function AdminDashboard() {
           {activeTab === 'products' && <ProductsTab products={products} isLoading={isLoading} onAdd={addProduct} onUpdate={updateProduct} onDelete={deleteProduct} showToast={showToast} />}
           {activeTab === 'blogs' && <BlogsTab blogs={blogs} onAdd={addBlogPost} onUpdate={updateBlogPost} onDelete={deleteBlogPost} showToast={showToast} />}
           {activeTab === 'team' && <TeamTab team={teamMembers} onAdd={addTeamMember} onUpdate={updateTeamMember} onDelete={deleteTeamMember} showToast={showToast} />}
+          {activeTab === 'faqs' && <FaqsTab faqs={faqs} onAdd={addFaq} onUpdate={updateFaq} onDelete={deleteFaq} showToast={showToast} />}
           {activeTab === 'settings' && <SettingsTab siteSettings={siteSettings} onUpdate={updateSiteSettings} showToast={showToast} />}
         </div>
       </main>
@@ -970,6 +979,148 @@ function TeamTab({ team, onAdd, onUpdate, onDelete, showToast }: TeamTabProps) {
             <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-3" />
             <h3 className="font-serif text-lg text-white">Remove Team Member?</h3>
             <p className="text-xs text-gray-400 mt-2">Are you sure you want to remove this team member? This action cannot be undone.</p>
+            <div className="flex gap-3 mt-6 justify-center">
+              <button onClick={() => setDeleteId(null)} className="px-4 py-2 border border-gray-700 text-gray-300 hover:bg-gray-850 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer">Cancel</button>
+              <button onClick={handleDelete} disabled={loading} className="px-4 py-2 bg-red-650 hover:bg-red-550 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center gap-1 cursor-pointer">{loading ? 'Removing...' : 'Remove'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface FaqsTabProps {
+  faqs: FAQ[];
+  onAdd: (faq: Omit<FAQ, 'id' | 'createdAt'>) => Promise<boolean>;
+  onUpdate: (id: string, fields: Partial<FAQ>) => Promise<boolean>;
+  onDelete: (id: string) => Promise<boolean>;
+  showToast: (msg: string, type: 'success' | 'error') => void;
+}
+
+function FaqsTab({ faqs, onAdd, onUpdate, onDelete, showToast }: FaqsTabProps) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState('');
+
+  const openAddModal = () => {
+    setEditingFaq(null);
+    setQuestion('');
+    setAnswer('');
+    setModalOpen(true);
+  };
+
+  const openEditModal = (faq: FAQ) => {
+    setEditingFaq(faq);
+    setQuestion(faq.question);
+    setAnswer(faq.answer);
+    setModalOpen(true);
+  };
+
+  const handleSave = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!question.trim() || !answer.trim()) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+    setLoading(true);
+    const payload = { question: question.trim(), answer: answer.trim() };
+    const success = editingFaq 
+      ? await onUpdate(editingFaq.id, payload)
+      : await onAdd(payload);
+    setLoading(false);
+    if (success) {
+      showToast(editingFaq ? 'FAQ updated' : 'FAQ created', 'success');
+      setModalOpen(false);
+    } else {
+      showToast('Failed to save FAQ', 'error');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setLoading(true);
+    const success = await onDelete(deleteId);
+    setLoading(false);
+    setDeleteId(null);
+    if (success) {
+      showToast('FAQ deleted', 'success');
+    } else {
+      showToast('Failed to delete FAQ', 'error');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-5">
+        <div>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2"><HelpCircle className="text-[#C5A059]" /> Frequently Asked Questions</h2>
+          <p className="text-xs text-gray-500">Manage FAQs that appear on your Contact Us page</p>
+        </div>
+        <button onClick={openAddModal} className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white rounded-xl text-xs font-semibold uppercase tracking-wider hover:opacity-90 transition-all cursor-pointer shadow-lg self-start sm:self-auto"><Plus size={14} /> Add FAQ</button>
+      </div>
+
+      {faqs.length === 0 ? (
+        <div className="bg-gray-900 border border-gray-850 rounded-2xl p-12 text-center">
+          <HelpCircle size={40} className="text-gray-700 mx-auto mb-3" />
+          <h3 className="text-white text-base font-semibold">No FAQs Found</h3>
+          <p className="text-gray-500 text-xs mt-1">Get started by creating your first storefront question.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {faqs.map((faq) => (
+            <div key={faq.id} className="bg-gray-900 border border-gray-850 rounded-2xl p-5 hover:border-gray-800 transition-all flex justify-between gap-4 items-start">
+              <div className="space-y-2">
+                <h4 className="font-serif text-white text-base font-semibold">{faq.question}</h4>
+                <p className="text-xs text-gray-400 font-sans leading-relaxed whitespace-pre-wrap">{faq.answer}</p>
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => openEditModal(faq)} className="p-2 text-gray-400 hover:text-[#C5A059] hover:bg-gray-850 rounded-lg transition-all cursor-pointer" title="Edit FAQ"><Pencil size={14} /></button>
+                <button onClick={() => setDeleteId(faq.id)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-950/20 rounded-lg transition-all cursor-pointer" title="Delete FAQ"><Trash2 size={14} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add/Edit Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-lg w-full flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-gray-800">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-white">{editingFaq ? 'Edit FAQ' : 'Add FAQ'}</h3>
+              <button onClick={() => setModalOpen(false)} className="text-gray-500 hover:text-white transition-all cursor-pointer"><X size={18} /></button>
+            </div>
+            <form onSubmit={handleSave} className="p-6 space-y-5">
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Question *</label>
+                <input type="text" required value={question} onChange={(e) => setQuestion(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none placeholder:text-gray-600" placeholder="e.g. Do you offer customization?" />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Answer *</label>
+                <textarea required rows={5} value={answer} onChange={(e) => setAnswer(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none placeholder:text-gray-600 resize-none leading-relaxed" placeholder="e.g. Yes! We offer bespoke options..." />
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-gray-800 justify-end">
+                <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 border border-gray-700 hover:bg-gray-800 text-gray-300 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer">Cancel</button>
+                <button type="submit" disabled={loading} className="px-5 py-2.5 bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer">{loading ? <><Loader2 size={12} className="animate-spin" />Saving...</> : 'Save FAQ'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation */}
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
+            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+            <h3 className="font-serif text-lg text-white">Remove FAQ?</h3>
+            <p className="text-xs text-gray-400 mt-2">Are you sure you want to remove this FAQ? This action cannot be undone.</p>
             <div className="flex gap-3 mt-6 justify-center">
               <button onClick={() => setDeleteId(null)} className="px-4 py-2 border border-gray-700 text-gray-300 hover:bg-gray-850 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer">Cancel</button>
               <button onClick={handleDelete} disabled={loading} className="px-4 py-2 bg-red-650 hover:bg-red-550 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center gap-1 cursor-pointer">{loading ? 'Removing...' : 'Remove'}</button>

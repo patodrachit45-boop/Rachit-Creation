@@ -54,3 +54,25 @@ CREATE POLICY "Public read team_members" ON team_members FOR SELECT USING (true)
 CREATE POLICY "Auth insert team_members" ON team_members FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "Auth update team_members" ON team_members FOR UPDATE USING (auth.role() = 'authenticated');
 CREATE POLICY "Auth delete team_members" ON team_members FOR DELETE USING (auth.role() = 'authenticated');
+
+-- 7. Create FAQs table
+CREATE TABLE IF NOT EXISTS faqs (
+  id TEXT PRIMARY KEY,
+  question TEXT NOT NULL,
+  answer TEXT NOT NULL,
+  created_at BIGINT DEFAULT (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
+);
+
+-- RLS for FAQs
+ALTER TABLE faqs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public read faqs" ON faqs;
+DROP POLICY IF EXISTS "Auth insert faqs" ON faqs;
+DROP POLICY IF EXISTS "Auth update faqs" ON faqs;
+DROP POLICY IF EXISTS "Auth delete faqs" ON faqs;
+
+CREATE POLICY "Public read faqs" ON faqs FOR SELECT USING (true);
+CREATE POLICY "Auth insert faqs" ON faqs FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Auth update faqs" ON faqs FOR UPDATE USING (auth.role() = 'authenticated');
+CREATE POLICY "Auth delete faqs" ON faqs FOR DELETE USING (auth.role() = 'authenticated');
+

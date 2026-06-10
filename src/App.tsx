@@ -68,14 +68,16 @@ function AppInit() {
   const fetchProducts = useStore((s) => s.fetchProducts);
   const fetchBlogs = useStore((s) => s.fetchBlogs);
   const fetchTeamMembers = useStore((s) => s.fetchTeamMembers);
+  const fetchFaqs = useStore((s) => s.fetchFaqs);
   const fetchSiteSettings = useStore((s) => s.fetchSiteSettings);
   
   useEffect(() => {
     fetchProducts();
     fetchBlogs();
     fetchTeamMembers();
+    fetchFaqs();
     fetchSiteSettings();
-  }, [fetchProducts, fetchBlogs, fetchTeamMembers, fetchSiteSettings]);
+  }, [fetchProducts, fetchBlogs, fetchTeamMembers, fetchFaqs, fetchSiteSettings]);
   return null;
 }
 

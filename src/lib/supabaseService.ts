@@ -12,7 +12,7 @@
 
 import { supabase, isSupabaseConfigured } from './supabase';
 import type { Product } from '../store';
-import type { SiteSettings, BlogPost, TeamMember } from './siteConfig';
+import type { SiteSettings, BlogPost, TeamMember, FAQ } from './siteConfig';
 
 // ── Helpers: DB ↔ TypeScript mapping ──────────────────────────────────
 
@@ -635,6 +635,91 @@ export async function deleteTeamMemberFromSupabase(id: string): Promise<boolean>
     return true;
   } catch (error) {
     console.error('Error deleting team member from Supabase:', error);
+    return false;
+  }
+}
+
+// ── FAQ DB Operations ────────────────────────────────────────────────
+export async function fetchFaqsFromSupabase(): Promise<FAQ[]> {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from('faqs')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) {
+      if (error.code === '42P01') { // table does not exist
+        console.warn('Supabase faqs table not found. Using local fallback.');
+        return [];
+      }
+      throw error;
+    }
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      question: row.question,
+      answer: row.answer,
+      createdAt: Number(row.created_at)
+    }));
+  } catch (error) {
+    console.error('Error fetching FAQs from Supabase:', error);
+    return [];
+  }
+}
+
+export async function addFaqToSupabase(
+  faq: Omit<FAQ, 'id' | 'createdAt'>
+): Promise<FAQ | null> {
+  if (!supabase) return null;
+  try {
+    const id = Math.random().toString(36).substring(2, 9);
+    const createdAt = Date.now();
+    const row = {
+      id,
+      question: faq.question,
+      answer: faq.answer,
+      created_at: createdAt
+    };
+    const { data, error } = await supabase.from('faqs').insert(row).select().single();
+    if (error) throw error;
+    return {
+      id: data.id,
+      question: data.question,
+      answer: data.answer,
+      createdAt: Number(data.created_at)
+    };
+  } catch (error) {
+    console.error('Error adding FAQ in Supabase:', error);
+    return null;
+  }
+}
+
+export async function updateFaqInSupabase(
+  id: string,
+  fields: Partial<FAQ>
+): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const payload: any = {};
+    if (fields.question !== undefined) payload.question = fields.question;
+    if (fields.answer !== undefined) payload.answer = fields.answer;
+
+    const { error } = await supabase.from('faqs').update(payload).eq('id', id);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error updating FAQ in Supabase:', error);
+    return false;
+  }
+}
+
+export async function deleteFaqFromSupabase(id: string): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { error } = await supabase.from('faqs').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting FAQ from Supabase:', error);
     return false;
   }
 }

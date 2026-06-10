@@ -31,14 +31,20 @@ import {
   addTeamMemberToSupabase,
   updateTeamMemberInSupabase,
   deleteTeamMemberFromSupabase,
+  fetchFaqsFromSupabase,
+  addFaqToSupabase,
+  updateFaqInSupabase,
+  deleteFaqFromSupabase,
 } from './lib/supabaseService';
 import {
   DEFAULT_SITE_SETTINGS,
   type SiteSettings,
   type BlogPost,
   type TeamMember,
+  type FAQ,
   DEFAULT_BLOGS,
   DEFAULT_TEAM_MEMBERS,
+  DEFAULT_FAQS,
 } from './lib/siteConfig';
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -60,6 +66,7 @@ interface StoreState {
   products: Product[];
   blogs: BlogPost[];
   teamMembers: TeamMember[];
+  faqs: FAQ[];
   siteSettings: SiteSettings;
   isLoading: boolean;
   isSettingsLoading: boolean;
@@ -70,6 +77,7 @@ interface StoreState {
   fetchProducts: () => Promise<void>;
   fetchBlogs: () => Promise<void>;
   fetchTeamMembers: () => Promise<void>;
+  fetchFaqs: () => Promise<void>;
   fetchSiteSettings: () => Promise<void>;
   addProduct: (product: Omit<Product, 'id'>, imageFile?: File) => Promise<boolean>;
   updateProduct: (id: string, fields: Partial<Product>, imageFile?: File) => Promise<boolean>;
@@ -80,6 +88,9 @@ interface StoreState {
   addTeamMember: (member: Omit<TeamMember, 'id' | 'createdAt'>, imageFile?: File) => Promise<boolean>;
   updateTeamMember: (id: string, fields: Partial<TeamMember>, imageFile?: File) => Promise<boolean>;
   deleteTeamMember: (id: string) => Promise<boolean>;
+  addFaq: (faq: Omit<FAQ, 'id' | 'createdAt'>) => Promise<boolean>;
+  updateFaq: (id: string, fields: Partial<FAQ>) => Promise<boolean>;
+  deleteFaq: (id: string) => Promise<boolean>;
   updateSiteSettings: (
     settings: Partial<SiteSettings>,
     heroImageFile?: File,
@@ -118,6 +129,7 @@ export const useStore = create<StoreState>()((set, get) => ({
   products: initialProducts,
   blogs: DEFAULT_BLOGS,
   teamMembers: DEFAULT_TEAM_MEMBERS,
+  faqs: DEFAULT_FAQS,
   siteSettings: DEFAULT_SITE_SETTINGS,
   isLoading: true,
   isSettingsLoading: true,
@@ -460,6 +472,107 @@ export const useStore = create<StoreState>()((set, get) => ({
         const updated = s.teamMembers.filter((m) => m.id !== id);
         localStorage.setItem('rachit_team_members_fallback', JSON.stringify(updated));
         return { teamMembers: updated };
+      });
+      return true;
+    }
+  },
+
+  fetchFaqs: async () => {
+    try {
+      if (isSupabaseConfigured) {
+        const faqs = await fetchFaqsFromSupabase();
+        if (faqs && faqs.length > 0) {
+          set({ faqs });
+          return;
+        }
+      }
+      const local = localStorage.getItem('rachit_faqs_fallback');
+      if (local) {
+        set({ faqs: JSON.parse(local) });
+      } else {
+        set({ faqs: DEFAULT_FAQS });
+      }
+    } catch (error) {
+      console.error('Failed to fetch FAQs:', error);
+      const local = localStorage.getItem('rachit_faqs_fallback');
+      if (local) set({ faqs: JSON.parse(local) });
+    }
+  },
+
+  addFaq: async (faqInfo) => {
+    try {
+      let success = false;
+      let newFaq: FAQ | null = null;
+      if (isSupabaseConfigured) {
+        try {
+          newFaq = await addFaqToSupabase(faqInfo);
+          if (newFaq) success = true;
+        } catch (dbErr) {
+          console.warn('Failed to add FAQ to Supabase, falling back to local:', dbErr);
+        }
+      }
+      if (!success) {
+        const id = Math.random().toString(36).substring(2, 9);
+        newFaq = { ...faqInfo, id, createdAt: Date.now() };
+      }
+      if (newFaq) {
+        set((s) => {
+          const updated = [...s.faqs, newFaq!];
+          localStorage.setItem('rachit_faqs_fallback', JSON.stringify(updated));
+          return { faqs: updated };
+        });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to add FAQ:', error);
+      return false;
+    }
+  },
+
+  updateFaq: async (id, fields) => {
+    try {
+      let success = false;
+      if (isSupabaseConfigured) {
+        try {
+          success = await updateFaqInSupabase(id, fields);
+        } catch (dbErr) {
+          console.warn('Failed to update FAQ in Supabase, falling back to local:', dbErr);
+        }
+      }
+      set((s) => {
+        const updated = s.faqs.map((f) => f.id === id ? { ...f, ...fields } : f);
+        localStorage.setItem('rachit_faqs_fallback', JSON.stringify(updated));
+        return { faqs: updated };
+      });
+      return true;
+    } catch (error) {
+      console.error('Failed to update FAQ:', error);
+      return false;
+    }
+  },
+
+  deleteFaq: async (id) => {
+    try {
+      if (isSupabaseConfigured) {
+        try {
+          await deleteFaqFromSupabase(id);
+        } catch (dbErr) {
+          console.warn('Failed to delete FAQ from Supabase, falling back to local:', dbErr);
+        }
+      }
+      set((s) => {
+        const updated = s.faqs.filter((f) => f.id !== id);
+        localStorage.setItem('rachit_faqs_fallback', JSON.stringify(updated));
+        return { faqs: updated };
+      });
+      return true;
+    } catch (error) {
+      console.error('Failed to delete FAQ:', error);
+      set((s) => {
+        const updated = s.faqs.filter((f) => f.id !== id);
+        localStorage.setItem('rachit_faqs_fallback', JSON.stringify(updated));
+        return { faqs: updated };
       });
       return true;
     }
