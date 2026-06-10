@@ -297,6 +297,16 @@ function SyncDatabaseButton({ showToast }: { showToast: (msg: string, type: 'suc
         }
       }
 
+      // Clear fallbacks on success
+      localStorage.removeItem('rachit_logo_fallback');
+      localStorage.removeItem('rachit_google_maps_url_fallback');
+      localStorage.removeItem('rachit_facebook_pixel_id_fallback');
+      localStorage.removeItem('rachit_pinterest_url_fallback');
+      localStorage.removeItem('rachit_twitter_url_fallback');
+      localStorage.removeItem('rachit_blogs_fallback');
+      localStorage.removeItem('rachit_faqs_fallback');
+      localStorage.removeItem('rachit_team_members_fallback');
+
       showToast(`Successfully synced local updates to database!`, 'success');
       setTimeout(() => {
         window.location.reload();
@@ -541,7 +551,7 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
 // ── SETTINGS ──────────────────────────────────────────────────────────
 function SettingsTab({ siteSettings, onUpdate, showToast }: {
   siteSettings: ReturnType<typeof useStore.getState>['siteSettings'];
-  onUpdate: (s: Partial<typeof siteSettings>, hero?: File, logo?: File, about?: File) => Promise<boolean>;
+  onUpdate: (s: Partial<typeof siteSettings>, hero?: File, logo?: File, about?: File) => Promise<{ success: boolean; error?: string }>;
   showToast: (m: string, t: 'success' | 'error') => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -607,15 +617,15 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     if (logoImageRemoved) settingsPayload.logoImage = '';
     if (aboutImageRemoved) settingsPayload.aboutHeroImage = '';
 
-    const success = await onUpdate(
+    const res = await onUpdate(
       settingsPayload,
       heroImageFile || undefined,
       logoImageFile || undefined,
       aboutImageFile || undefined
     );
     setLoading(false);
-    showToast(success ? 'Site settings saved' : 'Failed to save', success ? 'success' : 'error');
-    if (success) {
+    showToast(res.success ? 'Site settings saved' : (res.error ? `Failed to save: ${res.error}` : 'Failed to save settings'), res.success ? 'success' : 'error');
+    if (res.success) {
       setHeroImageFile(null);
       setLogoImageFile(null);
       setAboutImageFile(null);
@@ -743,9 +753,9 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
 
 interface BlogsTabProps {
   blogs: BlogPost[];
-  onAdd: (post: Omit<BlogPost, 'id' | 'createdAt'>, imageFile?: File) => Promise<boolean>;
-  onUpdate: (id: string, fields: Partial<BlogPost>, imageFile?: File) => Promise<boolean>;
-  onDelete: (id: string) => Promise<boolean>;
+  onAdd: (post: Omit<BlogPost, 'id' | 'createdAt'>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
+  onUpdate: (id: string, fields: Partial<BlogPost>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
+  onDelete: (id: string) => Promise<{ success: boolean; error?: string }>;
   showToast: (m: string, t: 'success' | 'error') => void;
 }
 
@@ -801,33 +811,33 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
     setLoading(true);
 
     const payload = { title, excerpt, content, imageUrl };
-    let success = false;
+    let res: { success: boolean; error?: string };
 
     if (editingPost) {
-      success = await onUpdate(editingPost.id, payload, imageFile || undefined);
+      res = await onUpdate(editingPost.id, payload, imageFile || undefined);
     } else {
-      success = await onAdd(payload, imageFile || undefined);
+      res = await onAdd(payload, imageFile || undefined);
     }
 
     setLoading(false);
-    if (success) {
+    if (res.success) {
       showToast(editingPost ? 'Blog post updated' : 'Blog post created', 'success');
       setModalOpen(false);
     } else {
-      showToast('Failed to save blog post', 'error');
+      showToast(res.error ? `Failed to save: ${res.error}` : 'Failed to save blog post', 'error');
     }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
     setLoading(true);
-    const success = await onDelete(deleteId);
+    const res = await onDelete(deleteId);
     setLoading(false);
     setDeleteId(null);
-    if (success) {
+    if (res.success) {
       showToast('Blog post deleted', 'success');
     } else {
-      showToast('Failed to delete blog post', 'error');
+      showToast(res.error ? `Failed to delete: ${res.error}` : 'Failed to delete blog post', 'error');
     }
   };
 
@@ -944,9 +954,9 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
 
 interface TeamTabProps {
   team: TeamMember[];
-  onAdd: (member: Omit<TeamMember, 'id' | 'createdAt'>, imageFile?: File) => Promise<boolean>;
-  onUpdate: (id: string, fields: Partial<TeamMember>, imageFile?: File) => Promise<boolean>;
-  onDelete: (id: string) => Promise<boolean>;
+  onAdd: (member: Omit<TeamMember, 'id' | 'createdAt'>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
+  onUpdate: (id: string, fields: Partial<TeamMember>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
+  onDelete: (id: string) => Promise<{ success: boolean; error?: string }>;
   showToast: (m: string, t: 'success' | 'error') => void;
 }
 
@@ -1002,33 +1012,33 @@ function TeamTab({ team, onAdd, onUpdate, onDelete, showToast }: TeamTabProps) {
     setLoading(true);
 
     const payload = { name, role, displayOrder: Number(displayOrder), imageUrl };
-    let success = false;
+    let res: { success: boolean; error?: string };
 
     if (editingMember) {
-      success = await onUpdate(editingMember.id, payload, imageFile || undefined);
+      res = await onUpdate(editingMember.id, payload, imageFile || undefined);
     } else {
-      success = await onAdd(payload, imageFile || undefined);
+      res = await onAdd(payload, imageFile || undefined);
     }
 
     setLoading(false);
-    if (success) {
+    if (res.success) {
       showToast(editingMember ? 'Team member updated' : 'Team member added', 'success');
       setModalOpen(false);
     } else {
-      showToast('Failed to save team member', 'error');
+      showToast(res.error ? `Failed to save: ${res.error}` : 'Failed to save team member', 'error');
     }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
     setLoading(true);
-    const success = await onDelete(deleteId);
+    const res = await onDelete(deleteId);
     setLoading(false);
     setDeleteId(null);
-    if (success) {
+    if (res.success) {
       showToast('Team member deleted', 'success');
     } else {
-      showToast('Failed to delete team member', 'error');
+      showToast(res.error ? `Failed to delete: ${res.error}` : 'Failed to delete team member', 'error');
     }
   };
 
@@ -1137,9 +1147,9 @@ function TeamTab({ team, onAdd, onUpdate, onDelete, showToast }: TeamTabProps) {
 
 interface FaqsTabProps {
   faqs: FAQ[];
-  onAdd: (faq: Omit<FAQ, 'id' | 'createdAt'>) => Promise<boolean>;
-  onUpdate: (id: string, fields: Partial<FAQ>) => Promise<boolean>;
-  onDelete: (id: string) => Promise<boolean>;
+  onAdd: (faq: Omit<FAQ, 'id' | 'createdAt'>) => Promise<{ success: boolean; error?: string }>;
+  onUpdate: (id: string, fields: Partial<FAQ>) => Promise<{ success: boolean; error?: string }>;
+  onDelete: (id: string) => Promise<{ success: boolean; error?: string }>;
   showToast: (msg: string, type: 'success' | 'error') => void;
 }
 
@@ -1174,28 +1184,28 @@ function FaqsTab({ faqs, onAdd, onUpdate, onDelete, showToast }: FaqsTabProps) {
     }
     setLoading(true);
     const payload = { question: question.trim(), answer: answer.trim() };
-    const success = editingFaq 
+    const res = editingFaq 
       ? await onUpdate(editingFaq.id, payload)
       : await onAdd(payload);
     setLoading(false);
-    if (success) {
+    if (res.success) {
       showToast(editingFaq ? 'FAQ updated' : 'FAQ created', 'success');
       setModalOpen(false);
     } else {
-      showToast('Failed to save FAQ', 'error');
+      showToast(res.error ? `Failed to save: ${res.error}` : 'Failed to save FAQ', 'error');
     }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
     setLoading(true);
-    const success = await onDelete(deleteId);
+    const res = await onDelete(deleteId);
     setLoading(false);
     setDeleteId(null);
-    if (success) {
+    if (res.success) {
       showToast('FAQ deleted', 'success');
     } else {
-      showToast('Failed to delete FAQ', 'error');
+      showToast(res.error ? `Failed to delete: ${res.error}` : 'Failed to delete FAQ', 'error');
     }
   };
 

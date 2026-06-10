@@ -82,21 +82,21 @@ interface StoreState {
   addProduct: (product: Omit<Product, 'id'>, imageFile?: File) => Promise<boolean>;
   updateProduct: (id: string, fields: Partial<Product>, imageFile?: File) => Promise<boolean>;
   deleteProduct: (id: string) => Promise<boolean>;
-  addBlogPost: (post: Omit<BlogPost, 'id' | 'createdAt'>, imageFile?: File) => Promise<boolean>;
-  updateBlogPost: (id: string, fields: Partial<BlogPost>, imageFile?: File) => Promise<boolean>;
-  deleteBlogPost: (id: string) => Promise<boolean>;
-  addTeamMember: (member: Omit<TeamMember, 'id' | 'createdAt'>, imageFile?: File) => Promise<boolean>;
-  updateTeamMember: (id: string, fields: Partial<TeamMember>, imageFile?: File) => Promise<boolean>;
-  deleteTeamMember: (id: string) => Promise<boolean>;
-  addFaq: (faq: Omit<FAQ, 'id' | 'createdAt'>) => Promise<boolean>;
-  updateFaq: (id: string, fields: Partial<FAQ>) => Promise<boolean>;
-  deleteFaq: (id: string) => Promise<boolean>;
+  addBlogPost: (post: Omit<BlogPost, 'id' | 'createdAt'>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
+  updateBlogPost: (id: string, fields: Partial<BlogPost>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
+  deleteBlogPost: (id: string) => Promise<{ success: boolean; error?: string }>;
+  addTeamMember: (member: Omit<TeamMember, 'id' | 'createdAt'>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
+  updateTeamMember: (id: string, fields: Partial<TeamMember>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
+  deleteTeamMember: (id: string) => Promise<{ success: boolean; error?: string }>;
+  addFaq: (faq: Omit<FAQ, 'id' | 'createdAt'>) => Promise<{ success: boolean; error?: string }>;
+  updateFaq: (id: string, fields: Partial<FAQ>) => Promise<{ success: boolean; error?: string }>;
+  deleteFaq: (id: string) => Promise<{ success: boolean; error?: string }>;
   updateSiteSettings: (
     settings: Partial<SiteSettings>,
     heroImageFile?: File,
     logoImageFile?: File,
     aboutImageFile?: File
-  ) => Promise<boolean>;
+  ) => Promise<{ success: boolean; error?: string }>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   setAdmin: (isAdmin: boolean, email: string | null) => void;
@@ -241,22 +241,22 @@ export const useStore = create<StoreState>()((set, get) => ({
         else us.aboutHeroImage = URL.createObjectURL(aboutImageFile);
       }
       if (isSupabaseConfigured) {
-        const success = await updateSiteSettingsInSupabase(us);
-        if (!success) return false;
+        await updateSiteSettingsInSupabase(us);
       }
       set((s) => ({ siteSettings: { ...s.siteSettings, ...us } }));
-      return true;
-    } catch (error) { console.error('Failed to update site settings:', error); return false; }
+      return { success: true };
+    } catch (error: any) {
+      console.error('Failed to update site settings:', error);
+      return { success: false, error: error?.message || 'Database error' };
+    }
   },
 
   fetchBlogs: async () => {
     try {
       if (isSupabaseConfigured) {
         const blogs = await fetchBlogsFromSupabase();
-        if (blogs && blogs.length > 0) {
-          set({ blogs });
-          return;
-        }
+        set({ blogs });
+        return;
       }
       const local = localStorage.getItem('rachit_blogs_fallback');
       if (local) {
@@ -268,6 +268,7 @@ export const useStore = create<StoreState>()((set, get) => ({
       console.error('Failed to fetch blogs:', error);
       const local = localStorage.getItem('rachit_blogs_fallback');
       if (local) set({ blogs: JSON.parse(local) });
+      else set({ blogs: DEFAULT_BLOGS });
     }
   },
 
@@ -275,10 +276,8 @@ export const useStore = create<StoreState>()((set, get) => ({
     try {
       if (isSupabaseConfigured) {
         const teamMembers = await fetchTeamFromSupabase();
-        if (teamMembers && teamMembers.length > 0) {
-          set({ teamMembers: teamMembers.sort((a, b) => a.displayOrder - b.displayOrder) });
-          return;
-        }
+        set({ teamMembers: teamMembers.sort((a, b) => a.displayOrder - b.displayOrder) });
+        return;
       }
       const local = localStorage.getItem('rachit_team_members_fallback');
       if (local) {
@@ -290,190 +289,155 @@ export const useStore = create<StoreState>()((set, get) => ({
       console.error('Failed to fetch team members:', error);
       const local = localStorage.getItem('rachit_team_members_fallback');
       if (local) set({ teamMembers: JSON.parse(local).sort((a: any, b: any) => a.displayOrder - b.displayOrder) });
+      else set({ teamMembers: DEFAULT_TEAM_MEMBERS });
     }
   },
 
   addBlogPost: async (postInfo, imageFile) => {
     try {
-      let success = false;
-      let newPost: BlogPost | null = null;
       if (isSupabaseConfigured) {
-        try {
-          newPost = await addBlogPostToSupabase(postInfo, imageFile);
-          if (newPost) success = true;
-        } catch (dbErr) {
-          console.warn('Failed to add blog post to Supabase, falling back to local:', dbErr);
+        const newPost = await addBlogPostToSupabase(postInfo, imageFile);
+        if (newPost) {
+          set((s) => ({ blogs: [newPost, ...s.blogs] }));
+          return { success: true };
         }
-      }
-      if (!success) {
+        return { success: false, error: 'Database write failed' };
+      } else {
         const id = Math.random().toString(36).substring(2, 9);
         let imageUrl = postInfo.imageUrl;
         if (imageFile) imageUrl = URL.createObjectURL(imageFile);
-        newPost = { ...postInfo, id, imageUrl, createdAt: Date.now() };
-      }
-      if (newPost) {
+        const newPost: BlogPost = { ...postInfo, id, imageUrl, createdAt: Date.now() };
         set((s) => {
-          const updated = [newPost!, ...s.blogs];
+          const updated = [newPost, ...s.blogs];
           localStorage.setItem('rachit_blogs_fallback', JSON.stringify(updated));
           return { blogs: updated };
         });
-        return true;
+        return { success: true };
       }
-      return false;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to add blog post:', error);
-      return false;
+      return { success: false, error: error?.message || 'Database error' };
     }
   },
 
   updateBlogPost: async (id, fields, imageFile) => {
     try {
-      let success = false;
-      let imageUrl = fields.imageUrl;
       if (isSupabaseConfigured) {
-        try {
-          if (imageFile) {
-            try {
-              imageUrl = await uploadImageToSupabase(imageFile);
-            } catch (imgErr) {
-              imageUrl = URL.createObjectURL(imageFile);
-            }
-          }
-          success = await updateBlogPostInSupabase(id, { ...fields, imageUrl });
-        } catch (dbErr) {
-          console.warn('Failed to update blog post in Supabase, falling back to local:', dbErr);
+        let imageUrl = fields.imageUrl;
+        if (imageFile) {
+          imageUrl = await uploadImageToSupabase(imageFile);
         }
+        await updateBlogPostInSupabase(id, { ...fields, imageUrl });
+        set((s) => ({
+          blogs: s.blogs.map((b) => b.id === id ? { ...b, ...fields, ...(imageUrl ? { imageUrl } : {}) } : b)
+        }));
+        return { success: true };
+      } else {
+        let imageUrl = fields.imageUrl;
+        if (imageFile) imageUrl = URL.createObjectURL(imageFile);
+        set((s) => {
+          const updated = s.blogs.map((b) => b.id === id ? { ...b, ...fields, ...(imageUrl ? { imageUrl } : {}) } : b);
+          localStorage.setItem('rachit_blogs_fallback', JSON.stringify(updated));
+          return { blogs: updated };
+        });
+        return { success: true };
       }
-      if (!success && imageFile && !imageUrl) {
-        imageUrl = URL.createObjectURL(imageFile);
-      }
-      set((s) => {
-        const updated = s.blogs.map((b) => b.id === id ? { ...b, ...fields, ...(imageUrl ? { imageUrl } : {}) } : b);
-        localStorage.setItem('rachit_blogs_fallback', JSON.stringify(updated));
-        return { blogs: updated };
-      });
-      return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update blog post:', error);
-      return false;
+      return { success: false, error: error?.message || 'Database error' };
     }
   },
 
   deleteBlogPost: async (id) => {
     try {
       if (isSupabaseConfigured) {
-        try {
-          await deleteBlogPostFromSupabase(id);
-        } catch (dbErr) {
-          console.warn('Failed to delete blog post from Supabase, falling back to local:', dbErr);
-        }
+        await deleteBlogPostFromSupabase(id);
       }
       set((s) => {
         const updated = s.blogs.filter((b) => b.id !== id);
-        localStorage.setItem('rachit_blogs_fallback', JSON.stringify(updated));
+        if (!isSupabaseConfigured) {
+          localStorage.setItem('rachit_blogs_fallback', JSON.stringify(updated));
+        }
         return { blogs: updated };
       });
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error('Failed to delete blog post:', error);
-      set((s) => {
-        const updated = s.blogs.filter((b) => b.id !== id);
-        localStorage.setItem('rachit_blogs_fallback', JSON.stringify(updated));
-        return { blogs: updated };
-      });
-      return true;
+      return { success: false, error: error?.message || 'Database error' };
     }
   },
 
   addTeamMember: async (memberInfo, imageFile) => {
     try {
-      let success = false;
-      let newMember: TeamMember | null = null;
       if (isSupabaseConfigured) {
-        try {
-          newMember = await addTeamMemberToSupabase(memberInfo, imageFile);
-          if (newMember) success = true;
-        } catch (dbErr) {
-          console.warn('Failed to add team member to Supabase, falling back to local:', dbErr);
+        const newMember = await addTeamMemberToSupabase(memberInfo, imageFile);
+        if (newMember) {
+          set((s) => ({ teamMembers: [...s.teamMembers, newMember].sort((a, b) => a.displayOrder - b.displayOrder) }));
+          return { success: true };
         }
-      }
-      if (!success) {
+        return { success: false, error: 'Database write failed' };
+      } else {
         const id = Math.random().toString(36).substring(2, 9);
         let imageUrl = memberInfo.imageUrl;
         if (imageFile) imageUrl = URL.createObjectURL(imageFile);
-        newMember = { ...memberInfo, id, imageUrl, createdAt: Date.now() };
-      }
-      if (newMember) {
+        const newMember: TeamMember = { ...memberInfo, id, imageUrl, createdAt: Date.now() };
         set((s) => {
-          const updated = [...s.teamMembers, newMember!].sort((a, b) => a.displayOrder - b.displayOrder);
+          const updated = [...s.teamMembers, newMember].sort((a, b) => a.displayOrder - b.displayOrder);
           localStorage.setItem('rachit_team_members_fallback', JSON.stringify(updated));
           return { teamMembers: updated };
         });
-        return true;
+        return { success: true };
       }
-      return false;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to add team member:', error);
-      return false;
+      return { success: false, error: error?.message || 'Database error' };
     }
   },
 
   updateTeamMember: async (id, fields, imageFile) => {
     try {
-      let success = false;
-      let imageUrl = fields.imageUrl;
       if (isSupabaseConfigured) {
-        try {
-          if (imageFile) {
-            try {
-              imageUrl = await uploadImageToSupabase(imageFile);
-            } catch (imgErr) {
-              imageUrl = URL.createObjectURL(imageFile);
-            }
-          }
-          success = await updateTeamMemberInSupabase(id, { ...fields, imageUrl });
-        } catch (dbErr) {
-          console.warn('Failed to update team member in Supabase, falling back to local:', dbErr);
+        let imageUrl = fields.imageUrl;
+        if (imageFile) {
+          imageUrl = await uploadImageToSupabase(imageFile);
         }
+        await updateTeamMemberInSupabase(id, { ...fields, imageUrl });
+        set((s) => ({
+          teamMembers: s.teamMembers.map((m) => m.id === id ? { ...m, ...fields, ...(imageUrl ? { imageUrl } : {}) } : m).sort((a, b) => a.displayOrder - b.displayOrder)
+        }));
+        return { success: true };
+      } else {
+        let imageUrl = fields.imageUrl;
+        if (imageFile) imageUrl = URL.createObjectURL(imageFile);
+        set((s) => {
+          const updated = s.teamMembers.map((m) => m.id === id ? { ...m, ...fields, ...(imageUrl ? { imageUrl } : {}) } : m).sort((a, b) => a.displayOrder - b.displayOrder);
+          localStorage.setItem('rachit_team_members_fallback', JSON.stringify(updated));
+          return { teamMembers: updated };
+        });
+        return { success: true };
       }
-      if (!success && imageFile && !imageUrl) {
-        imageUrl = URL.createObjectURL(imageFile);
-      }
-      set((s) => {
-        const updated = s.teamMembers.map((m) => m.id === id ? { ...m, ...fields, ...(imageUrl ? { imageUrl } : {}) } : m).sort((a, b) => a.displayOrder - b.displayOrder);
-        localStorage.setItem('rachit_team_members_fallback', JSON.stringify(updated));
-        return { teamMembers: updated };
-      });
-      return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update team member:', error);
-      return false;
+      return { success: false, error: error?.message || 'Database error' };
     }
   },
 
   deleteTeamMember: async (id) => {
     try {
       if (isSupabaseConfigured) {
-        try {
-          await deleteTeamMemberFromSupabase(id);
-        } catch (dbErr) {
-          console.warn('Failed to delete team member from Supabase, falling back to local:', dbErr);
-        }
+        await deleteTeamMemberFromSupabase(id);
       }
       set((s) => {
         const updated = s.teamMembers.filter((m) => m.id !== id);
-        localStorage.setItem('rachit_team_members_fallback', JSON.stringify(updated));
+        if (!isSupabaseConfigured) {
+          localStorage.setItem('rachit_team_members_fallback', JSON.stringify(updated));
+        }
         return { teamMembers: updated };
       });
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error('Failed to delete team member:', error);
-      set((s) => {
-        const updated = s.teamMembers.filter((m) => m.id !== id);
-        localStorage.setItem('rachit_team_members_fallback', JSON.stringify(updated));
-        return { teamMembers: updated };
-      });
-      return true;
+      return { success: false, error: error?.message || 'Database error' };
     }
   },
 
@@ -481,10 +445,8 @@ export const useStore = create<StoreState>()((set, get) => ({
     try {
       if (isSupabaseConfigured) {
         const faqs = await fetchFaqsFromSupabase();
-        if (faqs && faqs.length > 0) {
-          set({ faqs });
-          return;
-        }
+        set({ faqs });
+        return;
       }
       const local = localStorage.getItem('rachit_faqs_fallback');
       if (local) {
@@ -496,85 +458,70 @@ export const useStore = create<StoreState>()((set, get) => ({
       console.error('Failed to fetch FAQs:', error);
       const local = localStorage.getItem('rachit_faqs_fallback');
       if (local) set({ faqs: JSON.parse(local) });
+      else set({ faqs: DEFAULT_FAQS });
     }
   },
 
   addFaq: async (faqInfo) => {
     try {
-      let success = false;
-      let newFaq: FAQ | null = null;
       if (isSupabaseConfigured) {
-        try {
-          newFaq = await addFaqToSupabase(faqInfo);
-          if (newFaq) success = true;
-        } catch (dbErr) {
-          console.warn('Failed to add FAQ to Supabase, falling back to local:', dbErr);
+        const newFaq = await addFaqToSupabase(faqInfo);
+        if (newFaq) {
+          set((s) => ({ faqs: [...s.faqs, newFaq] }));
+          return { success: true };
         }
-      }
-      if (!success) {
+        return { success: false, error: 'Database write failed' };
+      } else {
         const id = Math.random().toString(36).substring(2, 9);
-        newFaq = { ...faqInfo, id, createdAt: Date.now() };
-      }
-      if (newFaq) {
+        const newFaq: FAQ = { ...faqInfo, id, createdAt: Date.now() };
         set((s) => {
-          const updated = [...s.faqs, newFaq!];
+          const updated = [...s.faqs, newFaq];
           localStorage.setItem('rachit_faqs_fallback', JSON.stringify(updated));
           return { faqs: updated };
         });
-        return true;
+        return { success: true };
       }
-      return false;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to add FAQ:', error);
-      return false;
+      return { success: false, error: error?.message || 'Database error' };
     }
   },
 
   updateFaq: async (id, fields) => {
     try {
-      let success = false;
       if (isSupabaseConfigured) {
-        try {
-          success = await updateFaqInSupabase(id, fields);
-        } catch (dbErr) {
-          console.warn('Failed to update FAQ in Supabase, falling back to local:', dbErr);
-        }
+        await updateFaqInSupabase(id, fields);
       }
       set((s) => {
         const updated = s.faqs.map((f) => f.id === id ? { ...f, ...fields } : f);
-        localStorage.setItem('rachit_faqs_fallback', JSON.stringify(updated));
+        if (!isSupabaseConfigured) {
+          localStorage.setItem('rachit_faqs_fallback', JSON.stringify(updated));
+        }
         return { faqs: updated };
       });
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error('Failed to update FAQ:', error);
-      return false;
+      return { success: false, error: error?.message || 'Database error' };
     }
   },
 
   deleteFaq: async (id) => {
     try {
       if (isSupabaseConfigured) {
-        try {
-          await deleteFaqFromSupabase(id);
-        } catch (dbErr) {
-          console.warn('Failed to delete FAQ from Supabase, falling back to local:', dbErr);
-        }
+        await deleteFaqFromSupabase(id);
       }
       set((s) => {
         const updated = s.faqs.filter((f) => f.id !== id);
-        localStorage.setItem('rachit_faqs_fallback', JSON.stringify(updated));
+        if (!isSupabaseConfigured) {
+          localStorage.setItem('rachit_faqs_fallback', JSON.stringify(updated));
+        }
         return { faqs: updated };
       });
-      return true;
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error('Failed to delete FAQ:', error);
-      set((s) => {
-        const updated = s.faqs.filter((f) => f.id !== id);
-        localStorage.setItem('rachit_faqs_fallback', JSON.stringify(updated));
-        return { faqs: updated };
-      });
-      return true;
+      return { success: false, error: error?.message || 'Database error' };
     }
   },
 

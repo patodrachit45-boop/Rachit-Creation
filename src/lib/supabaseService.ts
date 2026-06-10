@@ -288,83 +288,83 @@ export async function syncExtraDataToSupabase(data: {
   faqs?: FAQ[];
   teamMembers?: TeamMember[];
 }): Promise<boolean> {
-  if (!supabase) return false;
-  try {
-    const { data: currentData } = await supabase
-      .from('site_settings')
-      .select('about_text')
-      .eq('id', 'main')
-      .single();
-    
-    let aboutTextVal = '';
-    let existingExtra: ExtraData = {};
-    if (currentData?.about_text) {
-      const parsed = parseAboutText(currentData.about_text);
-      aboutTextVal = parsed.aboutText;
-      existingExtra = parsed.extraData;
-    }
-
-    if (data.blogs !== undefined) existingExtra.blogs = data.blogs;
-    if (data.faqs !== undefined) existingExtra.faqs = data.faqs;
-    if (data.teamMembers !== undefined) existingExtra.teamMembers = data.teamMembers;
-
-    const updatedAboutText = buildAboutText(aboutTextVal, existingExtra);
-
-    const { error } = await supabase
-      .from('site_settings')
-      .update({ about_text: updatedAboutText })
-      .eq('id', 'main');
-
-    if (error) throw error;
-    return true;
-  } catch (error) {
-    console.error('Error syncing extra data to Supabase:', error);
-    return false;
+  if (!supabase) throw new Error('Supabase is not configured');
+  
+  const { data: currentData, error: selectError } = await supabase
+    .from('site_settings')
+    .select('about_text')
+    .eq('id', 'main')
+    .single();
+  
+  if (selectError && selectError.code !== 'PGRST116') {
+    throw selectError;
   }
+  
+  let aboutTextVal = '';
+  let existingExtra: ExtraData = {};
+  if (currentData?.about_text) {
+    const parsed = parseAboutText(currentData.about_text);
+    aboutTextVal = parsed.aboutText;
+    existingExtra = parsed.extraData;
+  }
+
+  if (data.blogs !== undefined) existingExtra.blogs = data.blogs;
+  if (data.faqs !== undefined) existingExtra.faqs = data.faqs;
+  if (data.teamMembers !== undefined) existingExtra.teamMembers = data.teamMembers;
+
+  const updatedAboutText = buildAboutText(aboutTextVal, existingExtra);
+
+  const { error: updateError } = await supabase
+    .from('site_settings')
+    .update({ about_text: updatedAboutText })
+    .eq('id', 'main');
+
+  if (updateError) throw updateError;
+  return true;
 }
 
 export async function updateSiteSettingsInSupabase(
   settings: Partial<SiteSettings>
 ): Promise<boolean> {
-  if (!supabase) return false;
-  try {
-    const { data: currentData } = await supabase
-      .from('site_settings')
-      .select('about_text')
-      .eq('id', 'main')
-      .single();
-    
-    let aboutTextVal = '';
-    let existingExtra: ExtraData = {};
-    if (currentData?.about_text) {
-      const parsed = parseAboutText(currentData.about_text);
-      aboutTextVal = parsed.aboutText;
-      existingExtra = parsed.extraData;
-    }
-
-    if (settings.googleMapsUrl !== undefined) existingExtra.googleMapsUrl = settings.googleMapsUrl;
-    if (settings.facebookPixelId !== undefined) existingExtra.facebookPixelId = settings.facebookPixelId;
-    if (settings.pinterestUrl !== undefined) existingExtra.pinterestUrl = settings.pinterestUrl;
-    if (settings.twitterUrl !== undefined) existingExtra.twitterUrl = settings.twitterUrl;
-
-    if (settings.aboutText !== undefined) {
-      aboutTextVal = settings.aboutText;
-    }
-
-    const payload = settingsToDb(settings);
-    payload.about_text = buildAboutText(aboutTextVal, existingExtra);
-
-    const { error } = await supabase
-      .from('site_settings')
-      .update(payload)
-      .eq('id', 'main');
-      
-    if (error) throw error;
-    return true;
-  } catch (error) {
-    console.error('Error updating site settings:', error);
-    return false;
+  if (!supabase) throw new Error('Supabase is not configured');
+  
+  const { data: currentData, error: selectError } = await supabase
+    .from('site_settings')
+    .select('about_text')
+    .eq('id', 'main')
+    .single();
+  
+  if (selectError && selectError.code !== 'PGRST116') {
+    throw selectError;
   }
+  
+  let aboutTextVal = '';
+  let existingExtra: ExtraData = {};
+  if (currentData?.about_text) {
+    const parsed = parseAboutText(currentData.about_text);
+    aboutTextVal = parsed.aboutText;
+    existingExtra = parsed.extraData;
+  }
+
+  if (settings.googleMapsUrl !== undefined) existingExtra.googleMapsUrl = settings.googleMapsUrl;
+  if (settings.facebookPixelId !== undefined) existingExtra.facebookPixelId = settings.facebookPixelId;
+  if (settings.pinterestUrl !== undefined) existingExtra.pinterestUrl = settings.pinterestUrl;
+  if (settings.twitterUrl !== undefined) existingExtra.twitterUrl = settings.twitterUrl;
+
+  if (settings.aboutText !== undefined) {
+    aboutTextVal = settings.aboutText;
+  }
+
+  const payload = settingsToDb(settings);
+  payload.about_text = buildAboutText(aboutTextVal, existingExtra);
+
+  const { error: updateError } = await supabase
+    .from('site_settings')
+    .update(payload)
+    .eq('id', 'main');
+    
+  if (updateError) throw updateError;
+  return true;
 }
 
 export async function ensureSiteSettingsRowExists(): Promise<void> {
@@ -412,232 +412,172 @@ export function onAuthChanged(callback: (user: any) => void): () => void {
 
 export async function fetchBlogsFromSupabase(): Promise<BlogPost[]> {
   if (!supabase) return [];
-  try {
-    const { data } = await supabase
-      .from('site_settings')
-      .select('about_text')
-      .eq('id', 'main')
-      .single();
-    if (data?.about_text) {
-      const parsed = parseAboutText(data.about_text);
-      return parsed.extraData.blogs || [];
-    }
-    return [];
-  } catch (error) {
-    console.error('Error fetching blogs from Supabase settings:', error);
-    return [];
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('about_text')
+    .eq('id', 'main')
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  if (data?.about_text) {
+    const parsed = parseAboutText(data.about_text);
+    return parsed.extraData.blogs || [];
   }
+  return [];
 }
 
 export async function addBlogPostToSupabase(
   post: Omit<BlogPost, 'id' | 'createdAt'>,
   imageFile?: File
 ): Promise<BlogPost | null> {
-  if (!supabase) return null;
-  try {
-    let imageUrl = post.imageUrl;
-    if (imageFile) {
-      imageUrl = await uploadImageToSupabase(imageFile);
-    }
-    const id = Math.random().toString(36).substring(2, 9);
-    const createdAt = Date.now();
-    const newPost: BlogPost = {
-      id,
-      title: post.title,
-      content: post.content,
-      excerpt: post.excerpt,
-      imageUrl,
-      createdAt,
-    };
-
-    const currentBlogs = await fetchBlogsFromSupabase();
-    const updatedBlogs = [newPost, ...currentBlogs];
-    const success = await syncExtraDataToSupabase({ blogs: updatedBlogs });
-    if (!success) return null;
-    return newPost;
-  } catch (error) {
-    console.error('Error adding blog post in Supabase:', error);
-    return null;
+  if (!supabase) throw new Error('Supabase not configured');
+  let imageUrl = post.imageUrl;
+  if (imageFile) {
+    imageUrl = await uploadImageToSupabase(imageFile);
   }
+  const id = Math.random().toString(36).substring(2, 9);
+  const createdAt = Date.now();
+  const newPost: BlogPost = {
+    id,
+    title: post.title,
+    content: post.content,
+    excerpt: post.excerpt,
+    imageUrl,
+    createdAt,
+  };
+
+  const currentBlogs = await fetchBlogsFromSupabase();
+  const updatedBlogs = [newPost, ...currentBlogs];
+  await syncExtraDataToSupabase({ blogs: updatedBlogs });
+  return newPost;
 }
 
 export async function updateBlogPostInSupabase(
   id: string,
   fields: Partial<BlogPost>
 ): Promise<boolean> {
-  if (!supabase) return false;
-  try {
-    const currentBlogs = await fetchBlogsFromSupabase();
-    const updatedBlogs = currentBlogs.map((b) => b.id === id ? { ...b, ...fields } : b);
-    return await syncExtraDataToSupabase({ blogs: updatedBlogs });
-  } catch (error) {
-    console.error('Error updating blog post in Supabase:', error);
-    return false;
-  }
+  if (!supabase) throw new Error('Supabase not configured');
+  const currentBlogs = await fetchBlogsFromSupabase();
+  const updatedBlogs = currentBlogs.map((b) => b.id === id ? { ...b, ...fields } : b);
+  return await syncExtraDataToSupabase({ blogs: updatedBlogs });
 }
 
 export async function deleteBlogPostFromSupabase(id: string): Promise<boolean> {
-  if (!supabase) return false;
-  try {
-    const currentBlogs = await fetchBlogsFromSupabase();
-    const updatedBlogs = currentBlogs.filter((b) => b.id !== id);
-    return await syncExtraDataToSupabase({ blogs: updatedBlogs });
-  } catch (error) {
-    console.error('Error deleting blog post from Supabase:', error);
-    return false;
-  }
+  if (!supabase) throw new Error('Supabase not configured');
+  const currentBlogs = await fetchBlogsFromSupabase();
+  const updatedBlogs = currentBlogs.filter((b) => b.id !== id);
+  return await syncExtraDataToSupabase({ blogs: updatedBlogs });
 }
 
 // ── Team Members DB Operations ────────────────────────────────────────
 
 export async function fetchTeamFromSupabase(): Promise<TeamMember[]> {
   if (!supabase) return [];
-  try {
-    const { data } = await supabase
-      .from('site_settings')
-      .select('about_text')
-      .eq('id', 'main')
-      .single();
-    if (data?.about_text) {
-      const parsed = parseAboutText(data.about_text);
-      return parsed.extraData.teamMembers || [];
-    }
-    return [];
-  } catch (error) {
-    console.error('Error fetching team from Supabase settings:', error);
-    return [];
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('about_text')
+    .eq('id', 'main')
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  if (data?.about_text) {
+    const parsed = parseAboutText(data.about_text);
+    return parsed.extraData.teamMembers || [];
   }
+  return [];
 }
 
 export async function addTeamMemberToSupabase(
   member: Omit<TeamMember, 'id' | 'createdAt'>,
   imageFile?: File
 ): Promise<TeamMember | null> {
-  if (!supabase) return null;
-  try {
-    let imageUrl = member.imageUrl;
-    if (imageFile) {
-      imageUrl = await uploadImageToSupabase(imageFile);
-    }
-    const id = Math.random().toString(36).substring(2, 9);
-    const createdAt = Date.now();
-    const newMember: TeamMember = {
-      id,
-      name: member.name,
-      role: member.role,
-      imageUrl,
-      displayOrder: member.displayOrder,
-      createdAt,
-    };
-
-    const currentTeam = await fetchTeamFromSupabase();
-    const updatedTeam = [...currentTeam, newMember];
-    const success = await syncExtraDataToSupabase({ teamMembers: updatedTeam });
-    if (!success) return null;
-    return newMember;
-  } catch (error) {
-    console.error('Error adding team member in Supabase:', error);
-    return null;
+  if (!supabase) throw new Error('Supabase not configured');
+  let imageUrl = member.imageUrl;
+  if (imageFile) {
+    imageUrl = await uploadImageToSupabase(imageFile);
   }
+  const id = Math.random().toString(36).substring(2, 9);
+  const createdAt = Date.now();
+  const newMember: TeamMember = {
+    id,
+    name: member.name,
+    role: member.role,
+    imageUrl,
+    displayOrder: member.displayOrder,
+    createdAt,
+  };
+
+  const currentTeam = await fetchTeamFromSupabase();
+  const updatedTeam = [...currentTeam, newMember];
+  await syncExtraDataToSupabase({ teamMembers: updatedTeam });
+  return newMember;
 }
 
 export async function updateTeamMemberInSupabase(
   id: string,
   fields: Partial<TeamMember>
 ): Promise<boolean> {
-  if (!supabase) return false;
-  try {
-    const currentTeam = await fetchTeamFromSupabase();
-    const updatedTeam = currentTeam.map((m) => m.id === id ? { ...m, ...fields } : m);
-    return await syncExtraDataToSupabase({ teamMembers: updatedTeam });
-  } catch (error) {
-    console.error('Error updating team member in Supabase:', error);
-    return false;
-  }
+  if (!supabase) throw new Error('Supabase not configured');
+  const currentTeam = await fetchTeamFromSupabase();
+  const updatedTeam = currentTeam.map((m) => m.id === id ? { ...m, ...fields } : m);
+  return await syncExtraDataToSupabase({ teamMembers: updatedTeam });
 }
 
 export async function deleteTeamMemberFromSupabase(id: string): Promise<boolean> {
-  if (!supabase) return false;
-  try {
-    const currentTeam = await fetchTeamFromSupabase();
-    const updatedTeam = currentTeam.filter((m) => m.id !== id);
-    return await syncExtraDataToSupabase({ teamMembers: updatedTeam });
-  } catch (error) {
-    console.error('Error deleting team member from Supabase:', error);
-    return false;
-  }
+  if (!supabase) throw new Error('Supabase not configured');
+  const currentTeam = await fetchTeamFromSupabase();
+  const updatedTeam = currentTeam.filter((m) => m.id !== id);
+  return await syncExtraDataToSupabase({ teamMembers: updatedTeam });
 }
 
 // ── FAQ DB Operations ────────────────────────────────────────────────
 export async function fetchFaqsFromSupabase(): Promise<FAQ[]> {
   if (!supabase) return [];
-  try {
-    const { data } = await supabase
-      .from('site_settings')
-      .select('about_text')
-      .eq('id', 'main')
-      .single();
-    if (data?.about_text) {
-      const parsed = parseAboutText(data.about_text);
-      return parsed.extraData.faqs || [];
-    }
-    return [];
-  } catch (error) {
-    console.error('Error fetching FAQs from Supabase settings:', error);
-    return [];
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('about_text')
+    .eq('id', 'main')
+    .single();
+  if (error && error.code !== 'PGRST116') throw error;
+  if (data?.about_text) {
+    const parsed = parseAboutText(data.about_text);
+    return parsed.extraData.faqs || [];
   }
+  return [];
 }
 
 export async function addFaqToSupabase(
   faq: Omit<FAQ, 'id' | 'createdAt'>
 ): Promise<FAQ | null> {
-  if (!supabase) return null;
-  try {
-    const id = Math.random().toString(36).substring(2, 9);
-    const createdAt = Date.now();
-    const newFaq: FAQ = {
-      id,
-      question: faq.question,
-      answer: faq.answer,
-      createdAt,
-    };
+  if (!supabase) throw new Error('Supabase not configured');
+  const id = Math.random().toString(36).substring(2, 9);
+  const createdAt = Date.now();
+  const newFaq: FAQ = {
+    id,
+    question: faq.question,
+    answer: faq.answer,
+    createdAt,
+  };
 
-    const currentFaqs = await fetchFaqsFromSupabase();
-    const updatedFaqs = [...currentFaqs, newFaq];
-    const success = await syncExtraDataToSupabase({ faqs: updatedFaqs });
-    if (!success) return null;
-    return newFaq;
-  } catch (error) {
-    console.error('Error adding FAQ in Supabase:', error);
-    return null;
-  }
+  const currentFaqs = await fetchFaqsFromSupabase();
+  const updatedFaqs = [...currentFaqs, newFaq];
+  await syncExtraDataToSupabase({ faqs: updatedFaqs });
+  return newFaq;
 }
 
 export async function updateFaqInSupabase(
   id: string,
   fields: Partial<FAQ>
 ): Promise<boolean> {
-  if (!supabase) return false;
-  try {
-    const currentFaqs = await fetchFaqsFromSupabase();
-    const updatedFaqs = currentFaqs.map((f) => f.id === id ? { ...f, ...fields } : f);
-    return await syncExtraDataToSupabase({ faqs: updatedFaqs });
-  } catch (error) {
-    console.error('Error updating FAQ in Supabase:', error);
-    return false;
-  }
+  if (!supabase) throw new Error('Supabase not configured');
+  const currentFaqs = await fetchFaqsFromSupabase();
+  const updatedFaqs = currentFaqs.map((f) => f.id === id ? { ...f, ...fields } : f);
+  return await syncExtraDataToSupabase({ faqs: updatedFaqs });
 }
 
 export async function deleteFaqFromSupabase(id: string): Promise<boolean> {
-  if (!supabase) return false;
-  try {
-    const currentFaqs = await fetchFaqsFromSupabase();
-    const updatedFaqs = currentFaqs.filter((f) => f.id !== id);
-    return await syncExtraDataToSupabase({ faqs: updatedFaqs });
-  } catch (error) {
-    console.error('Error deleting FAQ from Supabase:', error);
-    return false;
-  }
+  if (!supabase) throw new Error('Supabase not configured');
+  const currentFaqs = await fetchFaqsFromSupabase();
+  const updatedFaqs = currentFaqs.filter((f) => f.id !== id);
+  return await syncExtraDataToSupabase({ faqs: updatedFaqs });
 }
 
 export { isSupabaseConfigured };

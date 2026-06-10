@@ -44,6 +44,25 @@ async function fetchSupabaseData(table) {
   }
   try {
     const cleanUrl = VITE_SUPABASE_URL.replace(/\/$/, '');
+    if (table === 'blogs') {
+      const res = await fetch(`${cleanUrl}/rest/v1/site_settings?id=eq.main&select=about_text`, {
+        headers: {
+          'apikey': VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${VITE_SUPABASE_ANON_KEY}`
+        }
+      });
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      const data = await res.json();
+      if (data && data.length > 0 && data[0].about_text) {
+        const parts = data[0].about_text.split('|||JSON_DATA|||');
+        if (parts.length > 1) {
+          const extraData = JSON.parse(parts[1].trim());
+          return extraData.blogs || [];
+        }
+      }
+      return [];
+    }
+
     const res = await fetch(`${cleanUrl}/rest/v1/${table}?select=id`, {
       headers: {
         'apikey': VITE_SUPABASE_ANON_KEY,
