@@ -86,6 +86,37 @@ export default function ProductDetail() {
                 <ul className="space-y-2">{highlights.map((h, i) => <li key={i} className="flex items-start gap-2 text-sm font-sans text-[#3D3D3D]/70"><span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#C5A059] shrink-0" />{h}</li>)}</ul>
               </div>
             )}
+
+            {/* Atelier Quick Facts (GEO / Structured Retrieval Grid) */}
+            <div className="mt-8 border border-[#C5A059]/15 rounded-2xl bg-white p-5 shadow-sm">
+              <h3 className="font-serif text-xs text-[#3D3D3D] mb-4 font-semibold tracking-wider uppercase text-center border-b border-[#C5A059]/10 pb-2">Atelier Quick Facts</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs font-sans">
+                <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Category</span>
+                  <span className="text-[#3D3D3D] font-medium">{product.category} Lehenga</span>
+                </div>
+                <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Crafting Time</span>
+                  <span className="text-[#3D3D3D] font-medium">4 - 8 Weeks</span>
+                </div>
+                <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Origin</span>
+                  <span className="text-[#3D3D3D] font-medium">Surat, Gujarat, India</span>
+                </div>
+                <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Customization</span>
+                  <span className="text-[#C5A059] font-semibold">Available on Request</span>
+                </div>
+                <div className="flex justify-between border-b border-[#C5A059]/5 pb-2 sm:border-0 sm:pb-0">
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Embroidery Handwork</span>
+                  <span className="text-[#3D3D3D] font-medium truncate max-w-[150px]" title="Zari, Zardozi, Resham & Stones">Zari, Zardozi, Resham & Stones</span>
+                </div>
+                <div className="flex justify-between pb-0">
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Shipping</span>
+                  <span className="text-[#3D3D3D] font-medium">Worldwide Express Delivery</span>
+                </div>
+              </div>
+            </div>
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
               {product.isSoldOut ? (
                 <a href={getWhatsAppOrderLink(siteSettings.whatsappNumber, `${product.name} (Inquire Availability - Sold Out)`, product.price)} target="_blank" rel="noopener noreferrer" className="flex-1 inline-flex items-center justify-center gap-2 bg-[#C5A059] hover:bg-[#b08d47] text-white font-sans text-sm tracking-wider uppercase px-6 py-3.5 rounded-full transition-colors shadow-md"><ShoppingBag className="w-4 h-4" /> Inquire Availability (Sold Out)</a>

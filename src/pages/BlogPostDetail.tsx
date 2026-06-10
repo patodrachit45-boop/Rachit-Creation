@@ -142,6 +142,14 @@ export default function BlogPostDetail() {
           </a>
         </div>
 
+        {/* Atelier Insights (TL;DR Summary) */}
+        <div className="mb-8 p-5 bg-[#FCEEE9]/20 border-l-4 border-[#C5A059] rounded-r-2xl shadow-sm">
+          <h4 className="text-xs uppercase tracking-wider font-sans text-[#C5A059] font-bold mb-2">Atelier Insights (TL;DR)</h4>
+          <p className="text-sm font-sans text-[#3D3D3D]/80 italic leading-relaxed">
+            {blog.excerpt}
+          </p>
+        </div>
+
         {/* Content Body */}
         <article className="prose max-w-none text-[#3D3D3D]">
           {parsedContent}

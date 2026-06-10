@@ -1,0 +1,31 @@
+# Allow all crawlers, including AI search & retrieval agents
+User-agent: *
+Allow: /
+
+# Specifically allow major AI, LLM search, and indexing crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Link to XML sitemap
+Sitemap: https://raccreation.com/sitemap.xml
