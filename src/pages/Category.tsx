@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useParams } from 'react-router';
 import { useStore } from '../store';
 import { formatPrice } from '../lib/siteConfig';
 import { motion } from 'motion/react';
 import { ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
 
 type SortKey = 'newest' | 'price-asc' | 'price-desc' | 'name-asc';
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
@@ -18,6 +19,17 @@ export default function Category() {
   const { products, isLoading } = useStore();
   const [sortBy, setSortBy] = useState<SortKey>('newest');
   const categoryName = type || 'All';
+
+  useEffect(() => {
+    if (categoryName) {
+      const breadcrumbSchema = getBreadcrumbSchema([
+        { name: 'Home', item: '/' },
+        { name: categoryName, item: `/category/${categoryName}` }
+      ]);
+      injectJSONLD('category-breadcrumb-schema', breadcrumbSchema);
+    }
+    return () => removeJSONLD('category-breadcrumb-schema');
+  }, [categoryName]);
 
   const filtered = useMemo(() => {
     const base = products.filter((p) => p.category.toLowerCase() === categoryName.toLowerCase());

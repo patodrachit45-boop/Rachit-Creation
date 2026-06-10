@@ -22,6 +22,9 @@ export interface SiteSettings {
   aboutText: string;
   aboutHeroImage: string;
   googleMapsUrl: string;
+  facebookPixelId: string;
+  pinterestUrl: string;
+  twitterUrl: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -40,7 +43,109 @@ Each piece is meticulously handcrafted using premium fabrics and adorned with in
 From opulent bridal ensembles to contemporary designer pieces, our collections are curated to help every woman feel like royalty on her special day.`,
   aboutHeroImage: '/images/products/regenerated_image_1779377157645.png',
   googleMapsUrl: 'https://maps.app.goo.gl/ndARWqQaobT93CUb7',
+  facebookPixelId: '',
+  pinterestUrl: '',
+  twitterUrl: '',
 };
+
+// ── Blogs ─────────────────────────────────────────────────────────────
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string;
+  imageUrl: string;
+  createdAt: number;
+}
+
+export const DEFAULT_BLOGS: BlogPost[] = [
+  {
+    id: 'blog1',
+    title: 'How to Choose the Perfect Bridal Lehenga for Your Big Day',
+    excerpt: 'Selecting a bridal lehenga is a monumental decision. Discover our curation guide on choosing colors, styles, and embroideries that highlight your personality.',
+    content: `Selecting your bridal lehenga is one of the most exciting yet monumental styling decisions you will make for your wedding. With countless styles, fabrics, and embroideries available, it is easy to feel overwhelmed. Here is our master curation guide to help you find the lehenga of your dreams.
+
+### 1. Identify Your Style
+Are you a classic traditionalist who loves opulent, heavy embroidery, or do you prefer contemporary silhouettes with minimalist detailing? Clarifying your personal aesthetic is the first and most crucial step. Traditional brides often lean towards classic Zardozi and Kundan work, while modern brides may opt for metallic thread embroidery, lighter fabrics, and pastel shades.
+
+### 2. Choose the Right Silhouette
+Lehengas come in various cuts, including A-line, mermaid, flared, and panelled:
+- **A-Line**: Fits at the waist and flares out gradually. Works beautifully on almost all body types.
+- **Flared**: Features dramatic volume and multiple gathers. Ideal for brides who want a royal look.
+- **Mermaid/Fish-cut**: Fitted from the waist to the knees and flares out at the bottom. Accentuates curves.
+
+### 3. Select a Harmonious Color Palette
+While classic crimson and maroon remain timeless choices, contemporary weddings feature diverse colors. Pastel pinks, blush gold, mint green, and deep jewel tones like royal blue and emerald have gained massive popularity. Choose a color that complements your skin undertones and the venue lighting.
+
+### 4. Fabric Matters
+The fabric of your lehenga dictates its drape and comfort. Heavy silk and velvet are perfect for winter weddings and create a structured, grand aesthetic. Lightweight fabrics like georgette, chiffon, and net drape gracefully, making them ideal for summer or destination weddings.
+
+At Rachit Creation, we specialize in customizing lehengas to fit your body type, color preferences, and wedding theme. Drop us a message on WhatsApp or visit our showroom to begin designing your dream lehenga!`,
+    imageUrl: '/images/products/regenerated_image_1779296299562.png',
+    createdAt: Date.now() - 1000 * 60 * 60 * 24 * 5, // 5 days ago
+  },
+  {
+    id: 'blog2',
+    title: 'The Exquisite Art of Zardozi and Zari Embroidery',
+    excerpt: 'Explore the rich history and meticulous craftsmanship behind Zari and Zardozi work, the gold embroideries that adorn luxury lehengas.',
+    content: `Indian bridal luxury is incomplete without the shimmering gold and silver details of Zari and Zardozi embroidery. These crafts have adorned royal garments for centuries, representing the peak of Indian textile craftsmanship.
+
+### History of the Art
+Zardozi, an ancient Persian craft meaning "gold sewing," was brought to India and flourished under the patronage of the Mughal emperors. Originally, genuine gold and silver wires (Zari) were woven onto rich silks, velvets, and brocades, and decorated with precious pearls and emeralds.
+
+### The Crafting Process
+Today, master artisans continue to practice this craft by hand. The fabric is stretched tightly over a large wooden frame, known as the *Adda*. Using specialized hooks, the artisan guides metallic threads, dabka, sequins, and stones onto the fabric. 
+
+Every single flower petal, border pattern, and motif is hand-stitched. It takes multiple artisans anywhere from 100 to over 500 hours to complete a single heavy bridal lehenga at Rachit Creation.
+
+### How to Maintain Zari and Zardozi Lehengas
+Because metallic threads can tarnish when exposed to moisture and air:
+- **Storage**: Never store your lehenga in a plastic bag. Wrap it in a pure white cotton muslin cloth.
+- **Folding**: Fold the embroidery inward to prevent threads from catching.
+- **Cleaning**: Only dry-clean when absolutely necessary, and ensure they specialize in luxury bridal wear.`,
+    imageUrl: '/images/products/regenerated_image_1779377157645.png',
+    createdAt: Date.now() - 1000 * 60 * 60 * 24 * 12, // 12 days ago
+  }
+];
+
+// ── Team Members ──────────────────────────────────────────────────────
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  imageUrl: string;
+  displayOrder: number;
+  createdAt: number;
+}
+
+export const DEFAULT_TEAM_MEMBERS: TeamMember[] = [
+  {
+    id: 'team1',
+    name: 'Rachit Patel',
+    role: 'Founder & Creative Director',
+    imageUrl: '',
+    displayOrder: 1,
+    createdAt: Date.now(),
+  },
+  {
+    id: 'team2',
+    name: 'Aisha Mehta',
+    role: 'Lead Bridal Designer',
+    imageUrl: '',
+    displayOrder: 2,
+    createdAt: Date.now(),
+  },
+  {
+    id: 'team3',
+    name: 'Master Ramesh',
+    role: 'Head Artisan (Master Embroiderer)',
+    imageUrl: '',
+    displayOrder: 3,
+    createdAt: Date.now(),
+  }
+];
 
 // ── Testimonials ──────────────────────────────────────────────────────
 

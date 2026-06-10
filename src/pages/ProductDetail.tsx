@@ -1,15 +1,34 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { Link, useParams } from 'react-router';
 import { useStore, useWishlistStore } from '../store';
 import { formatPrice, getWhatsAppOrderLink } from '../lib/siteConfig';
 import { Heart, ShoppingBag, ChevronRight, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
+import { injectJSONLD, removeJSONLD, getProductSchema, getBreadcrumbSchema } from '../lib/seoService';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const { products, siteSettings } = useStore();
   const { wishlistIds, toggleWishlist } = useWishlistStore();
   const product = useMemo(() => products.find((p) => p.id === id), [products, id]);
+  
+  useEffect(() => {
+    if (product && siteSettings) {
+      const productSchema = getProductSchema(product, siteSettings);
+      const breadcrumbSchema = getBreadcrumbSchema([
+        { name: 'Home', item: '/' },
+        { name: product.category, item: `/category/${product.category}` },
+        { name: product.name, item: `/product/${product.id}` }
+      ]);
+      injectJSONLD('product-schema', productSchema);
+      injectJSONLD('product-breadcrumb-schema', breadcrumbSchema);
+    }
+    return () => {
+      removeJSONLD('product-schema');
+      removeJSONLD('product-breadcrumb-schema');
+    };
+  }, [product, siteSettings]);
+
   const isWishlisted = product ? wishlistIds.includes(product.id) : false;
   const relatedProducts = useMemo(() => {
     if (!product) return [];

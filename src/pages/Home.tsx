@@ -3,10 +3,20 @@ import { useStore } from '../store';
 import { DEFAULT_TESTIMONIALS, formatPrice, CATEGORIES, getWhatsAppLink } from '../lib/siteConfig';
 import { Star, MessageCircle, ArrowRight, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
+import { injectJSONLD, removeJSONLD, getLocalBusinessSchema } from '../lib/seoService';
 
 export default function Home() {
   const { products, siteSettings, isSettingsLoading } = useStore();
+  
+  useEffect(() => {
+    if (siteSettings) {
+      const schema = getLocalBusinessSchema(siteSettings);
+      injectJSONLD('local-business-schema', schema);
+    }
+    return () => removeJSONLD('local-business-schema');
+  }, [siteSettings]);
+
   const categoryData = useMemo(() => CATEGORIES.map((cat) => {
     const cp = products.filter((p) => p.category === cat);
     return { name: cat, count: cp.length, image: cp[0]?.imageUrl || '/images/logo.jpg' };

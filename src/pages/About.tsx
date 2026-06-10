@@ -3,7 +3,7 @@ import { useStore } from '../store';
 import { motion } from 'motion/react';
 
 export default function About() {
-  const { siteSettings, isSettingsLoading } = useStore();
+  const { siteSettings, teamMembers, isSettingsLoading } = useStore();
   const paragraphs = siteSettings.aboutText.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 
   return (
@@ -40,7 +40,52 @@ export default function About() {
             <motion.p key={i} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }} className="text-[#3D3D3D]/75 font-sans text-sm md:text-base leading-relaxed">{para}</motion.p>
           ))}
         </div>
-        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.3 }} className="text-center mt-12">
+      </section>
+
+      {/* Team Section */}
+      {teamMembers.length > 0 && (
+        <section className="bg-white border-y border-[#C5A059]/10 py-16 md:py-24">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true }} 
+              transition={{ duration: 0.5 }}
+              className="text-center mb-12"
+            >
+              <h2 className="font-serif text-2xl md:text-4xl text-[#3D3D3D] mb-3">Our Artisans & Designers</h2>
+              <p className="text-[#3D3D3D]/50 text-sm font-sans max-w-md mx-auto">The masterminds and craftsmen weaving luxury threads into heritage bridal couture.</p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+              {teamMembers.map((member, idx) => (
+                <motion.div 
+                  key={member.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  className="bg-[#FCEEE9]/10 border border-[#C5A059]/10 rounded-2xl overflow-hidden p-6 flex flex-col items-center text-center shadow-sm group hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+                >
+                  <div className="w-28 h-28 rounded-full overflow-hidden bg-[#FCEEE9] border-2 border-[#C5A059]/20 mb-5 flex items-center justify-center shadow-inner relative">
+                    {member.imageUrl ? (
+                      <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[#C5A059] text-3xl font-serif font-bold uppercase">{member.name.charAt(0)}</span>
+                    )}
+                  </div>
+                  <h3 className="font-serif text-[#3D3D3D] text-lg font-bold">{member.name}</h3>
+                  <p className="text-xs text-[#C5A059] font-sans font-semibold uppercase tracking-wider mt-1">{member.role}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* CTA Section */}
+      <section className="py-16 text-center">
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2 }}>
           <Link to="/category/Bridal" className="inline-flex items-center gap-2 bg-[#C5A059] hover:bg-[#b08d47] text-white font-sans text-sm tracking-wider uppercase px-8 py-3.5 rounded-full transition-colors shadow-md">Explore Our Collection</Link>
         </motion.div>
       </section>

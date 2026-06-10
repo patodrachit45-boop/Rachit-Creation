@@ -12,7 +12,7 @@
 
 import { supabase, isSupabaseConfigured } from './supabase';
 import type { Product } from '../store';
-import type { SiteSettings } from './siteConfig';
+import type { SiteSettings, BlogPost, TeamMember } from './siteConfig';
 
 // ── Helpers: DB ↔ TypeScript mapping ──────────────────────────────────
 
@@ -58,6 +58,9 @@ function dbToSettings(row: any): SiteSettings {
     aboutText: row.about_text || '',
     aboutHeroImage: row.about_hero_image || '',
     googleMapsUrl: row.google_maps_url || '',
+    facebookPixelId: row.facebook_pixel_id || '',
+    pinterestUrl: row.pinterest_url || '',
+    twitterUrl: row.twitter_url || '',
   };
 
   // Fallback for logo if column doesn't exist or is empty
@@ -76,6 +79,17 @@ function dbToSettings(row: any): SiteSettings {
     }
   }
 
+  // Fallbacks for Pixel and Social URLs
+  if (!settings.facebookPixelId) {
+    settings.facebookPixelId = localStorage.getItem('rachit_facebook_pixel_id_fallback') || '';
+  }
+  if (!settings.pinterestUrl) {
+    settings.pinterestUrl = localStorage.getItem('rachit_pinterest_url_fallback') || '';
+  }
+  if (!settings.twitterUrl) {
+    settings.twitterUrl = localStorage.getItem('rachit_twitter_url_fallback') || '';
+  }
+
   return settings;
 }
 
@@ -92,6 +106,9 @@ function settingsToDb(s: Partial<SiteSettings>) {
   if (s.aboutText !== undefined) obj.about_text = s.aboutText;
   if (s.aboutHeroImage !== undefined) obj.about_hero_image = s.aboutHeroImage;
   if (s.googleMapsUrl !== undefined) obj.google_maps_url = s.googleMapsUrl;
+  if (s.facebookPixelId !== undefined) obj.facebook_pixel_id = s.facebookPixelId;
+  if (s.pinterestUrl !== undefined) obj.pinterest_url = s.pinterestUrl;
+  if (s.twitterUrl !== undefined) obj.twitter_url = s.twitterUrl;
   return obj;
 }
 
@@ -277,12 +294,20 @@ export async function updateSiteSettingsInSupabase(
       .eq('id', 'main');
       
     if (error) {
-      // Auto-healing: If logo_image or google_maps_url column does not exist, remove them and retry
-      if (error.message.includes('logo_image') || error.message.includes('google_maps_url') || error.code === '42703') {
+      // Auto-healing: If logo_image, google_maps_url, or other new columns do not exist, remove them and retry
+      if (error.message.includes('logo_image') || 
+          error.message.includes('google_maps_url') || 
+          error.message.includes('facebook_pixel_id') || 
+          error.message.includes('pinterest_url') || 
+          error.message.includes('twitter_url') || 
+          error.code === '42703') {
         console.warn('Database is missing new site settings columns. Retrying update with fallback...');
         const healedPayload = { ...payload };
         delete healedPayload.logo_image;
         delete healedPayload.google_maps_url;
+        delete healedPayload.facebook_pixel_id;
+        delete healedPayload.pinterest_url;
+        delete healedPayload.twitter_url;
         
         const { error: retryError } = await supabase
           .from('site_settings')
@@ -306,6 +331,27 @@ export async function updateSiteSettingsInSupabase(
             localStorage.setItem('rachit_google_maps_url_fallback', settings.googleMapsUrl);
           }
         }
+        if (settings.facebookPixelId !== undefined) {
+          if (settings.facebookPixelId === '') {
+            localStorage.removeItem('rachit_facebook_pixel_id_fallback');
+          } else {
+            localStorage.setItem('rachit_facebook_pixel_id_fallback', settings.facebookPixelId);
+          }
+        }
+        if (settings.pinterestUrl !== undefined) {
+          if (settings.pinterestUrl === '') {
+            localStorage.removeItem('rachit_pinterest_url_fallback');
+          } else {
+            localStorage.setItem('rachit_pinterest_url_fallback', settings.pinterestUrl);
+          }
+        }
+        if (settings.twitterUrl !== undefined) {
+          if (settings.twitterUrl === '') {
+            localStorage.removeItem('rachit_twitter_url_fallback');
+          } else {
+            localStorage.setItem('rachit_twitter_url_fallback', settings.twitterUrl);
+          }
+        }
         return true;
       }
       throw error;
@@ -324,6 +370,27 @@ export async function updateSiteSettingsInSupabase(
         localStorage.removeItem('rachit_google_maps_url_fallback');
       } else {
         localStorage.setItem('rachit_google_maps_url_fallback', settings.googleMapsUrl);
+      }
+    }
+    if (settings.facebookPixelId !== undefined) {
+      if (settings.facebookPixelId === '') {
+        localStorage.removeItem('rachit_facebook_pixel_id_fallback');
+      } else {
+        localStorage.setItem('rachit_facebook_pixel_id_fallback', settings.facebookPixelId);
+      }
+    }
+    if (settings.pinterestUrl !== undefined) {
+      if (settings.pinterestUrl === '') {
+        localStorage.removeItem('rachit_pinterest_url_fallback');
+      } else {
+        localStorage.setItem('rachit_pinterest_url_fallback', settings.pinterestUrl);
+      }
+    }
+    if (settings.twitterUrl !== undefined) {
+      if (settings.twitterUrl === '') {
+        localStorage.removeItem('rachit_twitter_url_fallback');
+      } else {
+        localStorage.setItem('rachit_twitter_url_fallback', settings.twitterUrl);
       }
     }
     return true;
@@ -372,6 +439,204 @@ export function onAuthChanged(callback: (user: any) => void): () => void {
     callback(session?.user || null);
   });
   return () => subscription.unsubscribe();
+}
+
+// ── Blogs DB Operations ───────────────────────────────────────────────
+
+export async function fetchBlogsFromSupabase(): Promise<BlogPost[]> {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      if (error.code === '42P01') { // table does not exist
+        console.warn('Supabase blogs table not found. Using local fallback.');
+        return [];
+      }
+      throw error;
+    }
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      title: row.title,
+      content: row.content,
+      excerpt: row.excerpt,
+      imageUrl: row.image_url,
+      createdAt: Number(row.created_at),
+    }));
+  } catch (error) {
+    console.error('Error fetching blogs from Supabase:', error);
+    return [];
+  }
+}
+
+export async function addBlogPostToSupabase(
+  post: Omit<BlogPost, 'id' | 'createdAt'>,
+  imageFile?: File
+): Promise<BlogPost | null> {
+  if (!supabase) return null;
+  try {
+    let imageUrl = post.imageUrl;
+    if (imageFile) {
+      imageUrl = await uploadImageToSupabase(imageFile);
+    }
+    const id = Math.random().toString(36).substring(2, 9);
+    const createdAt = Date.now();
+    const row = {
+      id,
+      title: post.title,
+      content: post.content,
+      excerpt: post.excerpt,
+      image_url: imageUrl,
+      created_at: createdAt,
+    };
+    const { data, error } = await supabase.from('blogs').insert(row).select().single();
+    if (error) throw error;
+    return {
+      id: data.id,
+      title: data.title,
+      content: data.content,
+      excerpt: data.excerpt,
+      imageUrl: data.image_url,
+      createdAt: Number(data.created_at),
+    };
+  } catch (error) {
+    console.error('Error adding blog post in Supabase:', error);
+    return null;
+  }
+}
+
+export async function updateBlogPostInSupabase(
+  id: string,
+  fields: Partial<BlogPost>
+): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const payload: any = {};
+    if (fields.title !== undefined) payload.title = fields.title;
+    if (fields.content !== undefined) payload.content = fields.content;
+    if (fields.excerpt !== undefined) payload.excerpt = fields.excerpt;
+    if (fields.imageUrl !== undefined) payload.image_url = fields.imageUrl;
+
+    const { error } = await supabase.from('blogs').update(payload).eq('id', id);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error updating blog post in Supabase:', error);
+    return false;
+  }
+}
+
+export async function deleteBlogPostFromSupabase(id: string): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { error } = await supabase.from('blogs').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting blog post from Supabase:', error);
+    return false;
+  }
+}
+
+// ── Team Members DB Operations ────────────────────────────────────────
+
+export async function fetchTeamFromSupabase(): Promise<TeamMember[]> {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('*')
+      .order('display_order', { ascending: true });
+    if (error) {
+      if (error.code === '42P01') { // table does not exist
+        console.warn('Supabase team_members table not found. Using local fallback.');
+        return [];
+      }
+      throw error;
+    }
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      name: row.name,
+      role: row.role,
+      imageUrl: row.image_url,
+      displayOrder: Number(row.display_order || 0),
+      createdAt: Number(row.created_at),
+    }));
+  } catch (error) {
+    console.error('Error fetching team from Supabase:', error);
+    return [];
+  }
+}
+
+export async function addTeamMemberToSupabase(
+  member: Omit<TeamMember, 'id' | 'createdAt'>,
+  imageFile?: File
+): Promise<TeamMember | null> {
+  if (!supabase) return null;
+  try {
+    let imageUrl = member.imageUrl;
+    if (imageFile) {
+      imageUrl = await uploadImageToSupabase(imageFile);
+    }
+    const id = Math.random().toString(36).substring(2, 9);
+    const createdAt = Date.now();
+    const row = {
+      id,
+      name: member.name,
+      role: member.role,
+      image_url: imageUrl,
+      display_order: member.displayOrder,
+      created_at: createdAt,
+    };
+    const { data, error } = await supabase.from('team_members').insert(row).select().single();
+    if (error) throw error;
+    return {
+      id: data.id,
+      name: data.name,
+      role: data.role,
+      imageUrl: data.image_url,
+      displayOrder: Number(data.display_order || 0),
+      createdAt: Number(data.created_at),
+    };
+  } catch (error) {
+    console.error('Error adding team member in Supabase:', error);
+    return null;
+  }
+}
+
+export async function updateTeamMemberInSupabase(
+  id: string,
+  fields: Partial<TeamMember>
+): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const payload: any = {};
+    if (fields.name !== undefined) payload.name = fields.name;
+    if (fields.role !== undefined) payload.role = fields.role;
+    if (fields.imageUrl !== undefined) payload.image_url = fields.imageUrl;
+    if (fields.displayOrder !== undefined) payload.display_order = fields.displayOrder;
+
+    const { error } = await supabase.from('team_members').update(payload).eq('id', id);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error updating team member in Supabase:', error);
+    return false;
+  }
+}
+
+export async function deleteTeamMemberFromSupabase(id: string): Promise<boolean> {
+  if (!supabase) return false;
+  try {
+    const { error } = await supabase.from('team_members').delete().eq('id', id);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting team member from Supabase:', error);
+    return false;
+  }
 }
 
 export { isSupabaseConfigured };

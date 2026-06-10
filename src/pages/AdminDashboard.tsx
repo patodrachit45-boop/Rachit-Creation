@@ -1,15 +1,15 @@
 import { useState, useRef, useEffect, useCallback, type FormEvent, type DragEvent } from 'react';
 import { useStore, type Product } from '../store';
 import { isSupabaseConfigured } from '../lib/supabaseService';
-import { CATEGORIES, formatPrice } from '../lib/siteConfig';
+import { CATEGORIES, formatPrice, type BlogPost, type TeamMember } from '../lib/siteConfig';
 import {
   Package, Crown, Sparkles, Heart, Gem, Plus, Pencil, Trash2, X,
   Upload, Save, LogOut, LayoutDashboard, Settings, Image, Search,
   Loader2, ShieldCheck, AlertTriangle, Check, ChevronDown,
-  Phone, Mail, MapPin, Clock, Instagram, MessageCircle, FileText,
+  Phone, Mail, MapPin, Clock, Instagram, MessageCircle, FileText, Users,
 } from 'lucide-react';
 
-type Tab = 'overview' | 'products' | 'settings';
+type Tab = 'overview' | 'products' | 'blogs' | 'team' | 'settings';
 type ProductCategory = Product['category'];
 interface Toast { id: number; message: string; type: 'success' | 'error'; }
 let toastCounter = 0;
@@ -30,6 +30,8 @@ function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id
 
 export default function AdminDashboard() {
   const products = useStore((s) => s.products);
+  const blogs = useStore((s) => s.blogs);
+  const teamMembers = useStore((s) => s.teamMembers);
   const siteSettings = useStore((s) => s.siteSettings);
   const isAdmin = useStore((s) => s.isAdmin);
   const adminEmail = useStore((s) => s.adminEmail);
@@ -38,8 +40,16 @@ export default function AdminDashboard() {
   const addProduct = useStore((s) => s.addProduct);
   const updateProduct = useStore((s) => s.updateProduct);
   const deleteProduct = useStore((s) => s.deleteProduct);
+  const addBlogPost = useStore((s) => s.addBlogPost);
+  const updateBlogPost = useStore((s) => s.updateBlogPost);
+  const deleteBlogPost = useStore((s) => s.deleteBlogPost);
+  const addTeamMember = useStore((s) => s.addTeamMember);
+  const updateTeamMember = useStore((s) => s.updateTeamMember);
+  const deleteTeamMember = useStore((s) => s.deleteTeamMember);
   const updateSiteSettings = useStore((s) => s.updateSiteSettings);
   const fetchProducts = useStore((s) => s.fetchProducts);
+  const fetchBlogs = useStore((s) => s.fetchBlogs);
+  const fetchTeamMembers = useStore((s) => s.fetchTeamMembers);
   const fetchSiteSettings = useStore((s) => s.fetchSiteSettings);
   const isLoading = useStore((s) => s.isLoading);
 
@@ -48,7 +58,12 @@ export default function AdminDashboard() {
   const [logoError, setLogoError] = useState(false);
 
   useEffect(() => { setLogoError(false); }, [siteSettings.logoImage]);
-  useEffect(() => { fetchProducts(); fetchSiteSettings(); }, [fetchProducts, fetchSiteSettings]);
+  useEffect(() => { 
+    fetchProducts(); 
+    fetchBlogs();
+    fetchTeamMembers();
+    fetchSiteSettings(); 
+  }, [fetchProducts, fetchBlogs, fetchTeamMembers, fetchSiteSettings]);
 
   const showToast = useCallback((message: string, type: 'success' | 'error' = 'success') => {
     const id = ++toastCounter;
@@ -62,6 +77,8 @@ export default function AdminDashboard() {
   const navItems: { id: Tab; icon: typeof LayoutDashboard; label: string }[] = [
     { id: 'overview', icon: LayoutDashboard, label: 'Overview' },
     { id: 'products', icon: Package, label: 'Products' },
+    { id: 'blogs', icon: FileText, label: 'Blog Posts' },
+    { id: 'team', icon: Users, label: 'Our Team' },
     { id: 'settings', icon: Settings, label: 'Site Settings' },
   ];
 
@@ -112,6 +129,8 @@ export default function AdminDashboard() {
         <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
           {activeTab === 'overview' && <OverviewTab products={products} isLoading={isLoading} />}
           {activeTab === 'products' && <ProductsTab products={products} isLoading={isLoading} onAdd={addProduct} onUpdate={updateProduct} onDelete={deleteProduct} showToast={showToast} />}
+          {activeTab === 'blogs' && <BlogsTab blogs={blogs} onAdd={addBlogPost} onUpdate={updateBlogPost} onDelete={deleteBlogPost} showToast={showToast} />}
+          {activeTab === 'team' && <TeamTab team={teamMembers} onAdd={addTeamMember} onUpdate={updateTeamMember} onDelete={deleteTeamMember} showToast={showToast} />}
           {activeTab === 'settings' && <SettingsTab siteSettings={siteSettings} onUpdate={updateSiteSettings} showToast={showToast} />}
         </div>
       </main>
@@ -380,6 +399,9 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [email, setEmail] = useState(siteSettings.email);
   const [address, setAddress] = useState(siteSettings.address);
   const [googleMapsUrl, setGoogleMapsUrl] = useState(siteSettings.googleMapsUrl);
+  const [facebookPixelId, setFacebookPixelId] = useState(siteSettings.facebookPixelId);
+  const [pinterestUrl, setPinterestUrl] = useState(siteSettings.pinterestUrl);
+  const [twitterUrl, setTwitterUrl] = useState(siteSettings.twitterUrl);
   const [showroomHours, setShowroomHours] = useState(siteSettings.showroomHours);
   const [instagramUrl, setInstagramUrl] = useState(siteSettings.instagramUrl);
   const [aboutText, setAboutText] = useState(siteSettings.aboutText);
@@ -400,6 +422,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   useEffect(() => {
     setWhatsappNumber(siteSettings.whatsappNumber); setPhone(siteSettings.phone); setEmail(siteSettings.email);
     setAddress(siteSettings.address); setGoogleMapsUrl(siteSettings.googleMapsUrl); setShowroomHours(siteSettings.showroomHours); setInstagramUrl(siteSettings.instagramUrl);
+    setFacebookPixelId(siteSettings.facebookPixelId || ''); setPinterestUrl(siteSettings.pinterestUrl || ''); setTwitterUrl(siteSettings.twitterUrl || '');
     setAboutText(siteSettings.aboutText); setHeroImagePreview(siteSettings.heroImage);
     setLogoImagePreview(siteSettings.logoImage); setAboutImagePreview(siteSettings.aboutHeroImage);
     setHeroImageRemoved(false); setLogoImageRemoved(false); setAboutImageRemoved(false);
@@ -418,6 +441,9 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
       email, 
       address, 
       googleMapsUrl,
+      facebookPixelId,
+      pinterestUrl,
+      twitterUrl,
       showroomHours, 
       instagramUrl, 
       aboutText 
@@ -510,12 +536,19 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><MapPin size={12} className="inline mr-1.5" />Address</label><input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className={inputClass} placeholder="Full address" /></div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><MapPin size={12} className="inline mr-1.5" />Google Maps Link (Redirect URL)</label><input type="text" value={googleMapsUrl} onChange={(e) => setGoogleMapsUrl(e.target.value)} className={inputClass} placeholder="https://maps.app.goo.gl/ndARWqQaobT93CUb7" /></div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium"><Clock size={12} className="inline mr-1.5" />Showroom Hours</label><input type="text" value={showroomHours} onChange={(e) => setShowroomHours(e.target.value)} className={inputClass} placeholder="Mon - Sat: 10:00 AM - 8:00 PM" /></div>
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Facebook Pixel ID</label><input type="text" value={facebookPixelId} onChange={(e) => setFacebookPixelId(e.target.value)} className={inputClass} placeholder="e.g. 1234567890" /></div>
           </div>
         </section>
 
         <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-pink-500/10 flex items-center justify-center"><Instagram size={18} className="text-pink-400" /></div><div><h3 className="text-sm font-semibold text-white">Social Media</h3><p className="text-xs text-gray-500">Your social media presence</p></div></div>
-          <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Instagram URL</label><input type="url" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} className={inputClass} placeholder="https://www.instagram.com/rachit__creation/" /></div>
+          <div className="space-y-4">
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Instagram URL</label><input type="url" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} className={inputClass} placeholder="https://www.instagram.com/rachit__creation/" /></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Pinterest URL</label><input type="url" value={pinterestUrl} onChange={(e) => setPinterestUrl(e.target.value)} className={inputClass} placeholder="https://www.pinterest.com/..." /></div>
+              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Twitter (X) URL</label><input type="url" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} className={inputClass} placeholder="https://x.com/..." /></div>
+            </div>
+          </div>
         </section>
 
         <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
@@ -548,6 +581,407 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
           <button type="submit" disabled={loading} className="inline-flex items-center gap-2 bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white px-8 py-3.5 rounded-xl text-sm font-semibold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-[#C5A059]/20">{loading ? <><Loader2 size={16} className="animate-spin" />Saving...</> : <><Save size={16} />Save Settings</>}</button>
         </div>
       </form>
+    </div>
+  );
+}
+
+// ── BLOGS TAB ──────────────────────────────────────────────────────────
+
+interface BlogsTabProps {
+  blogs: BlogPost[];
+  onAdd: (post: Omit<BlogPost, 'id' | 'createdAt'>, imageFile?: File) => Promise<boolean>;
+  onUpdate: (id: string, fields: Partial<BlogPost>, imageFile?: File) => Promise<boolean>;
+  onDelete: (id: string) => Promise<boolean>;
+  showToast: (m: string, t: 'success' | 'error') => void;
+}
+
+function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const [title, setTitle] = useState('');
+  const [excerpt, setExcerpt] = useState('');
+  const [content, setContent] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const openAddModal = () => {
+    setEditingPost(null);
+    setTitle('');
+    setExcerpt('');
+    setContent('');
+    setImageUrl('');
+    setImageFile(null);
+    setImagePreview('');
+    setModalOpen(true);
+  };
+
+  const openEditModal = (post: BlogPost) => {
+    setEditingPost(post);
+    setTitle(post.title);
+    setExcerpt(post.excerpt);
+    setContent(post.content);
+    setImageUrl(post.imageUrl);
+    setImageFile(null);
+    setImagePreview(post.imageUrl);
+    setModalOpen(true);
+  };
+
+  const handleImageUpload = (file: File) => {
+    setImageFile(file);
+    const r = new FileReader();
+    r.onloadend = () => setImagePreview(r.result as string);
+    r.readAsDataURL(file);
+  };
+
+  const handleSave = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!title || !excerpt || !content) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+    setLoading(true);
+
+    const payload = { title, excerpt, content, imageUrl };
+    let success = false;
+
+    if (editingPost) {
+      success = await onUpdate(editingPost.id, payload, imageFile || undefined);
+    } else {
+      success = await onAdd(payload, imageFile || undefined);
+    }
+
+    setLoading(false);
+    if (success) {
+      showToast(editingPost ? 'Blog post updated' : 'Blog post created', 'success');
+      setModalOpen(false);
+    } else {
+      showToast('Failed to save blog post', 'error');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setLoading(true);
+    const success = await onDelete(deleteId);
+    setLoading(false);
+    setDeleteId(null);
+    if (success) {
+      showToast('Blog post deleted', 'success');
+    } else {
+      showToast('Failed to delete blog post', 'error');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-5">
+        <div>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2"><FileText className="text-[#C5A059]" /> Blog Posts</h2>
+          <p className="text-xs text-gray-500">Manage luxury collection stories, fashion trends, and articles</p>
+        </div>
+        <button onClick={openAddModal} className="inline-flex items-center gap-2 bg-[#C5A059] hover:bg-[#b08d47] text-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer"><Plus size={15} /> Add Blog Post</button>
+      </div>
+
+      {blogs.length === 0 ? (
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
+          <FileText className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-white">No Blog Posts Yet</h3>
+          <p className="text-xs text-gray-500 mt-1">Start writing design ideas and bridal fashion guides.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {blogs.map((post) => (
+            <div key={post.id} className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden flex flex-col group">
+              <div className="relative h-48 bg-gray-950 overflow-hidden">
+                <img src={post.imageUrl || '/images/products/regenerated_image_1779296299562.png'} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
+                <div className="absolute top-4 right-4 flex gap-2">
+                  <button onClick={() => openEditModal(post)} className="w-8 h-8 rounded-lg bg-gray-900/90 hover:bg-[#C5A059] text-gray-300 hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer"><Pencil size={14} /></button>
+                  <button onClick={() => setDeleteId(post.id)} className="w-8 h-8 rounded-lg bg-gray-900/90 hover:bg-red-650 text-gray-300 hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer"><Trash2 size={14} /></button>
+                </div>
+                <div className="absolute bottom-4 left-4 bg-gray-900/80 backdrop-blur-sm text-[10px] text-gray-400 px-2.5 py-1 rounded-md">{new Date(post.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}</div>
+              </div>
+              <div className="p-5 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-serif text-lg text-white group-hover:text-[#C5A059] transition-all line-clamp-1">{post.title}</h3>
+                  <p className="text-xs text-gray-400 font-sans mt-2 line-clamp-2 leading-relaxed">{post.excerpt}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add/Edit Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-gray-800">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-white">{editingPost ? 'Edit Blog Post' : 'Add Blog Post'}</h3>
+              <button onClick={() => setModalOpen(false)} className="text-gray-500 hover:text-white transition-all cursor-pointer"><X size={18} /></button>
+            </div>
+            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-5">
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Post Title *</label>
+                <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50" placeholder="e.g. 5 Lehenga Trends for the Wedding Season" />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Short Excerpt *</label>
+                <input type="text" required value={excerpt} onChange={(e) => setExcerpt(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50" placeholder="A brief one-sentence summary of the post..." />
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Featured Image</label>
+                <div onClick={() => fileInputRef.current?.click()} className="relative border-2 border-dashed border-gray-700 rounded-xl overflow-hidden cursor-pointer hover:border-gray-600 transition-all group h-44 flex items-center justify-center bg-gray-850">
+                  {imagePreview ? (
+                    <>
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                        <span className="px-3.5 py-2 bg-white/95 text-gray-900 rounded-xl text-xs font-semibold shadow-lg">Change Image</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-4 text-center">
+                      <Upload size={24} className="mx-auto text-gray-600 mb-1" />
+                      <p className="text-xs text-gray-400">Click to upload cover photo</p>
+                    </div>
+                  )}
+                </div>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Content *</label>
+                <textarea required rows={8} value={content} onChange={(e) => setContent(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50 font-sans resize-none" placeholder="Write your article details here. You can use markdown like ### Headings or bullet points..." />
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-gray-800 justify-end">
+                <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 border border-gray-700 hover:bg-gray-800 text-gray-300 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer">Cancel</button>
+                <button type="submit" disabled={loading} className="px-5 py-2.5 bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer">{loading ? <><Loader2 size={12} className="animate-spin" />Saving...</> : 'Save Post'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation */}
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
+            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+            <h3 className="font-serif text-lg text-white">Delete Blog Post?</h3>
+            <p className="text-xs text-gray-400 mt-2">Are you sure you want to permanently delete this article? This action cannot be undone.</p>
+            <div className="flex gap-3 mt-6 justify-center">
+              <button onClick={() => setDeleteId(null)} className="px-4 py-2 border border-gray-700 text-gray-300 hover:bg-gray-850 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer">Cancel</button>
+              <button onClick={handleDelete} disabled={loading} className="px-4 py-2 bg-red-650 hover:bg-red-550 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center gap-1 cursor-pointer">{loading ? 'Deleting...' : 'Delete'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── TEAM TAB ───────────────────────────────────────────────────────────
+
+interface TeamTabProps {
+  team: TeamMember[];
+  onAdd: (member: Omit<TeamMember, 'id' | 'createdAt'>, imageFile?: File) => Promise<boolean>;
+  onUpdate: (id: string, fields: Partial<TeamMember>, imageFile?: File) => Promise<boolean>;
+  onDelete: (id: string) => Promise<boolean>;
+  showToast: (m: string, t: 'success' | 'error') => void;
+}
+
+function TeamTab({ team, onAdd, onUpdate, onDelete, showToast }: TeamTabProps) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const [name, setName] = useState('');
+  const [role, setRole] = useState('');
+  const [displayOrder, setDisplayOrder] = useState(0);
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const openAddModal = () => {
+    setEditingMember(null);
+    setName('');
+    setRole('');
+    setDisplayOrder(team.length + 1);
+    setImageUrl('');
+    setImageFile(null);
+    setImagePreview('');
+    setModalOpen(true);
+  };
+
+  const openEditModal = (member: TeamMember) => {
+    setEditingMember(member);
+    setName(member.name);
+    setRole(member.role);
+    setDisplayOrder(member.displayOrder);
+    setImageUrl(member.imageUrl);
+    setImageFile(null);
+    setImagePreview(member.imageUrl);
+    setModalOpen(true);
+  };
+
+  const handleImageUpload = (file: File) => {
+    setImageFile(file);
+    const r = new FileReader();
+    r.onloadend = () => setImagePreview(r.result as string);
+    r.readAsDataURL(file);
+  };
+
+  const handleSave = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!name || !role) {
+      showToast('Please fill in all required fields', 'error');
+      return;
+    }
+    setLoading(true);
+
+    const payload = { name, role, displayOrder: Number(displayOrder), imageUrl };
+    let success = false;
+
+    if (editingMember) {
+      success = await onUpdate(editingMember.id, payload, imageFile || undefined);
+    } else {
+      success = await onAdd(payload, imageFile || undefined);
+    }
+
+    setLoading(false);
+    if (success) {
+      showToast(editingMember ? 'Team member updated' : 'Team member added', 'success');
+      setModalOpen(false);
+    } else {
+      showToast('Failed to save team member', 'error');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setLoading(true);
+    const success = await onDelete(deleteId);
+    setLoading(false);
+    setDeleteId(null);
+    if (success) {
+      showToast('Team member deleted', 'success');
+    } else {
+      showToast('Failed to delete team member', 'error');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-5">
+        <div>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2"><Users className="text-[#C5A059]" /> Our Team</h2>
+          <p className="text-xs text-gray-500">Manage designers, master artisans, and showroom directors</p>
+        </div>
+        <button onClick={openAddModal} className="inline-flex items-center gap-2 bg-[#C5A059] hover:bg-[#b08d47] text-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer"><Plus size={15} /> Add Team Member</button>
+      </div>
+
+      {team.length === 0 ? (
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
+          <Users className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-white">No Team Members Yet</h3>
+          <p className="text-xs text-gray-500 mt-1">Add profiles of designers and master artisans.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {team.map((member) => (
+            <div key={member.id} className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden p-5 flex flex-col items-center text-center group relative">
+              <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => openEditModal(member)} className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-[#C5A059] text-gray-300 hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer"><Pencil size={12} /></button>
+                <button onClick={() => setDeleteId(member.id)} className="w-7 h-7 rounded-lg bg-gray-800 hover:bg-red-650 text-gray-300 hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer"><Trash2 size={12} /></button>
+              </div>
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-800 border border-gray-700 mb-4 flex items-center justify-center shadow-inner">
+                {member.imageUrl ? (
+                  <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-[#C5A059] text-2xl font-bold uppercase">{member.name.charAt(0)}</span>
+                )}
+              </div>
+              <h3 className="font-serif text-white text-base font-semibold">{member.name}</h3>
+              <p className="text-xs text-[#C5A059] font-sans mt-0.5">{member.role}</p>
+              <div className="mt-3 bg-gray-800 text-[10px] text-gray-400 px-2 py-0.5 rounded-full font-sans">Order: {member.displayOrder}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add/Edit Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-md w-full flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-gray-800">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-white">{editingMember ? 'Edit Team Member' : 'Add Team Member'}</h3>
+              <button onClick={() => setModalOpen(false)} className="text-gray-500 hover:text-white transition-all cursor-pointer"><X size={18} /></button>
+            </div>
+            <form onSubmit={handleSave} className="p-6 space-y-5">
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Full Name *</label>
+                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none" placeholder="e.g. Master Ramesh" />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Role/Designation *</label>
+                <input type="text" required value={role} onChange={(e) => setRole(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none" placeholder="e.g. Lead Embroiderer" />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Display Order</label>
+                <input type="number" value={displayOrder} onChange={(e) => setDisplayOrder(Number(e.target.value))} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none" placeholder="e.g. 1" />
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Photo</label>
+                <div onClick={() => fileInputRef.current?.click()} className="relative border-2 border-dashed border-gray-700 rounded-xl overflow-hidden cursor-pointer hover:border-gray-600 transition-all group h-36 flex items-center justify-center bg-gray-850">
+                  {imagePreview ? (
+                    <>
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+                        <span className="px-3 py-1.5 bg-white/95 text-gray-900 rounded-lg text-xs font-semibold shadow-lg">Change Photo</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="p-4 text-center">
+                      <Upload size={20} className="mx-auto text-gray-600 mb-1" />
+                      <p className="text-xs text-gray-400">Click to upload photo</p>
+                    </div>
+                  )}
+                </div>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-gray-800 justify-end">
+                <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 border border-gray-700 hover:bg-gray-800 text-gray-300 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer">Cancel</button>
+                <button type="submit" disabled={loading} className="px-5 py-2.5 bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer">{loading ? <><Loader2 size={12} className="animate-spin" />Saving...</> : 'Save Member'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation */}
+      {deleteId && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
+            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+            <h3 className="font-serif text-lg text-white">Remove Team Member?</h3>
+            <p className="text-xs text-gray-400 mt-2">Are you sure you want to remove this team member? This action cannot be undone.</p>
+            <div className="flex gap-3 mt-6 justify-center">
+              <button onClick={() => setDeleteId(null)} className="px-4 py-2 border border-gray-700 text-gray-300 hover:bg-gray-850 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer">Cancel</button>
+              <button onClick={handleDelete} disabled={loading} className="px-4 py-2 bg-red-650 hover:bg-red-550 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center gap-1 cursor-pointer">{loading ? 'Removing...' : 'Remove'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

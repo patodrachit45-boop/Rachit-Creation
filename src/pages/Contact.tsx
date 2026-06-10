@@ -1,10 +1,30 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { getWhatsAppLink } from '../lib/siteConfig';
-import { MapPin, Phone, Mail, Clock, Send, MessageCircle } from 'lucide-react';
-import { motion } from 'motion/react';
+import { MapPin, Phone, Mail, Clock, Send, MessageCircle, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { injectJSONLD, removeJSONLD, getFAQSchema } from '../lib/seoService';
 
 const PRODUCT_INTERESTS = ['Bridal Lehenga', 'Designer Lehenga', 'Girlish Lehenga', 'Heavy Lehenga', 'Custom Design', 'Other'];
+
+const FAQS = [
+  {
+    q: "Do you offer customization on lehengas?",
+    a: "Yes! At Rachit Creation, we specialize in high-end customization. We can modify color schemes, embroidery density, sleeve lengths, neckline cuts, and blouse sizes to fit your specific requests."
+  },
+  {
+    q: "How long does it take to deliver a custom bridal lehenga?",
+    a: "Custom bridal lehengas take approximately 4 to 8 weeks to craft, depending on the complexity of the hand embroidery (Zari, Zardozi, and hand stone work). We recommend placing orders well in advance of your wedding date."
+  },
+  {
+    q: "Do you ship worldwide?",
+    a: "Yes, we ship our luxury lehengas internationally to the US, UK, Canada, Australia, UAE, and other global destinations with trusted express shipping partners."
+  },
+  {
+    q: "Where is your showroom located in Surat?",
+    a: "Our physical showroom is located at Millennium Textile Market, Ring Road, Surat, Gujarat, India. You can find detailed directions using the Google Maps section below."
+  }
+];
 
 export default function Contact() {
   const { siteSettings } = useStore();
@@ -13,6 +33,13 @@ export default function Contact() {
   const [city, setCity] = useState('');
   const [interest, setInterest] = useState('');
   const [message, setMessage] = useState('');
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+
+  useEffect(() => {
+    const schema = getFAQSchema(FAQS);
+    injectJSONLD('faq-schema', schema);
+    return () => removeJSONLD('faq-schema');
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +92,66 @@ export default function Contact() {
               </form>
             </div>
           </motion.div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 md:pb-20">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          viewport={{ once: true }} 
+          transition={{ duration: 0.5 }}
+          className="text-center mb-10"
+        >
+          <h2 className="font-serif text-2xl md:text-3xl text-[#3D3D3D] mb-2">Frequently Asked Questions</h2>
+          <p className="text-[#3D3D3D]/50 text-sm font-sans max-w-md mx-auto">Common questions regarding our customizations, orders, and showroom location.</p>
+        </motion.div>
+
+        <div className="space-y-4">
+          {FAQS.map((faq, idx) => {
+            const isOpen = activeFaq === idx;
+            return (
+              <motion.div 
+                key={idx}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: idx * 0.05 }}
+                className="bg-white rounded-xl border border-[#C5A059]/10 shadow-sm overflow-hidden"
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveFaq(isOpen ? null : idx)}
+                  className="w-full flex items-center justify-between gap-4 p-5 text-left font-serif text-base md:text-lg text-[#3D3D3D] hover:bg-[#FCEEE9]/10 transition-colors cursor-pointer focus:outline-none"
+                >
+                  <span>{faq.q}</span>
+                  <motion.div
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="text-[#C5A059]"
+                  >
+                    <ChevronDown className="w-5 h-5" />
+                  </motion.div>
+                </button>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="border-t border-[#C5A059]/5 bg-[#FCEEE9]/5"
+                    >
+                      <div className="p-5 font-sans text-sm text-[#3D3D3D]/70 leading-relaxed">
+                        {faq.a}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 

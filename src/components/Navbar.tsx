@@ -48,6 +48,7 @@ export default function Navbar() {
               </div>
             </div>
             <Link to="/about" className="hover:text-[#C5A059] transition-colors">The Story</Link>
+            <Link to="/blog" className="hover:text-[#C5A059] transition-colors">Journal</Link>
             <Link to="/contact" className="hover:text-[#C5A059] transition-colors">Contact</Link>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
@@ -83,6 +84,7 @@ export default function Navbar() {
             </div>
             <div className="w-full h-px bg-gray-100 my-2" />
             <Link to="/about" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">The Story</Link>
+            <Link to="/blog" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">Journal</Link>
             <Link to="/contact" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">Contact</Link>
             <Link to="/wishlist" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059] flex items-center gap-3">
               <Heart className="w-4 h-4" /> Wishlist {wishlistCount > 0 && <span className="bg-[#C5A059] text-white text-[9px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{wishlistCount}</span>}
