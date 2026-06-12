@@ -89,30 +89,30 @@ export default function ProductDetail() {
 
             {/* Atelier Quick Facts (GEO / Structured Retrieval Grid) */}
             <div className="mt-8 border border-[#C5A059]/15 rounded-2xl bg-white p-5 shadow-sm">
-              <h3 className="font-serif text-xs text-[#3D3D3D] mb-4 font-semibold tracking-wider uppercase text-center border-b border-[#C5A059]/10 pb-2">Atelier Quick Facts</h3>
+              <h3 className="font-serif text-xs text-[#3D3D3D] mb-4 font-semibold tracking-wider uppercase text-center border-b border-[#C5A059]/10 pb-2">{siteSettings?.quickFactsTitle || 'Atelier Quick Facts'}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs font-sans">
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
                   <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Category</span>
                   <span className="text-[#3D3D3D] font-medium">{product.category} Lehenga</span>
                 </div>
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
-                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Crafting Time</span>
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">{siteSettings?.labelCraftingTime || 'Crafting Time'}</span>
                   <span className="text-[#3D3D3D] font-medium">{product.craftingTime || siteSettings?.defaultCraftingTime || '4 - 8 Weeks'}</span>
                 </div>
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
-                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Origin</span>
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">{siteSettings?.labelOrigin || 'Origin'}</span>
                   <span className="text-[#3D3D3D] font-medium">{product.origin || siteSettings?.defaultOrigin || 'Surat, Gujarat, India'}</span>
                 </div>
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
-                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Customization</span>
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">{siteSettings?.labelCustomization || 'Customization'}</span>
                   <span className="text-[#C5A059] font-semibold">{product.customization || siteSettings?.defaultCustomization || 'Available on Request'}</span>
                 </div>
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2 sm:border-0 sm:pb-0">
-                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Embroidery Handwork</span>
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">{siteSettings?.labelEmbroidery || 'Embroidery Handwork'}</span>
                   <span className="text-[#3D3D3D] font-medium truncate max-w-[150px]" title={product.embroidery || siteSettings?.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones'}>{product.embroidery || siteSettings?.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones'}</span>
                 </div>
                 <div className="flex justify-between pb-0">
-                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Shipping</span>
+                  <span className="text-[#3D3D3D]/50 uppercase tracking-wider">{siteSettings?.labelShipping || 'Shipping'}</span>
                   <span className="text-[#3D3D3D] font-medium">{product.shipping || siteSettings?.defaultShipping || 'Worldwide Express Delivery'}</span>
                 </div>
               </div>

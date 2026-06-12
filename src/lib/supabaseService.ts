@@ -100,6 +100,12 @@ export interface ExtraData {
   defaultCustomization?: string;
   defaultEmbroidery?: string;
   defaultShipping?: string;
+  quickFactsTitle?: string;
+  labelCraftingTime?: string;
+  labelOrigin?: string;
+  labelCustomization?: string;
+  labelEmbroidery?: string;
+  labelShipping?: string;
 }
 
 export function parseAboutText(dbAboutText: string): { aboutText: string; extraData: ExtraData } {
@@ -145,6 +151,12 @@ function dbToSettings(row: any): SiteSettings {
     defaultCustomization: extraData.defaultCustomization || 'Available on Request',
     defaultEmbroidery: extraData.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones',
     defaultShipping: extraData.defaultShipping || 'Worldwide Express Delivery',
+    quickFactsTitle: extraData.quickFactsTitle || 'Atelier Quick Facts',
+    labelCraftingTime: extraData.labelCraftingTime || 'Crafting Time',
+    labelOrigin: extraData.labelOrigin || 'Origin',
+    labelCustomization: extraData.labelCustomization || 'Customization',
+    labelEmbroidery: extraData.labelEmbroidery || 'Embroidery Handwork',
+    labelShipping: extraData.labelShipping || 'Shipping',
   };
 
   // Fallback for logo if column doesn't exist or is empty
@@ -446,6 +458,12 @@ export async function updateSiteSettingsInSupabase(
   if (settings.defaultCustomization !== undefined) existingExtra.defaultCustomization = settings.defaultCustomization;
   if (settings.defaultEmbroidery !== undefined) existingExtra.defaultEmbroidery = settings.defaultEmbroidery;
   if (settings.defaultShipping !== undefined) existingExtra.defaultShipping = settings.defaultShipping;
+  if (settings.quickFactsTitle !== undefined) existingExtra.quickFactsTitle = settings.quickFactsTitle;
+  if (settings.labelCraftingTime !== undefined) existingExtra.labelCraftingTime = settings.labelCraftingTime;
+  if (settings.labelOrigin !== undefined) existingExtra.labelOrigin = settings.labelOrigin;
+  if (settings.labelCustomization !== undefined) existingExtra.labelCustomization = settings.labelCustomization;
+  if (settings.labelEmbroidery !== undefined) existingExtra.labelEmbroidery = settings.labelEmbroidery;
+  if (settings.labelShipping !== undefined) existingExtra.labelShipping = settings.labelShipping;
 
   if (settings.aboutText !== undefined) {
     aboutTextVal = settings.aboutText;

@@ -30,6 +30,12 @@ export interface SiteSettings {
   defaultCustomization?: string;
   defaultEmbroidery?: string;
   defaultShipping?: string;
+  quickFactsTitle?: string;
+  labelCraftingTime?: string;
+  labelOrigin?: string;
+  labelCustomization?: string;
+  labelEmbroidery?: string;
+  labelShipping?: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -56,6 +62,12 @@ From opulent bridal ensembles to contemporary designer pieces, our collections a
   defaultCustomization: 'Available on Request',
   defaultEmbroidery: 'Zari, Zardozi, Resham & Stones',
   defaultShipping: 'Worldwide Express Delivery',
+  quickFactsTitle: 'Atelier Quick Facts',
+  labelCraftingTime: 'Crafting Time',
+  labelOrigin: 'Origin',
+  labelCustomization: 'Customization',
+  labelEmbroidery: 'Embroidery Handwork',
+  labelShipping: 'Shipping',
 };
 
 // ── Blogs ─────────────────────────────────────────────────────────────

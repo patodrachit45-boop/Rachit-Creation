@@ -545,26 +545,26 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
           <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Description</label><textarea required rows={3} value={description} onChange={(e) => setDescription(e.target.value)} className={`${inputClass} resize-none`} placeholder="Describe the product..." /></div>
           
           <div className="border-t border-gray-800 pt-5 space-y-4">
-            <h3 className="text-xs uppercase tracking-widest text-[#C5A059] font-semibold">Atelier Quick Facts (SEO / GEO)</h3>
+            <h3 className="text-xs uppercase tracking-widest text-[#C5A059] font-semibold">{siteSettings?.quickFactsTitle || 'Atelier Quick Facts'} (SEO / GEO)</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-gray-400 mb-1.5 font-medium">Crafting Time</label>
+                <label className="block text-xs text-gray-400 mb-1.5 font-medium">{siteSettings?.labelCraftingTime || 'Crafting Time'}</label>
                 <input type="text" value={craftingTime} onChange={(e) => setCraftingTime(e.target.value)} className={inputClass} placeholder="e.g., 4 - 8 Weeks" />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1.5 font-medium">Origin</label>
+                <label className="block text-xs text-gray-400 mb-1.5 font-medium">{siteSettings?.labelOrigin || 'Origin'}</label>
                 <input type="text" value={origin} onChange={(e) => setOrigin(e.target.value)} className={inputClass} placeholder="e.g., Surat, Gujarat, India" />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1.5 font-medium">Customization</label>
+                <label className="block text-xs text-gray-400 mb-1.5 font-medium">{siteSettings?.labelCustomization || 'Customization'}</label>
                 <input type="text" value={customization} onChange={(e) => setCustomization(e.target.value)} className={inputClass} placeholder="e.g., Available on Request" />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1.5 font-medium">Embroidery Handwork</label>
+                <label className="block text-xs text-gray-400 mb-1.5 font-medium">{siteSettings?.labelEmbroidery || 'Embroidery Handwork'}</label>
                 <input type="text" value={embroidery} onChange={(e) => setEmbroidery(e.target.value)} className={inputClass} placeholder="e.g., Zari, Zardozi, Resham & Stones" />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs text-gray-400 mb-1.5 font-medium">Shipping</label>
+                <label className="block text-xs text-gray-400 mb-1.5 font-medium">{siteSettings?.labelShipping || 'Shipping'}</label>
                 <input type="text" value={shipping} onChange={(e) => setShipping(e.target.value)} className={inputClass} placeholder="e.g., Worldwide Express Delivery" />
               </div>
             </div>
@@ -607,6 +607,12 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [defaultCustomization, setDefaultCustomization] = useState(siteSettings.defaultCustomization || 'Available on Request');
   const [defaultEmbroidery, setDefaultEmbroidery] = useState(siteSettings.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones');
   const [defaultShipping, setDefaultShipping] = useState(siteSettings.defaultShipping || 'Worldwide Express Delivery');
+  const [quickFactsTitle, setQuickFactsTitle] = useState(siteSettings.quickFactsTitle || 'Atelier Quick Facts');
+  const [labelCraftingTime, setLabelCraftingTime] = useState(siteSettings.labelCraftingTime || 'Crafting Time');
+  const [labelOrigin, setLabelOrigin] = useState(siteSettings.labelOrigin || 'Origin');
+  const [labelCustomization, setLabelCustomization] = useState(siteSettings.labelCustomization || 'Customization');
+  const [labelEmbroidery, setLabelEmbroidery] = useState(siteSettings.labelEmbroidery || 'Embroidery Handwork');
+  const [labelShipping, setLabelShipping] = useState(siteSettings.labelShipping || 'Shipping');
 
   const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
   const [heroImagePreview, setHeroImagePreview] = useState(siteSettings.heroImage);
@@ -632,6 +638,12 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     setDefaultCustomization(siteSettings.defaultCustomization || 'Available on Request');
     setDefaultEmbroidery(siteSettings.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones');
     setDefaultShipping(siteSettings.defaultShipping || 'Worldwide Express Delivery');
+    setQuickFactsTitle(siteSettings.quickFactsTitle || 'Atelier Quick Facts');
+    setLabelCraftingTime(siteSettings.labelCraftingTime || 'Crafting Time');
+    setLabelOrigin(siteSettings.labelOrigin || 'Origin');
+    setLabelCustomization(siteSettings.labelCustomization || 'Customization');
+    setLabelEmbroidery(siteSettings.labelEmbroidery || 'Embroidery Handwork');
+    setLabelShipping(siteSettings.labelShipping || 'Shipping');
     setHeroImageRemoved(false); setLogoImageRemoved(false); setAboutImageRemoved(false);
   }, [siteSettings]);
 
@@ -658,7 +670,13 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
       defaultOrigin,
       defaultCustomization,
       defaultEmbroidery,
-      defaultShipping
+      defaultShipping,
+      quickFactsTitle,
+      labelCraftingTime,
+      labelOrigin,
+      labelCustomization,
+      labelEmbroidery,
+      labelShipping
     };
 
     if (heroImageRemoved) settingsPayload.heroImage = '';
@@ -764,17 +782,69 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
         </section>
 
         <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-          <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><Gem size={18} className="text-[#C5A059]" /></div><div><h3 className="text-sm font-semibold text-white">Atelier Quick Facts Defaults</h3><p className="text-xs text-gray-500">Default fallback specifications for product details page</p></div></div>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Crafting Time</label><input type="text" value={defaultCraftingTime} onChange={(e) => setDefaultCraftingTime(e.target.value)} className={inputClass} placeholder="e.g., 4 - 8 Weeks" /></div>
-              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Origin</label><input type="text" value={defaultOrigin} onChange={(e) => setDefaultOrigin(e.target.value)} className={inputClass} placeholder="e.g., Surat, Gujarat, India" /></div>
+          <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><Gem size={18} className="text-[#C5A059]" /></div><div><h3 className="text-sm font-semibold text-white">Atelier Quick Facts Customization</h3><p className="text-xs text-gray-500">Customize the Quick Facts section title, field names, and default fallback values</p></div></div>
+          <div className="space-y-5">
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Quick Facts Section Title</label>
+              <input type="text" value={quickFactsTitle} onChange={(e) => setQuickFactsTitle(e.target.value)} className={inputClass} placeholder="e.g., Atelier Quick Facts" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Customization</label><input type="text" value={defaultCustomization} onChange={(e) => setDefaultCustomization(e.target.value)} className={inputClass} placeholder="e.g., Available on Request" /></div>
-              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Embroidery Handwork</label><input type="text" value={defaultEmbroidery} onChange={(e) => setDefaultEmbroidery(e.target.value)} className={inputClass} placeholder="e.g., Zari, Zardozi, Resham & Stones" /></div>
+            
+            <div className="border-t border-gray-800/80 pt-4 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Crafting Time Field Label</label>
+                  <input type="text" value={labelCraftingTime} onChange={(e) => setLabelCraftingTime(e.target.value)} className={inputClass} placeholder="Crafting Time" />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Crafting Time Value</label>
+                  <input type="text" value={defaultCraftingTime} onChange={(e) => setDefaultCraftingTime(e.target.value)} className={inputClass} placeholder="e.g., 4 - 8 Weeks" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Origin Field Label</label>
+                  <input type="text" value={labelOrigin} onChange={(e) => setLabelOrigin(e.target.value)} className={inputClass} placeholder="Origin" />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Origin Value</label>
+                  <input type="text" value={defaultOrigin} onChange={(e) => setDefaultOrigin(e.target.value)} className={inputClass} placeholder="e.g., Surat, Gujarat, India" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Customization Field Label</label>
+                  <input type="text" value={labelCustomization} onChange={(e) => setLabelCustomization(e.target.value)} className={inputClass} placeholder="Customization" />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Customization Value</label>
+                  <input type="text" value={defaultCustomization} onChange={(e) => setDefaultCustomization(e.target.value)} className={inputClass} placeholder="e.g., Available on Request" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Embroidery Field Label</label>
+                  <input type="text" value={labelEmbroidery} onChange={(e) => setLabelEmbroidery(e.target.value)} className={inputClass} placeholder="Embroidery Handwork" />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Embroidery Value</label>
+                  <input type="text" value={defaultEmbroidery} onChange={(e) => setDefaultEmbroidery(e.target.value)} className={inputClass} placeholder="e.g., Zari, Zardozi, Resham & Stones" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Shipping Field Label</label>
+                  <input type="text" value={labelShipping} onChange={(e) => setLabelShipping(e.target.value)} className={inputClass} placeholder="Shipping" />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Shipping Value</label>
+                  <input type="text" value={defaultShipping} onChange={(e) => setDefaultShipping(e.target.value)} className={inputClass} placeholder="e.g., Worldwide Express Delivery" />
+                </div>
+              </div>
             </div>
-            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Shipping</label><input type="text" value={defaultShipping} onChange={(e) => setDefaultShipping(e.target.value)} className={inputClass} placeholder="e.g., Worldwide Express Delivery" /></div>
           </div>
         </section>
 
