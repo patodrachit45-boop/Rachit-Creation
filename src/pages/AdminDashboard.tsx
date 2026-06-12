@@ -482,6 +482,11 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
   const [description, setDescription] = useState(product?.description || '');
   const [highlights, setHighlights] = useState(product?.highlights || '');
   const [isSoldOut, setIsSoldOut] = useState(product?.isSoldOut || false);
+  const [craftingTime, setCraftingTime] = useState(product?.craftingTime || '4 - 8 Weeks');
+  const [origin, setOrigin] = useState(product?.origin || 'Surat, Gujarat, India');
+  const [customization, setCustomization] = useState(product?.customization || 'Available on Request');
+  const [embroidery, setEmbroidery] = useState(product?.embroidery || 'Zari, Zardozi, Resham & Stones');
+  const [shipping, setShipping] = useState(product?.shipping || 'Worldwide Express Delivery');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(product?.imageUrl || '');
   const [loading, setLoading] = useState(false);
@@ -494,8 +499,8 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
     e.preventDefault(); setLoading(true);
     try {
       const success = isEditing && product
-        ? await onUpdate(product.id, { name, category, price, description, highlights, isSoldOut, imageUrl: product.imageUrl }, imageFile || undefined)
-        : await onAdd({ name, category, price, description, highlights, isSoldOut, imageUrl: imagePreview }, imageFile || undefined);
+        ? await onUpdate(product.id, { name, category, price, description, highlights, isSoldOut, imageUrl: product.imageUrl, craftingTime, origin, customization, embroidery, shipping }, imageFile || undefined)
+        : await onAdd({ name, category, price, description, highlights, isSoldOut, imageUrl: imagePreview, craftingTime, origin, customization, embroidery, shipping }, imageFile || undefined);
       showToast(success ? `"${name}" ${isEditing ? 'updated' : 'added'}` : `Failed to ${isEditing ? 'update' : 'add'}`, success ? 'success' : 'error');
       if (success) onClose();
     } catch { showToast('An error occurred', 'error'); }
@@ -537,6 +542,33 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
             </label>
           </div>
           <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Description</label><textarea required rows={3} value={description} onChange={(e) => setDescription(e.target.value)} className={`${inputClass} resize-none`} placeholder="Describe the product..." /></div>
+          
+          <div className="border-t border-gray-800 pt-5 space-y-4">
+            <h3 className="text-xs uppercase tracking-widest text-[#C5A059] font-semibold">Atelier Quick Facts (SEO / GEO)</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5 font-medium">Crafting Time</label>
+                <input type="text" value={craftingTime} onChange={(e) => setCraftingTime(e.target.value)} className={inputClass} placeholder="e.g., 4 - 8 Weeks" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5 font-medium">Origin</label>
+                <input type="text" value={origin} onChange={(e) => setOrigin(e.target.value)} className={inputClass} placeholder="e.g., Surat, Gujarat, India" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5 font-medium">Customization</label>
+                <input type="text" value={customization} onChange={(e) => setCustomization(e.target.value)} className={inputClass} placeholder="e.g., Available on Request" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1.5 font-medium">Embroidery Handwork</label>
+                <input type="text" value={embroidery} onChange={(e) => setEmbroidery(e.target.value)} className={inputClass} placeholder="e.g., Zari, Zardozi, Resham & Stones" />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs text-gray-400 mb-1.5 font-medium">Shipping</label>
+                <input type="text" value={shipping} onChange={(e) => setShipping(e.target.value)} className={inputClass} placeholder="e.g., Worldwide Express Delivery" />
+              </div>
+            </div>
+          </div>
+
           <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Highlights <span className="normal-case tracking-normal text-gray-600">(optional)</span></label><textarea rows={3} value={highlights} onChange={(e) => setHighlights(e.target.value)} className={`${inputClass} resize-none`} placeholder="Enter highlights separated by newlines..." /></div>
           <div className="flex gap-3 pt-3">
             <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-gray-800 text-gray-300 text-sm font-medium hover:bg-gray-700 transition-colors">Cancel</button>

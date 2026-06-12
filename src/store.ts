@@ -60,6 +60,13 @@ export interface Product {
   highlights?: string;
   createdAt?: number;
   isSoldOut?: boolean;
+  
+  // Atelier Quick Facts (GEO / Search Optimization)
+  craftingTime?: string;
+  origin?: string;
+  customization?: string;
+  embroidery?: string;
+  shipping?: string;
 }
 
 interface StoreState {

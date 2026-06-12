@@ -16,11 +16,35 @@ import type { SiteSettings, BlogPost, TeamMember, FAQ } from './siteConfig';
 
 // ── Helpers: DB ↔ TypeScript mapping ──────────────────────────────────
 
+export function parseProductDescription(dbDescription: string): { description: string; extraData: any } {
+  if (!dbDescription) return { description: '', extraData: {} };
+  const separator = '|||JSON_DATA|||';
+  const parts = dbDescription.split(separator);
+  const description = parts[0].trim();
+  let extraData: any = {};
+  if (parts.length > 1) {
+    try {
+      extraData = JSON.parse(parts[1].trim());
+    } catch (e) {
+      console.error('Failed to parse extra JSON data from product description:', e);
+    }
+  }
+  return { description, extraData };
+}
+
+export function buildProductDescription(description: string, extraData: any): string {
+  const separator = '|||JSON_DATA|||';
+  const cleanDesc = (description || '').split(separator)[0].trim();
+  if (Object.keys(extraData || {}).length === 0) return cleanDesc;
+  return `${cleanDesc}\n\n${separator}\n${JSON.stringify(extraData)}`;
+}
+
 function dbToProduct(row: any): Product {
+  const { description, extraData } = parseProductDescription(row.description || '');
   return {
     id: row.id,
     name: row.name,
-    description: row.description,
+    description: description,
     price: row.price,
     category: row.category,
     imageUrl: row.image_url,
@@ -28,13 +52,29 @@ function dbToProduct(row: any): Product {
     highlights: row.highlights || '',
     createdAt: row.created_at,
     isSoldOut: row.is_sold_out || false,
+    craftingTime: extraData.craftingTime || '4 - 8 Weeks',
+    origin: extraData.origin || 'Surat, Gujarat, India',
+    customization: extraData.customization || 'Available on Request',
+    embroidery: extraData.embroidery || 'Zari, Zardozi, Resham & Stones',
+    shipping: extraData.shipping || 'Worldwide Express Delivery',
   };
 }
 
 function productToDb(p: Partial<Product> & { imageUrl?: string }) {
   const obj: any = {};
   if (p.name !== undefined) obj.name = p.name;
-  if (p.description !== undefined) obj.description = p.description;
+  
+  if (p.description !== undefined) {
+    const extraData: any = {};
+    if (p.craftingTime !== undefined) extraData.craftingTime = p.craftingTime;
+    if (p.origin !== undefined) extraData.origin = p.origin;
+    if (p.customization !== undefined) extraData.customization = p.customization;
+    if (p.embroidery !== undefined) extraData.embroidery = p.embroidery;
+    if (p.shipping !== undefined) extraData.shipping = p.shipping;
+    
+    obj.description = buildProductDescription(p.description, extraData);
+  }
+  
   if (p.price !== undefined) obj.price = p.price;
   if (p.category !== undefined) obj.category = p.category;
   if (p.imageUrl !== undefined) obj.image_url = p.imageUrl;
@@ -187,6 +227,47 @@ export async function updateProductInSupabase(
     let updateFields = { ...fields };
     if (imageFile) {
       updateFields.imageUrl = await uploadImageToSupabase(imageFile);
+    }
+
+    // Since quick facts are serialized inside description, if we update any quick fact
+    // OR if we update the description itself, we should make sure we merge it with the
+    // existing description and extra facts in the database to prevent overwriting/losing facts.
+    const hasQuickFacts = 
+      fields.description !== undefined ||
+      fields.craftingTime !== undefined ||
+      fields.origin !== undefined ||
+      fields.customization !== undefined ||
+      fields.embroidery !== undefined ||
+      fields.shipping !== undefined;
+
+    if (hasQuickFacts) {
+      // Fetch current product description from Supabase
+      const { data: current, error: fetchErr } = await supabase
+        .from('products')
+        .select('description')
+        .eq('id', id)
+        .single();
+      
+      if (!fetchErr && current) {
+        const { description: cleanDesc, extraData: currentExtra } = parseProductDescription(current.description || '');
+        
+        // Merge the updates
+        const mergedDesc = fields.description !== undefined ? fields.description : cleanDesc;
+        const mergedExtra = {
+          craftingTime: fields.craftingTime !== undefined ? fields.craftingTime : (currentExtra.craftingTime || '4 - 8 Weeks'),
+          origin: fields.origin !== undefined ? fields.origin : (currentExtra.origin || 'Surat, Gujarat, India'),
+          customization: fields.customization !== undefined ? fields.customization : (currentExtra.customization || 'Available on Request'),
+          embroidery: fields.embroidery !== undefined ? fields.embroidery : (currentExtra.embroidery || 'Zari, Zardozi, Resham & Stones'),
+          shipping: fields.shipping !== undefined ? fields.shipping : (currentExtra.shipping || 'Worldwide Express Delivery'),
+        };
+        
+        updateFields.description = mergedDesc;
+        updateFields.craftingTime = mergedExtra.craftingTime;
+        updateFields.origin = mergedExtra.origin;
+        updateFields.customization = mergedExtra.customization;
+        updateFields.embroidery = mergedExtra.embroidery;
+        updateFields.shipping = mergedExtra.shipping;
+      }
     }
 
     const payload = productToDb(updateFields);
