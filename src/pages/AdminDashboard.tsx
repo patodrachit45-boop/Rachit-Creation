@@ -476,17 +476,18 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
 }) {
   const isEditing = !!product;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const siteSettings = useStore((s) => s.siteSettings);
   const [name, setName] = useState(product?.name || '');
   const [category, setCategory] = useState<ProductCategory>(product?.category || 'Bridal');
   const [price, setPrice] = useState<number>(product?.price || 0);
   const [description, setDescription] = useState(product?.description || '');
   const [highlights, setHighlights] = useState(product?.highlights || '');
   const [isSoldOut, setIsSoldOut] = useState(product?.isSoldOut || false);
-  const [craftingTime, setCraftingTime] = useState(product?.craftingTime || '4 - 8 Weeks');
-  const [origin, setOrigin] = useState(product?.origin || 'Surat, Gujarat, India');
-  const [customization, setCustomization] = useState(product?.customization || 'Available on Request');
-  const [embroidery, setEmbroidery] = useState(product?.embroidery || 'Zari, Zardozi, Resham & Stones');
-  const [shipping, setShipping] = useState(product?.shipping || 'Worldwide Express Delivery');
+  const [craftingTime, setCraftingTime] = useState(product?.craftingTime || siteSettings?.defaultCraftingTime || '4 - 8 Weeks');
+  const [origin, setOrigin] = useState(product?.origin || siteSettings?.defaultOrigin || 'Surat, Gujarat, India');
+  const [customization, setCustomization] = useState(product?.customization || siteSettings?.defaultCustomization || 'Available on Request');
+  const [embroidery, setEmbroidery] = useState(product?.embroidery || siteSettings?.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones');
+  const [shipping, setShipping] = useState(product?.shipping || siteSettings?.defaultShipping || 'Worldwide Express Delivery');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(product?.imageUrl || '');
   const [loading, setLoading] = useState(false);
@@ -601,6 +602,11 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [showroomHours, setShowroomHours] = useState(siteSettings.showroomHours);
   const [instagramUrl, setInstagramUrl] = useState(siteSettings.instagramUrl);
   const [aboutText, setAboutText] = useState(siteSettings.aboutText);
+  const [defaultCraftingTime, setDefaultCraftingTime] = useState(siteSettings.defaultCraftingTime || '4 - 8 Weeks');
+  const [defaultOrigin, setDefaultOrigin] = useState(siteSettings.defaultOrigin || 'Surat, Gujarat, India');
+  const [defaultCustomization, setDefaultCustomization] = useState(siteSettings.defaultCustomization || 'Available on Request');
+  const [defaultEmbroidery, setDefaultEmbroidery] = useState(siteSettings.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones');
+  const [defaultShipping, setDefaultShipping] = useState(siteSettings.defaultShipping || 'Worldwide Express Delivery');
 
   const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
   const [heroImagePreview, setHeroImagePreview] = useState(siteSettings.heroImage);
@@ -621,6 +627,11 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     setFacebookPixelId(siteSettings.facebookPixelId || ''); setPinterestUrl(siteSettings.pinterestUrl || ''); setTwitterUrl(siteSettings.twitterUrl || '');
     setAboutText(siteSettings.aboutText); setHeroImagePreview(siteSettings.heroImage);
     setLogoImagePreview(siteSettings.logoImage); setAboutImagePreview(siteSettings.aboutHeroImage);
+    setDefaultCraftingTime(siteSettings.defaultCraftingTime || '4 - 8 Weeks');
+    setDefaultOrigin(siteSettings.defaultOrigin || 'Surat, Gujarat, India');
+    setDefaultCustomization(siteSettings.defaultCustomization || 'Available on Request');
+    setDefaultEmbroidery(siteSettings.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones');
+    setDefaultShipping(siteSettings.defaultShipping || 'Worldwide Express Delivery');
     setHeroImageRemoved(false); setLogoImageRemoved(false); setAboutImageRemoved(false);
   }, [siteSettings]);
 
@@ -642,7 +653,12 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
       twitterUrl,
       showroomHours, 
       instagramUrl, 
-      aboutText 
+      aboutText,
+      defaultCraftingTime,
+      defaultOrigin,
+      defaultCustomization,
+      defaultEmbroidery,
+      defaultShipping
     };
 
     if (heroImageRemoved) settingsPayload.heroImage = '';
@@ -744,6 +760,21 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
               <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Pinterest URL</label><input type="url" value={pinterestUrl} onChange={(e) => setPinterestUrl(e.target.value)} className={inputClass} placeholder="https://www.pinterest.com/..." /></div>
               <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Twitter (X) URL</label><input type="url" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} className={inputClass} placeholder="https://x.com/..." /></div>
             </div>
+          </div>
+        </section>
+
+        <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><Gem size={18} className="text-[#C5A059]" /></div><div><h3 className="text-sm font-semibold text-white">Atelier Quick Facts Defaults</h3><p className="text-xs text-gray-500">Default fallback specifications for product details page</p></div></div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Crafting Time</label><input type="text" value={defaultCraftingTime} onChange={(e) => setDefaultCraftingTime(e.target.value)} className={inputClass} placeholder="e.g., 4 - 8 Weeks" /></div>
+              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Origin</label><input type="text" value={defaultOrigin} onChange={(e) => setDefaultOrigin(e.target.value)} className={inputClass} placeholder="e.g., Surat, Gujarat, India" /></div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Customization</label><input type="text" value={defaultCustomization} onChange={(e) => setDefaultCustomization(e.target.value)} className={inputClass} placeholder="e.g., Available on Request" /></div>
+              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Embroidery Handwork</label><input type="text" value={defaultEmbroidery} onChange={(e) => setDefaultEmbroidery(e.target.value)} className={inputClass} placeholder="e.g., Zari, Zardozi, Resham & Stones" /></div>
+            </div>
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Default Shipping</label><input type="text" value={defaultShipping} onChange={(e) => setDefaultShipping(e.target.value)} className={inputClass} placeholder="e.g., Worldwide Express Delivery" /></div>
           </div>
         </section>
 

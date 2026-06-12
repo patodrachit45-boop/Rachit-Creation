@@ -25,6 +25,11 @@ export interface SiteSettings {
   facebookPixelId: string;
   pinterestUrl: string;
   twitterUrl: string;
+  defaultCraftingTime?: string;
+  defaultOrigin?: string;
+  defaultCustomization?: string;
+  defaultEmbroidery?: string;
+  defaultShipping?: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -46,6 +51,11 @@ From opulent bridal ensembles to contemporary designer pieces, our collections a
   facebookPixelId: '',
   pinterestUrl: '',
   twitterUrl: '',
+  defaultCraftingTime: '4 - 8 Weeks',
+  defaultOrigin: 'Surat, Gujarat, India',
+  defaultCustomization: 'Available on Request',
+  defaultEmbroidery: 'Zari, Zardozi, Resham & Stones',
+  defaultShipping: 'Worldwide Express Delivery',
 };
 
 // ── Blogs ─────────────────────────────────────────────────────────────

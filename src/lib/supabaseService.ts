@@ -95,6 +95,11 @@ export interface ExtraData {
   blogs?: BlogPost[];
   faqs?: FAQ[];
   teamMembers?: TeamMember[];
+  defaultCraftingTime?: string;
+  defaultOrigin?: string;
+  defaultCustomization?: string;
+  defaultEmbroidery?: string;
+  defaultShipping?: string;
 }
 
 export function parseAboutText(dbAboutText: string): { aboutText: string; extraData: ExtraData } {
@@ -135,6 +140,11 @@ function dbToSettings(row: any): SiteSettings {
     facebookPixelId: extraData.facebookPixelId || row.facebook_pixel_id || '',
     pinterestUrl: extraData.pinterestUrl || row.pinterest_url || '',
     twitterUrl: extraData.twitterUrl || row.twitter_url || '',
+    defaultCraftingTime: extraData.defaultCraftingTime || '4 - 8 Weeks',
+    defaultOrigin: extraData.defaultOrigin || 'Surat, Gujarat, India',
+    defaultCustomization: extraData.defaultCustomization || 'Available on Request',
+    defaultEmbroidery: extraData.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones',
+    defaultShipping: extraData.defaultShipping || 'Worldwide Express Delivery',
   };
 
   // Fallback for logo if column doesn't exist or is empty
@@ -431,6 +441,11 @@ export async function updateSiteSettingsInSupabase(
   if (settings.facebookPixelId !== undefined) existingExtra.facebookPixelId = settings.facebookPixelId;
   if (settings.pinterestUrl !== undefined) existingExtra.pinterestUrl = settings.pinterestUrl;
   if (settings.twitterUrl !== undefined) existingExtra.twitterUrl = settings.twitterUrl;
+  if (settings.defaultCraftingTime !== undefined) existingExtra.defaultCraftingTime = settings.defaultCraftingTime;
+  if (settings.defaultOrigin !== undefined) existingExtra.defaultOrigin = settings.defaultOrigin;
+  if (settings.defaultCustomization !== undefined) existingExtra.defaultCustomization = settings.defaultCustomization;
+  if (settings.defaultEmbroidery !== undefined) existingExtra.defaultEmbroidery = settings.defaultEmbroidery;
+  if (settings.defaultShipping !== undefined) existingExtra.defaultShipping = settings.defaultShipping;
 
   if (settings.aboutText !== undefined) {
     aboutTextVal = settings.aboutText;

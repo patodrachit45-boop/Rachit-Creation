@@ -97,23 +97,23 @@ export default function ProductDetail() {
                 </div>
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
                   <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Crafting Time</span>
-                  <span className="text-[#3D3D3D] font-medium">{product.craftingTime || '4 - 8 Weeks'}</span>
+                  <span className="text-[#3D3D3D] font-medium">{product.craftingTime || siteSettings?.defaultCraftingTime || '4 - 8 Weeks'}</span>
                 </div>
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
                   <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Origin</span>
-                  <span className="text-[#3D3D3D] font-medium">{product.origin || 'Surat, Gujarat, India'}</span>
+                  <span className="text-[#3D3D3D] font-medium">{product.origin || siteSettings?.defaultOrigin || 'Surat, Gujarat, India'}</span>
                 </div>
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
                   <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Customization</span>
-                  <span className="text-[#C5A059] font-semibold">{product.customization || 'Available on Request'}</span>
+                  <span className="text-[#C5A059] font-semibold">{product.customization || siteSettings?.defaultCustomization || 'Available on Request'}</span>
                 </div>
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2 sm:border-0 sm:pb-0">
                   <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Embroidery Handwork</span>
-                  <span className="text-[#3D3D3D] font-medium truncate max-w-[150px]" title={product.embroidery || 'Zari, Zardozi, Resham & Stones'}>{product.embroidery || 'Zari, Zardozi, Resham & Stones'}</span>
+                  <span className="text-[#3D3D3D] font-medium truncate max-w-[150px]" title={product.embroidery || siteSettings?.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones'}>{product.embroidery || siteSettings?.defaultEmbroidery || 'Zari, Zardozi, Resham & Stones'}</span>
                 </div>
                 <div className="flex justify-between pb-0">
                   <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Shipping</span>
-                  <span className="text-[#3D3D3D] font-medium">{product.shipping || 'Worldwide Express Delivery'}</span>
+                  <span className="text-[#3D3D3D] font-medium">{product.shipping || siteSettings?.defaultShipping || 'Worldwide Express Delivery'}</span>
                 </div>
               </div>
             </div>
