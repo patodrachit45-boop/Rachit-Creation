@@ -614,6 +614,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [labelEmbroidery, setLabelEmbroidery] = useState(siteSettings.labelEmbroidery || 'Embroidery Handwork');
   const [labelShipping, setLabelShipping] = useState(siteSettings.labelShipping || 'Shipping');
   const [backlinksText, setBacklinksText] = useState(siteSettings.backlinksText || '');
+  const [facebookUrl, setFacebookUrl] = useState(siteSettings.facebookUrl || '');
 
   const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
   const [heroImagePreview, setHeroImagePreview] = useState(siteSettings.heroImage);
@@ -646,6 +647,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     setLabelEmbroidery(siteSettings.labelEmbroidery || 'Embroidery Handwork');
     setLabelShipping(siteSettings.labelShipping || 'Shipping');
     setBacklinksText(siteSettings.backlinksText || '');
+    setFacebookUrl(siteSettings.facebookUrl || '');
     setHeroImageRemoved(false); setLogoImageRemoved(false); setAboutImageRemoved(false);
   }, [siteSettings]);
 
@@ -679,7 +681,8 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
       labelCustomization,
       labelEmbroidery,
       labelShipping,
-      backlinksText
+      backlinksText,
+      facebookUrl
     };
 
     if (heroImageRemoved) settingsPayload.heroImage = '';
@@ -776,7 +779,10 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
         <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-pink-500/10 flex items-center justify-center"><Instagram size={18} className="text-pink-400" /></div><div><h3 className="text-sm font-semibold text-white">Social Media</h3><p className="text-xs text-gray-500">Your social media presence</p></div></div>
           <div className="space-y-4">
-            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Instagram URL</label><input type="url" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} className={inputClass} placeholder="https://www.instagram.com/rachit__creation/" /></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Instagram URL</label><input type="url" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} className={inputClass} placeholder="https://www.instagram.com/rachit__creation/" /></div>
+              <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Facebook URL</label><input type="url" value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} className={inputClass} placeholder="https://www.facebook.com/..." /></div>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Pinterest URL</label><input type="url" value={pinterestUrl} onChange={(e) => setPinterestUrl(e.target.value)} className={inputClass} placeholder="https://www.pinterest.com/..." /></div>
               <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Twitter (X) URL</label><input type="url" value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} className={inputClass} placeholder="https://x.com/..." /></div>

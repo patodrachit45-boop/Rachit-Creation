@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useStore } from '../store';
 import { getWhatsAppLink } from '../lib/siteConfig';
-import { Instagram, MessageCircle, Mail, Phone, MapPin, Twitter } from 'lucide-react';
+import { Instagram, MessageCircle, Mail, Phone, MapPin, Twitter, Facebook } from 'lucide-react';
 
 const categories = ['Bridal', 'Designer', 'Girlish', 'Heavy'] as const;
 
@@ -68,6 +68,7 @@ export default function Footer() {
             <div className="space-y-4">
               <a href={getWhatsAppLink(siteSettings.whatsappNumber)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-4 py-2.5 bg-[#25D366]/10 border border-[#25D366]/20 rounded-lg text-[#25D366] hover:bg-[#25D366]/20 transition-colors text-sm"><MessageCircle className="w-4 h-4 shrink-0" /><span className="text-xs uppercase tracking-wider font-medium">WhatsApp Us</span></a>
               {siteSettings.instagramUrl && <a href={siteSettings.instagramUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-400 hover:text-[#E1306C] transition-colors"><Instagram className="w-4 h-4" /><span className="text-sm">Instagram</span></a>}
+              {siteSettings.facebookUrl && <a href={siteSettings.facebookUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-400 hover:text-[#1877F2] transition-colors"><Facebook className="w-4 h-4" /><span className="text-sm">Facebook</span></a>}
               {siteSettings.twitterUrl && <a href={siteSettings.twitterUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-400 hover:text-[#1DA1F2] transition-colors"><Twitter className="w-4 h-4" /><span className="text-sm">Twitter (X)</span></a>}
               {siteSettings.pinterestUrl && (
                 <a href={siteSettings.pinterestUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-gray-400 hover:text-[#BD081C] transition-colors">

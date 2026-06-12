@@ -107,6 +107,7 @@ export interface ExtraData {
   labelEmbroidery?: string;
   labelShipping?: string;
   backlinksText?: string;
+  facebookUrl?: string;
 }
 
 export function parseAboutText(dbAboutText: string): { aboutText: string; extraData: ExtraData } {
@@ -159,6 +160,7 @@ function dbToSettings(row: any): SiteSettings {
     labelEmbroidery: extraData.labelEmbroidery || 'Embroidery Handwork',
     labelShipping: extraData.labelShipping || 'Shipping',
     backlinksText: extraData.backlinksText || '',
+    facebookUrl: extraData.facebookUrl || '',
   };
 
   // Fallback for logo if column doesn't exist or is empty
@@ -467,6 +469,7 @@ export async function updateSiteSettingsInSupabase(
   if (settings.labelEmbroidery !== undefined) existingExtra.labelEmbroidery = settings.labelEmbroidery;
   if (settings.labelShipping !== undefined) existingExtra.labelShipping = settings.labelShipping;
   if (settings.backlinksText !== undefined) existingExtra.backlinksText = settings.backlinksText;
+  if (settings.facebookUrl !== undefined) existingExtra.facebookUrl = settings.facebookUrl;
 
   if (settings.aboutText !== undefined) {
     aboutTextVal = settings.aboutText;
