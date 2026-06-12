@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useStore } from '../store';
 import { getWhatsAppLink } from '../lib/siteConfig';
@@ -11,6 +11,20 @@ export default function Footer() {
   const [logoError, setLogoError] = useState(false);
 
   useEffect(() => { setLogoError(false); }, [siteSettings.logoImage]);
+
+  const parsedBacklinks = useMemo(() => {
+    if (!siteSettings.backlinksText) return [];
+    return siteSettings.backlinksText
+      .split('\n')
+      .map((line) => {
+        const parts = line.split('|');
+        if (parts.length >= 2) {
+          return { anchor: parts[0].trim(), url: parts[1].trim() };
+        }
+        return null;
+      })
+      .filter(Boolean) as { anchor: string; url: string }[];
+  }, [siteSettings.backlinksText]);
 
   return (
     <footer className="bg-gray-900 text-gray-300">
@@ -71,9 +85,31 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-gray-500 tracking-wide">&copy; {new Date().getFullYear()} RACHIT CREATION. All rights reserved.</p>
-          <p className="text-xs text-gray-600 tracking-wide">Crafted with <span className="text-[#C5A059]">&hearts;</span> in Surat, India</p>
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col gap-2.5">
+            <p className="text-xs text-gray-500 tracking-wide">
+              &copy; {new Date().getFullYear()}{' '}
+              <a href="https://raccreation.com/" className="hover:text-[#C5A059] transition-colors">
+                RACHIT CREATION
+              </a>
+              . All rights reserved.
+            </p>
+            {parsedBacklinks.length > 0 && (
+              <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-gray-500">
+                {parsedBacklinks.map((link, idx) => (
+                  <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="hover:text-[#C5A059] transition-colors">
+                    {link.anchor}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 tracking-wide md:text-right">
+            Crafted with <span className="text-[#C5A059]">&hearts;</span> in{' '}
+            <a href="https://raccreation.com/" className="hover:text-[#C5A059] transition-colors">
+              Surat, India
+            </a>
+          </p>
         </div>
       </div>
     </footer>

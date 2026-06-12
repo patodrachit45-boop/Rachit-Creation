@@ -36,6 +36,7 @@ export interface SiteSettings {
   labelCustomization?: string;
   labelEmbroidery?: string;
   labelShipping?: string;
+  backlinksText?: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -68,6 +69,7 @@ From opulent bridal ensembles to contemporary designer pieces, our collections a
   labelCustomization: 'Customization',
   labelEmbroidery: 'Embroidery Handwork',
   labelShipping: 'Shipping',
+  backlinksText: 'Rachit Creation | https://raccreation.com/\nBridal Lehengas Surat | https://raccreation.com/category/Bridal\nDesigner Lehengas Surat | https://raccreation.com/category/Designer',
 };
 
 // ── Blogs ─────────────────────────────────────────────────────────────

@@ -613,6 +613,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [labelCustomization, setLabelCustomization] = useState(siteSettings.labelCustomization || 'Customization');
   const [labelEmbroidery, setLabelEmbroidery] = useState(siteSettings.labelEmbroidery || 'Embroidery Handwork');
   const [labelShipping, setLabelShipping] = useState(siteSettings.labelShipping || 'Shipping');
+  const [backlinksText, setBacklinksText] = useState(siteSettings.backlinksText || '');
 
   const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
   const [heroImagePreview, setHeroImagePreview] = useState(siteSettings.heroImage);
@@ -644,6 +645,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     setLabelCustomization(siteSettings.labelCustomization || 'Customization');
     setLabelEmbroidery(siteSettings.labelEmbroidery || 'Embroidery Handwork');
     setLabelShipping(siteSettings.labelShipping || 'Shipping');
+    setBacklinksText(siteSettings.backlinksText || '');
     setHeroImageRemoved(false); setLogoImageRemoved(false); setAboutImageRemoved(false);
   }, [siteSettings]);
 
@@ -676,7 +678,8 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
       labelOrigin,
       labelCustomization,
       labelEmbroidery,
-      labelShipping
+      labelShipping,
+      backlinksText
     };
 
     if (heroImageRemoved) settingsPayload.heroImage = '';
@@ -844,6 +847,17 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
                   <input type="text" value={defaultShipping} onChange={(e) => setDefaultShipping(e.target.value)} className={inputClass} placeholder="e.g., Worldwide Express Delivery" />
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center"><Settings size={18} className="text-[#C5A059]" /></div><div><h3 className="text-sm font-semibold text-white">SEO Backlinks</h3><p className="text-xs text-gray-500">Manage external search engine optimization backlinks in the footer</p></div></div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Backlinks List (one link per line, format: Anchor Text | URL)</label>
+              <textarea rows={4} value={backlinksText} onChange={(e) => setBacklinksText(e.target.value)} className={`${inputClass} resize-none font-mono`} placeholder="e.g.&#10;Rachit Creation | https://raccreation.com/&#10;Bridal Lehengas Surat | https://raccreation.com/category/Bridal" />
+              <p className="text-[10px] text-gray-500 mt-1">Specify high-quality sitewide internal or partner backlinks to render in the footer. Use the format: <code className="text-gray-400">Anchor Text | URL</code> (one per line).</p>
             </div>
           </div>
         </section>
