@@ -64,7 +64,7 @@ export default function ProductDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-14">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="relative">
             <div className="aspect-[3/4] rounded-2xl overflow-hidden shadow-lg bg-white group cursor-zoom-in relative">
-              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" fetchPriority="high" />
               {product.isSoldOut && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
                   <span className="border-2 border-white text-white font-serif text-sm tracking-[0.25em] uppercase px-6 py-3 rounded-sm font-semibold select-none shadow-lg">Sold Out</span>
@@ -139,7 +139,7 @@ export default function ProductDetail() {
                 <motion.div key={rp.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.08 }}>
                   <Link to={`/product/${rp.id}`} className="group block">
                     <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md bg-white">
-                      <img src={rp.imageUrl} alt={rp.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <img src={rp.imageUrl} alt={rp.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
                       {rp.isSoldOut && (
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
                           <span className="border-2 border-white text-white font-serif text-xs tracking-[0.2em] uppercase px-3 py-1.5 rounded-sm font-semibold select-none shadow-lg">Sold Out</span>

@@ -35,6 +35,7 @@ export default function Home() {
             src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} 
             alt="Rachit Creation — Luxury Lehengas" 
             className="absolute inset-0 w-full h-full object-cover" 
+            fetchPriority="high"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
@@ -60,7 +61,7 @@ export default function Home() {
             <motion.div key={cat.name} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}>
               <Link to={`/category/${cat.name}`} className="group block">
                 <motion.div whileHover={{ scale: 1.03 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }} className="relative aspect-[3/4] rounded-2xl overflow-hidden shadow-lg">
-                  <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" decoding="async" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5">
                     <h3 className="font-serif text-white text-xl md:text-2xl">{cat.name}</h3>
@@ -89,7 +90,7 @@ export default function Home() {
                 <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.45, delay: i * 0.07 }} className="min-w-[70vw] sm:min-w-[45vw] md:min-w-0 snap-start">
                   <Link to={`/product/${product.id}`} className="group block">
                     <div className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-md">
-                      <img src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <img src={product.imageUrl} alt={product.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
                       {product.isSoldOut && (
                         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
                           <span className="border-2 border-white text-white font-serif text-xs sm:text-sm tracking-[0.25em] uppercase px-4 py-2 rounded-sm font-semibold select-none shadow-lg">Sold Out</span>

@@ -32,7 +32,7 @@ export default function Wishlist() {
             {wishlistProducts.map((product, i) => (
               <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.06 }} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-[#C5A059]/10 hover:shadow-md transition-shadow">
                 <Link to={`/product/${product.id}`} className="block relative aspect-[3/4] overflow-hidden group">
-                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" />
                   {product.isSoldOut && (
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
                       <span className="border-2 border-white text-white font-serif text-xs sm:text-sm tracking-[0.25em] uppercase px-4 py-2 rounded-sm font-semibold select-none shadow-lg">Sold Out</span>

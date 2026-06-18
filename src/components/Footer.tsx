@@ -33,7 +33,7 @@ export default function Footer() {
           <div className="sm:col-span-2 lg:col-span-1">
             <Link to="/" className="flex items-center gap-3 mb-5 group">
               {!logoError && (
-                <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Rachit Creation" className="w-11 h-11 rounded-full object-cover ring-1 ring-[#C5A059]/40 group-hover:ring-[#C5A059] transition-all" onError={() => setLogoError(true)} />
+                <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Rachit Creation" className="w-11 h-11 rounded-full object-cover ring-1 ring-[#C5A059]/40 group-hover:ring-[#C5A059] transition-all" onError={() => setLogoError(true)} loading="lazy" decoding="async" />
               )}
               <span className="font-serif text-xl tracking-[0.1em] uppercase text-white">Rachit <span className="font-semibold">Creation</span></span>
             </Link>

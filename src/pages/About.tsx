@@ -30,6 +30,7 @@ export default function About() {
             src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} 
             alt="About Rachit Creation" 
             className="absolute inset-0 w-full h-full object-cover" 
+            fetchPriority="high"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/70" />
@@ -44,7 +45,7 @@ export default function About() {
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20">
         {!isSettingsLoading && siteSettings.aboutHeroImage && (
           <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-12 rounded-2xl overflow-hidden shadow-lg border border-[#C5A059]/10 aspect-video bg-gray-100">
-            <img src={siteSettings.aboutHeroImage} alt="Rachit Creation Heritage Story" className="w-full h-full object-cover" />
+            <img src={siteSettings.aboutHeroImage} alt="Rachit Creation Heritage Story" className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </motion.div>
         )}
         <div className="space-y-6">
@@ -80,7 +81,7 @@ export default function About() {
                 >
                   <div className="w-28 h-28 rounded-full overflow-hidden bg-[#FCEEE9] border-2 border-[#C5A059]/20 mb-5 flex items-center justify-center shadow-inner relative">
                     {member.imageUrl ? (
-                      <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" />
+                      <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                     ) : (
                       <span className="text-[#C5A059] text-3xl font-serif font-bold uppercase">{member.name.charAt(0)}</span>
                     )}

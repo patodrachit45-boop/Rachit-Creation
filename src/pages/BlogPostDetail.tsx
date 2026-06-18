@@ -80,6 +80,8 @@ export default function BlogPostDetail() {
           src={blog.imageUrl || '/images/products/regenerated_image_1779296299562.png'} 
           alt={blog.title} 
           className="absolute inset-0 w-full h-full object-cover opacity-80"
+          fetchPriority="high"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-white via-black/30 to-black/50" />
         <div className="absolute bottom-6 left-0 right-0 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
