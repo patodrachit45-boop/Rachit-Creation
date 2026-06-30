@@ -8,7 +8,13 @@ import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoServi
 export default function BlogPostDetail() {
   const { id } = useParams<{ id: string }>();
   const { blogs } = useStore();
-  const blog = useMemo(() => blogs.find((b) => b.id === id), [blogs, id]);
+  const blog = useMemo(() => {
+    const found = blogs.find((b) => b.id === id);
+    if (found && found.createdAt > Date.now()) {
+      return undefined;
+    }
+    return found;
+  }, [blogs, id]);
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : `https://raccreation.com/blog/${id}`;
 

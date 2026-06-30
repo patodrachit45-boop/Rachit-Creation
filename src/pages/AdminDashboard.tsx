@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, type FormEvent, type DragEvent } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo, type FormEvent, type DragEvent } from 'react';
 import { useStore, type Product } from '../store';
 import { 
   isSupabaseConfigured,
@@ -906,7 +906,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
 
 interface BlogsTabProps {
   blogs: BlogPost[];
-  onAdd: (post: Omit<BlogPost, 'id' | 'createdAt'>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
+  onAdd: (post: Omit<BlogPost, 'id' | 'createdAt'> & { createdAt?: number }, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
   onUpdate: (id: string, fields: Partial<BlogPost>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
   onDelete: (id: string) => Promise<{ success: boolean; error?: string }>;
   showToast: (m: string, t: 'success' | 'error') => void;
@@ -924,7 +924,15 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
   const [imageUrl, setImageUrl] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
+  const [scheduleMode, setScheduleMode] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const formatDateTimeLocal = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const pad = (num: number) => String(num).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
 
   const openAddModal = () => {
     setEditingPost(null);
@@ -934,6 +942,8 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
     setImageUrl('');
     setImageFile(null);
     setImagePreview('');
+    setScheduleMode(false);
+    setScheduledDate(formatDateTimeLocal(Date.now() + 60 * 60 * 1000)); // Default to 1 hour from now
     setModalOpen(true);
   };
 
@@ -945,6 +955,9 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
     setImageUrl(post.imageUrl);
     setImageFile(null);
     setImagePreview(post.imageUrl);
+    const isFuture = post.createdAt > Date.now();
+    setScheduleMode(isFuture);
+    setScheduledDate(formatDateTimeLocal(post.createdAt));
     setModalOpen(true);
   };
 
@@ -961,9 +974,21 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
       showToast('Please fill in all required fields', 'error');
       return;
     }
+
+    let postCreatedAt = Date.now();
+    if (scheduleMode) {
+      if (!scheduledDate) {
+        showToast('Please select a publication date and time', 'error');
+        return;
+      }
+      postCreatedAt = new Date(scheduledDate).getTime();
+    } else if (editingPost) {
+      postCreatedAt = editingPost.createdAt; // Preserve original published date
+    }
+
     setLoading(true);
 
-    const payload = { title, excerpt, content, imageUrl };
+    const payload = { title, excerpt, content, imageUrl, createdAt: postCreatedAt };
     let res: { success: boolean; error?: string };
 
     if (editingPost) {
@@ -994,12 +1019,16 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
     }
   };
 
+  const sortedBlogs = useMemo(() => {
+    return [...blogs].sort((a, b) => b.createdAt - a.createdAt);
+  }, [blogs]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-5">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2"><FileText className="text-[#C5A059]" /> Blog Posts</h2>
-          <p className="text-xs text-gray-500">Manage luxury collection stories, fashion trends, and articles</p>
+          <p className="text-xs text-gray-500">Manage digital marketing insights, guides, and updates</p>
         </div>
         <button onClick={openAddModal} className="inline-flex items-center gap-2 bg-[#C5A059] hover:bg-[#b08d47] text-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer"><Plus size={15} /> Add Blog Post</button>
       </div>
@@ -1008,19 +1037,33 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
           <FileText className="w-12 h-12 text-gray-700 mx-auto mb-3" />
           <h3 className="text-sm font-semibold text-white">No Blog Posts Yet</h3>
-          <p className="text-xs text-gray-500 mt-1">Start writing design ideas and bridal fashion guides.</p>
+          <p className="text-xs text-gray-500 mt-1">Start writing design ideas and marketing guides.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {blogs.map((post) => (
+          {sortedBlogs.map((post) => (
             <div key={post.id} className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden flex flex-col group">
               <div className="relative h-48 bg-gray-950 overflow-hidden">
-                <img src={post.imageUrl || '/images/products/regenerated_image_1779296299562.png'} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
+                <img src={post.imageUrl || 'https://zffuxuykmxnaedjokddm.supabase.co/storage/v1/object/public/product-images/products/1781108838743_e57tpv.png'} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
                 <div className="absolute top-4 right-4 flex gap-2">
                   <button onClick={() => openEditModal(post)} className="w-8 h-8 rounded-lg bg-gray-900/90 hover:bg-[#C5A059] text-gray-300 hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer"><Pencil size={14} /></button>
                   <button onClick={() => setDeleteId(post.id)} className="w-8 h-8 rounded-lg bg-gray-900/90 hover:bg-red-650 text-gray-300 hover:text-white flex items-center justify-center transition-all shadow-md cursor-pointer"><Trash2 size={14} /></button>
                 </div>
-                <div className="absolute bottom-4 left-4 bg-gray-900/80 backdrop-blur-sm text-[10px] text-gray-400 px-2.5 py-1 rounded-md">{new Date(post.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}</div>
+                {(() => {
+                  const isScheduled = post.createdAt > Date.now();
+                  return (
+                    <div className={`absolute bottom-4 left-4 backdrop-blur-sm text-[10px] px-2.5 py-1 rounded-md ${
+                      isScheduled 
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+                        : 'bg-gray-900/80 text-gray-400'
+                    }`}>
+                      {isScheduled 
+                        ? `Scheduled: ${new Date(post.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}` 
+                        : new Date(post.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })
+                      }
+                    </div>
+                  );
+                })()}
               </div>
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div>
@@ -1044,7 +1087,7 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
             <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-5">
               <div>
                 <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Post Title *</label>
-                <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50" placeholder="e.g. 5 Lehenga Trends for the Wedding Season" />
+                <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50" placeholder="e.g. How to Scale Lead Gen with Facebook Ads" />
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Short Excerpt *</label>
@@ -1074,6 +1117,27 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
               <div>
                 <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Content *</label>
                 <textarea required rows={8} value={content} onChange={(e) => setContent(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50 font-sans resize-none" placeholder="Write your article details here. You can use markdown like ### Headings or bullet points..." />
+              </div>
+
+              {/* Publication Schedule */}
+              <div className="bg-gray-850/50 border border-gray-800 rounded-xl p-4 space-y-4">
+                <label className="block text-xs uppercase tracking-widest text-gray-400 font-bold mb-1">Publication Schedule</label>
+                <div className="flex gap-6 items-center">
+                  <label className="flex items-center gap-2 text-xs text-gray-300 cursor-pointer">
+                    <input type="radio" checked={!scheduleMode} onChange={() => setScheduleMode(false)} className="accent-[#C5A059]" />
+                    <span>Post Now (Publish Immediately)</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-gray-300 cursor-pointer">
+                    <input type="radio" checked={scheduleMode} onChange={() => setScheduleMode(true)} className="accent-[#C5A059]" />
+                    <span>Schedule for Later</span>
+                  </label>
+                </div>
+                {scheduleMode && (
+                  <div className="pt-2 animate-fadeIn">
+                    <label className="block text-[10px] uppercase tracking-wider text-gray-500 mb-1.5 font-semibold">Publish Date & Time *</label>
+                    <input type="datetime-local" required value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} className="bg-gray-900 border border-gray-750 text-white rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#C5A059]/40 w-full sm:w-auto" />
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 pt-3 border-t border-gray-800 justify-end">

@@ -546,7 +546,7 @@ export async function fetchBlogsFromSupabase(): Promise<BlogPost[]> {
 }
 
 export async function addBlogPostToSupabase(
-  post: Omit<BlogPost, 'id' | 'createdAt'>,
+  post: Omit<BlogPost, 'id' | 'createdAt'> & { createdAt?: number },
   imageFile?: File
 ): Promise<BlogPost | null> {
   if (!supabase) throw new Error('Supabase not configured');
@@ -555,7 +555,7 @@ export async function addBlogPostToSupabase(
     imageUrl = await uploadImageToSupabase(imageFile);
   }
   const id = Math.random().toString(36).substring(2, 9);
-  const createdAt = Date.now();
+  const createdAt = post.createdAt || Date.now();
   const newPost: BlogPost = {
     id,
     title: post.title,

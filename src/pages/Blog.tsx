@@ -19,7 +19,10 @@ export default function Blog() {
   }, []);
 
   const filteredBlogs = useMemo(() => {
-    return blogs.filter((blog) => 
+    const now = Date.now();
+    const visible = blogs.filter((blog) => blog.createdAt <= now);
+    const sorted = [...visible].sort((a, b) => b.createdAt - a.createdAt);
+    return sorted.filter((blog) => 
       blog.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
       blog.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) || 
       blog.content.toLowerCase().includes(searchQuery.toLowerCase())

@@ -89,7 +89,7 @@ interface StoreState {
   addProduct: (product: Omit<Product, 'id'>, imageFile?: File) => Promise<boolean>;
   updateProduct: (id: string, fields: Partial<Product>, imageFile?: File) => Promise<boolean>;
   deleteProduct: (id: string) => Promise<boolean>;
-  addBlogPost: (post: Omit<BlogPost, 'id' | 'createdAt'>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
+  addBlogPost: (post: Omit<BlogPost, 'id' | 'createdAt'> & { createdAt?: number }, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
   updateBlogPost: (id: string, fields: Partial<BlogPost>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
   deleteBlogPost: (id: string) => Promise<{ success: boolean; error?: string }>;
   addTeamMember: (member: Omit<TeamMember, 'id' | 'createdAt'>, imageFile?: File) => Promise<{ success: boolean; error?: string }>;
@@ -313,7 +313,7 @@ export const useStore = create<StoreState>()((set, get) => ({
         const id = Math.random().toString(36).substring(2, 9);
         let imageUrl = postInfo.imageUrl;
         if (imageFile) imageUrl = URL.createObjectURL(imageFile);
-        const newPost: BlogPost = { ...postInfo, id, imageUrl, createdAt: Date.now() };
+        const newPost: BlogPost = { ...postInfo, id, imageUrl, createdAt: postInfo.createdAt || Date.now() };
         set((s) => {
           const updated = [newPost, ...s.blogs];
           localStorage.setItem('rachit_blogs_fallback', JSON.stringify(updated));
