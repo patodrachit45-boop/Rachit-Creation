@@ -11,7 +11,9 @@ export function useCanonicalURL() {
       link.setAttribute('rel', 'canonical');
       document.head.appendChild(link);
     }
-    link.setAttribute('href', 'https://raccreation.com/');
+    // Set canonical link based on the current window location to ensure it is valid for all pages
+    const currentUrl = window.location.origin + window.location.pathname;
+    link.setAttribute('href', currentUrl);
   }, []);
 }
 
