@@ -53,7 +53,9 @@ export default function Footer() {
                 { label: 'About Us', to: '/about' },
                 { label: 'Blogs', to: '/blog' },
                 { label: 'Contact', to: '/contact' },
-                { label: 'Wishlist', to: '/wishlist' }
+                { label: 'Wishlist', to: '/wishlist' },
+                { label: 'Privacy Policy', to: '/privacy-policy' },
+                { label: 'Terms of Service', to: '/terms-of-service' }
               ].map((l) => (
                 <li key={l.to}>
                   <Link to={l.to} className="text-sm text-gray-400 hover:text-[#C5A059] transition-colors inline-block">

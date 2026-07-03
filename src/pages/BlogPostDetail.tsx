@@ -2,7 +2,7 @@ import { useMemo, useEffect } from 'react';
 import { Link, useParams } from 'react-router';
 import { useStore } from '../store';
 import { motion } from 'motion/react';
-import { Calendar, ArrowLeft, Share2, Facebook, Twitter, ShieldCheck } from 'lucide-react';
+import { Calendar, ArrowLeft, Share2, Facebook, Twitter, ShieldCheck, ChevronRight } from 'lucide-react';
 import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
 
 export default function BlogPostDetail() {
@@ -100,8 +100,25 @@ export default function BlogPostDetail() {
         </div>
       </div>
 
+      {/* Breadcrumb section */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-12">
+        <nav className="flex items-center gap-1.5 text-xs font-sans text-[#3D3D3D]/50 mb-4 animate-fadeIn">
+          <Link to="/" className="hover:text-[#C5A059] transition-colors">Home</Link>
+          <ChevronRight className="w-3 h-3 text-[#3D3D3D]/30" />
+          <Link to="/blog" className="hover:text-[#C5A059] transition-colors">Blogs</Link>
+          <ChevronRight className="w-3 h-3 text-[#3D3D3D]/30" />
+          <span className="text-[#3D3D3D] truncate max-w-[200px] sm:max-w-xs">{blog.title}</span>
+        </nav>
+        <Link 
+          to="/blog" 
+          className="inline-flex items-center gap-2 text-xs font-sans text-[#3D3D3D]/50 hover:text-[#C5A059] transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to Blogs
+        </Link>
+      </div>
+
       {/* Main Content Layout */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 md:pb-16">
         {/* Meta Info */}
         <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-[#C5A059] font-sans mb-4">
           <Calendar className="w-4 h-4" />

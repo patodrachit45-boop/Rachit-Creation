@@ -34,7 +34,12 @@ export default function About() {
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/70" />
-        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6">
+        <div className="relative z-10 flex flex-col items-center justify-center h-full text-center px-6 mt-4">
+          <nav className="flex items-center gap-1.5 text-xs font-sans text-white/60 mb-3">
+            <Link to="/" className="hover:text-[#C5A059] transition-colors">Home</Link>
+            <span className="text-white/30">/</span>
+            <span className="text-white">Our Story</span>
+          </nav>
           <motion.p initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-[#C5A059] tracking-[0.35em] uppercase text-xs font-sans mb-3">Rachit Creation</motion.p>
           <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="font-serif text-white text-4xl sm:text-5xl md:text-6xl">Our Story</motion.h1>
         </div>

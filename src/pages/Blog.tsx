@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router';
 import { useStore } from '../store';
 import { motion } from 'motion/react';
-import { Calendar, Search, ArrowRight, BookOpen } from 'lucide-react';
+import { Calendar, Search, ArrowRight, BookOpen, ChevronRight } from 'lucide-react';
 import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
 
 export default function Blog() {
@@ -34,17 +34,23 @@ export default function Blog() {
       {/* Page Header */}
       <div className="bg-gradient-to-b from-[#FCEEE9] to-white border-b border-[#C5A059]/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 text-center">
+          <nav className="flex items-center justify-center gap-1.5 text-xs font-sans text-[#3D3D3D]/50 mb-4">
+            <Link to="/" className="hover:text-[#C5A059] transition-colors">Home</Link>
+            <ChevronRight className="w-3 h-3 text-[#3D3D3D]/30" />
+            <span className="text-[#3D3D3D]">Blogs</span>
+          </nav>
           <motion.p 
             initial={{ opacity: 0, y: -8 }} 
             animate={{ opacity: 1, y: 0 }} 
-            className="text-[#C5A059] tracking-[0.3em] uppercase text-xs font-sans mb-2"
+            transition={{ duration: 0.6 }} 
+            className="text-[#C5A059] tracking-[0.35em] uppercase text-xs font-sans mb-3"
           >
             The Atelier Blogs
           </motion.p>
           <motion.h1 
-            initial={{ opacity: 0, y: 12 }} 
+            initial={{ opacity: 0, y: 16 }} 
             animate={{ opacity: 1, y: 0 }} 
-            transition={{ delay: 0.1 }} 
+            transition={{ duration: 0.7, delay: 0.1 }} 
             className="font-serif text-3xl md:text-5xl text-[#3D3D3D]"
           >
             Stories & Style Guides

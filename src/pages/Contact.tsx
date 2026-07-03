@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { getWhatsAppLink } from '../lib/siteConfig';
-import { MapPin, Phone, Mail, Clock, Send, MessageCircle, ChevronDown } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, MessageCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { injectJSONLD, removeJSONLD, getFAQSchema } from '../lib/seoService';
-import { useLocation } from 'react-router';
+import { useLocation, Link } from 'react-router';
 
 const PRODUCT_INTERESTS = ['Bridal Lehenga', 'Designer Lehenga', 'Girlish Lehenga', 'Heavy Lehenga', 'Custom Design', 'Other'];
 
@@ -56,6 +56,11 @@ export default function Contact() {
     <div className="min-h-screen bg-[#FCEEE9]/30">
       <div className="bg-gradient-to-b from-[#FCEEE9] to-white border-b border-[#C5A059]/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 text-center">
+          <nav className="flex items-center justify-center gap-1.5 text-xs font-sans text-[#3D3D3D]/50 mb-4">
+            <Link to="/" className="hover:text-[#C5A059] transition-colors">Home</Link>
+            <ChevronRight className="w-3 h-3 text-[#3D3D3D]/30" />
+            <span className="text-[#3D3D3D]">Contact</span>
+          </nav>
           <motion.p initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="text-[#C5A059] tracking-[0.3em] uppercase text-xs font-sans mb-2">Get in Touch</motion.p>
           <motion.h1 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="font-serif text-3xl md:text-5xl text-[#3D3D3D]">Contact Us</motion.h1>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="text-[#3D3D3D]/50 text-sm font-sans mt-3 max-w-md mx-auto">We'd love to help you find the perfect lehenga for your special occasion.</motion.p>

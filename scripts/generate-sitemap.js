@@ -92,6 +92,8 @@ async function generate() {
     '/category/Designer',
     '/category/Girlish',
     '/category/Heavy',
+    '/privacy-policy',
+    '/terms-of-service',
   ];
 
   // 2. Fetch Dynamic Products
