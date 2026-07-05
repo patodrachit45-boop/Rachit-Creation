@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useStore } from '../store';
 import { getWhatsAppLink } from '../lib/siteConfig';
-import { Instagram, MessageCircle, Mail, Phone, MapPin, Twitter, Facebook } from 'lucide-react';
+import { Instagram, MessageCircle, Mail, Phone, MapPin, Twitter, Facebook, ShieldCheck, Lock, Globe } from 'lucide-react';
 
 const categories = ['Bridal', 'Designer', 'Girlish', 'Heavy'] as const;
 
@@ -55,7 +55,8 @@ export default function Footer() {
                 { label: 'Contact', to: '/contact' },
                 { label: 'Wishlist', to: '/wishlist' },
                 { label: 'Privacy Policy', to: '/privacy-policy' },
-                { label: 'Terms of Service', to: '/terms-of-service' }
+                { label: 'Terms of Service', to: '/terms-of-service' },
+                { label: 'Editorial Policy', to: '/editorial-policy' }
               ].map((l) => (
                 <li key={l.to}>
                   <Link to={l.to} className="text-sm text-gray-400 hover:text-[#C5A059] transition-colors inline-block">
@@ -82,12 +83,48 @@ export default function Footer() {
               )}
               {siteSettings.email && <a href={`mailto:${siteSettings.email}`} className="flex items-center gap-3 text-gray-400 hover:text-[#C5A059] transition-colors"><Mail className="w-4 h-4" /><span className="text-sm break-all">{siteSettings.email}</span></a>}
               {siteSettings.phone && <a href={`tel:${siteSettings.phone.replace(/\s/g, '')}`} className="flex items-center gap-3 text-gray-400 hover:text-[#C5A059] transition-colors"><Phone className="w-4 h-4" /><span className="text-sm">{siteSettings.phone}</span></a>}
-              {siteSettings.address && <div className="flex items-start gap-3 text-gray-400"><MapPin className="w-4 h-4 shrink-0 mt-0.5" /><span className="text-sm leading-relaxed">{siteSettings.address}</span></div>}
+              {siteSettings.address && (
+                <div className="flex items-start gap-3 text-gray-400" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
+                  <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span className="text-sm leading-relaxed" itemProp="streetAddress">{siteSettings.address}</span>
+                  <meta itemProp="addressLocality" content="Surat" />
+                  <meta itemProp="addressRegion" content="Gujarat" />
+                  <meta itemProp="addressCountry" content="India" />
+                  <meta itemProp="postalCode" content="395002" />
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-      <div className="border-t border-gray-800">
+      <div className="border-t border-gray-800 bg-gray-950/40">
+        {/* Trust Badges Banner */}
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-6 border-b border-gray-800/80">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-left">
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <ShieldCheck className="w-8 h-8 text-[#C5A059] shrink-0" />
+              <div>
+                <h5 className="text-xs uppercase font-sans tracking-wider text-white font-semibold">100% Authentic Handloom</h5>
+                <p className="text-[10px] text-gray-500 font-sans mt-0.5">Certified traditional handwork and embroidery</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <Lock className="w-7 h-7 text-[#C5A059] shrink-0" />
+              <div>
+                <h5 className="text-xs uppercase font-sans tracking-wider text-white font-semibold">Secure WhatsApp Checkout</h5>
+                <p className="text-[10px] text-gray-500 font-sans mt-0.5">Direct chat verification and order protection</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 justify-center sm:justify-start">
+              <Globe className="w-7 h-7 text-[#C5A059] shrink-0" />
+              <div>
+                <h5 className="text-xs uppercase font-sans tracking-wider text-white font-semibold">Global Express Shipping</h5>
+                <p className="text-[10px] text-gray-500 font-sans mt-0.5">Safe delivery with international transit tracking</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex flex-col gap-2.5">
             <p className="text-xs text-gray-500 tracking-wide">

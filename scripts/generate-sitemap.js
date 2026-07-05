@@ -94,6 +94,7 @@ async function generate() {
     '/category/Heavy',
     '/privacy-policy',
     '/terms-of-service',
+    '/editorial-policy',
   ];
 
   // 2. Fetch Dynamic Products

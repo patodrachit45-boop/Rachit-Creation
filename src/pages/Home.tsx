@@ -118,10 +118,19 @@ export default function Home() {
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {DEFAULT_TESTIMONIALS.map((t, i) => (
-            <motion.div key={t.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.08 }} className="bg-white rounded-2xl p-6 shadow-sm border border-[#C5A059]/10 hover:shadow-md transition-shadow">
-              <div className="flex gap-0.5 mb-3">{Array.from({ length: t.rating }).map((_, idx) => <Star key={idx} className="w-4 h-4 fill-[#C5A059] text-[#C5A059]" />)}</div>
-              <p className="text-[#3D3D3D]/80 text-sm font-sans leading-relaxed mb-4">"{t.text}"</p>
-              <div><p className="font-serif text-[#3D3D3D] text-base font-semibold">{t.name}</p><p className="text-[#3D3D3D]/50 text-xs font-sans">{t.location}</p></div>
+            <motion.div key={t.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.08 }} className="bg-white rounded-2xl p-6 shadow-sm border border-[#C5A059]/10 hover:shadow-md transition-shadow" itemScope itemType="https://schema.org/Review">
+              <div className="flex gap-0.5 mb-3" itemProp="reviewRating" itemScope itemType="https://schema.org/Rating">
+                <meta itemProp="ratingValue" content={String(t.rating)} />
+                <meta itemProp="bestRating" content="5" />
+                {Array.from({ length: t.rating }).map((_, idx) => <Star key={idx} className="w-4 h-4 fill-[#C5A059] text-[#C5A059]" />)}
+              </div>
+              <p className="text-[#3D3D3D]/80 text-sm font-sans leading-relaxed mb-4" itemProp="reviewBody">"{t.text}"</p>
+              <div>
+                <p className="font-serif text-[#3D3D3D] text-base font-semibold" itemProp="author" itemScope itemType="https://schema.org/Person">
+                  <span itemProp="name">{t.name}</span>
+                </p>
+                <p className="text-[#3D3D3D]/50 text-xs font-sans">{t.location}</p>
+              </div>
             </motion.div>
           ))}
         </div>

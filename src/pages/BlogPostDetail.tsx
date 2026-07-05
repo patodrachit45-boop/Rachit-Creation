@@ -118,13 +118,20 @@ export default function BlogPostDetail() {
       </div>
 
       {/* Main Content Layout */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 md:pb-16">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 md:pb-16" itemScope itemType="https://schema.org/BlogPosting">
         {/* Meta Info */}
-        <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-[#C5A059] font-sans mb-4">
+        <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-wider text-[#C5A059] font-sans mb-4">
           <Calendar className="w-4 h-4" />
-          <span>{new Date(blog.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}</span>
+          <time dateTime={new Date(blog.createdAt).toISOString()} itemProp="datePublished">
+            {new Date(blog.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}
+          </time>
+          <meta itemProp="dateModified" content={new Date(blog.createdAt).toISOString()} />
           <span className="text-[#C5A059]/20">•</span>
           <span className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5" /> Verified Atelier Designer</span>
+          <span className="text-[#C5A059]/20">•</span>
+          <span className="font-semibold" itemProp="author" itemScope itemType="https://schema.org/Person">
+            By <span itemProp="name">Mahesh Patodiya</span> (Founder & Master Craftsman)
+          </span>
         </div>
 
         {/* Title */}
@@ -176,9 +183,29 @@ export default function BlogPostDetail() {
         </div>
 
         {/* Content Body */}
-        <article className="prose max-w-none text-[#3D3D3D]">
+        <article className="prose max-w-none text-[#3D3D3D]" itemProp="articleBody">
           {parsedContent}
         </article>
+
+        {/* Author Bio Card for E-E-A-T */}
+        <div className="mt-12 p-6 md:p-8 bg-[#FCEEE9]/15 border border-[#C5A059]/20 rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-sm" itemProp="author" itemScope itemType="https://schema.org/Person">
+          <img 
+            src="https://zffuxuykmxnaedjokddm.supabase.co/storage/v1/object/public/product-images/products/1781108838743_e57tpv.png" 
+            alt="Mahesh Patodiya" 
+            className="w-16 h-16 rounded-full object-cover border border-[#C5A059]/20 shadow-sm shrink-0" 
+            itemProp="image"
+          />
+          <div className="text-center sm:text-left space-y-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+              <h4 className="font-serif text-lg text-[#3D3D3D] font-semibold" itemProp="name">Mahesh Patodiya</h4>
+              <span className="hidden sm:inline text-gray-300">|</span>
+              <span className="text-xs uppercase tracking-wider text-[#C5A059] font-sans font-semibold" itemProp="jobTitle">Founder & Lead Designer</span>
+            </div>
+            <p className="text-xs sm:text-sm text-[#3D3D3D]/70 font-sans leading-relaxed" itemProp="description">
+              Mahesh Patodiya is the Founder & Master Craftsman of Rachit Creation. With over 15+ years of experience in handloom textiles and bridal Zardozi embroidery, Mahesh curates and reviews all design journals for accuracy.
+            </p>
+          </div>
+        </div>
 
         {/* Recommended Collections Internal Links */}
         <div className="mt-16 pt-10 border-t border-[#C5A059]/15">
