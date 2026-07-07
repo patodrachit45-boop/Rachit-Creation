@@ -104,22 +104,34 @@ export default function Footer() {
             <div className="flex items-center gap-3 justify-center sm:justify-start">
               <ShieldCheck className="w-8 h-8 text-[#C5A059] shrink-0" />
               <div>
-                <h5 className="text-xs uppercase font-sans tracking-wider text-white font-semibold">100% Authentic Handloom</h5>
-                <p className="text-[10px] text-gray-500 font-sans mt-0.5">Certified traditional handwork and embroidery</p>
+                <h5 className="text-xs uppercase font-sans tracking-wider text-white font-semibold">
+                  {siteSettings.trustBadge1Title || '100% Authentic Handloom'}
+                </h5>
+                <p className="text-[10px] text-gray-500 font-sans mt-0.5">
+                  {siteSettings.trustBadge1Desc || 'Certified traditional handwork and embroidery'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3 justify-center sm:justify-start">
               <Lock className="w-7 h-7 text-[#C5A059] shrink-0" />
               <div>
-                <h5 className="text-xs uppercase font-sans tracking-wider text-white font-semibold">Secure WhatsApp Checkout</h5>
-                <p className="text-[10px] text-gray-500 font-sans mt-0.5">Direct chat verification and order protection</p>
+                <h5 className="text-xs uppercase font-sans tracking-wider text-white font-semibold">
+                  {siteSettings.trustBadge2Title || 'Secure WhatsApp Checkout'}
+                </h5>
+                <p className="text-[10px] text-gray-500 font-sans mt-0.5">
+                  {siteSettings.trustBadge2Desc || 'Direct chat verification and order protection'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3 justify-center sm:justify-start">
               <Globe className="w-7 h-7 text-[#C5A059] shrink-0" />
               <div>
-                <h5 className="text-xs uppercase font-sans tracking-wider text-white font-semibold">Global Express Shipping</h5>
-                <p className="text-[10px] text-gray-500 font-sans mt-0.5">Safe delivery with international transit tracking</p>
+                <h5 className="text-xs uppercase font-sans tracking-wider text-white font-semibold">
+                  {siteSettings.trustBadge3Title || 'Global Express Shipping'}
+                </h5>
+                <p className="text-[10px] text-gray-500 font-sans mt-0.5">
+                  {siteSettings.trustBadge3Desc || 'Safe delivery with international transit tracking'}
+                </p>
               </div>
             </div>
           </div>

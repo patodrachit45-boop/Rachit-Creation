@@ -38,6 +38,12 @@ export interface SiteSettings {
   labelShipping?: string;
   backlinksText?: string;
   facebookUrl?: string;
+  trustBadge1Title?: string;
+  trustBadge1Desc?: string;
+  trustBadge2Title?: string;
+  trustBadge2Desc?: string;
+  trustBadge3Title?: string;
+  trustBadge3Desc?: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -72,6 +78,12 @@ From opulent bridal ensembles to contemporary designer pieces, our collections a
   labelShipping: 'Shipping',
   backlinksText: 'Rachit Creation | https://raccreation.com/\nBridal Lehengas Surat | https://raccreation.com/category/Bridal\nDesigner Lehengas Surat | https://raccreation.com/category/Designer',
   facebookUrl: 'https://www.facebook.com/rachitcreation/',
+  trustBadge1Title: '100% Authentic Handloom',
+  trustBadge1Desc: 'Certified traditional handwork and embroidery',
+  trustBadge2Title: 'Secure WhatsApp Checkout',
+  trustBadge2Desc: 'Direct chat verification and order protection',
+  trustBadge3Title: 'Global Express Shipping',
+  trustBadge3Desc: 'Safe delivery with international transit tracking',
 };
 
 // ── Blogs ─────────────────────────────────────────────────────────────

@@ -108,6 +108,12 @@ export interface ExtraData {
   labelShipping?: string;
   backlinksText?: string;
   facebookUrl?: string;
+  trustBadge1Title?: string;
+  trustBadge1Desc?: string;
+  trustBadge2Title?: string;
+  trustBadge2Desc?: string;
+  trustBadge3Title?: string;
+  trustBadge3Desc?: string;
 }
 
 export function parseAboutText(dbAboutText: string): { aboutText: string; extraData: ExtraData } {
@@ -161,6 +167,12 @@ function dbToSettings(row: any): SiteSettings {
     labelShipping: extraData.labelShipping || 'Shipping',
     backlinksText: extraData.backlinksText || '',
     facebookUrl: extraData.facebookUrl || '',
+    trustBadge1Title: extraData.trustBadge1Title || '100% Authentic Handloom',
+    trustBadge1Desc: extraData.trustBadge1Desc || 'Certified traditional handwork and embroidery',
+    trustBadge2Title: extraData.trustBadge2Title || 'Secure WhatsApp Checkout',
+    trustBadge2Desc: extraData.trustBadge2Desc || 'Direct chat verification and order protection',
+    trustBadge3Title: extraData.trustBadge3Title || 'Global Express Shipping',
+    trustBadge3Desc: extraData.trustBadge3Desc || 'Safe delivery with international transit tracking',
   };
 
   // Fallback for logo if column doesn't exist or is empty
@@ -470,6 +482,12 @@ export async function updateSiteSettingsInSupabase(
   if (settings.labelShipping !== undefined) existingExtra.labelShipping = settings.labelShipping;
   if (settings.backlinksText !== undefined) existingExtra.backlinksText = settings.backlinksText;
   if (settings.facebookUrl !== undefined) existingExtra.facebookUrl = settings.facebookUrl;
+  if (settings.trustBadge1Title !== undefined) existingExtra.trustBadge1Title = settings.trustBadge1Title;
+  if (settings.trustBadge1Desc !== undefined) existingExtra.trustBadge1Desc = settings.trustBadge1Desc;
+  if (settings.trustBadge2Title !== undefined) existingExtra.trustBadge2Title = settings.trustBadge2Title;
+  if (settings.trustBadge2Desc !== undefined) existingExtra.trustBadge2Desc = settings.trustBadge2Desc;
+  if (settings.trustBadge3Title !== undefined) existingExtra.trustBadge3Title = settings.trustBadge3Title;
+  if (settings.trustBadge3Desc !== undefined) existingExtra.trustBadge3Desc = settings.trustBadge3Desc;
 
   if (settings.aboutText !== undefined) {
     aboutTextVal = settings.aboutText;

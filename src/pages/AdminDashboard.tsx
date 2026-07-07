@@ -616,6 +616,13 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [backlinksText, setBacklinksText] = useState(siteSettings.backlinksText || '');
   const [facebookUrl, setFacebookUrl] = useState(siteSettings.facebookUrl || '');
 
+  const [trustBadge1Title, setTrustBadge1Title] = useState(siteSettings.trustBadge1Title || '100% Authentic Handloom');
+  const [trustBadge1Desc, setTrustBadge1Desc] = useState(siteSettings.trustBadge1Desc || 'Certified traditional handwork and embroidery');
+  const [trustBadge2Title, setTrustBadge2Title] = useState(siteSettings.trustBadge2Title || 'Secure WhatsApp Checkout');
+  const [trustBadge2Desc, setTrustBadge2Desc] = useState(siteSettings.trustBadge2Desc || 'Direct chat verification and order protection');
+  const [trustBadge3Title, setTrustBadge3Title] = useState(siteSettings.trustBadge3Title || 'Global Express Shipping');
+  const [trustBadge3Desc, setTrustBadge3Desc] = useState(siteSettings.trustBadge3Desc || 'Safe delivery with international transit tracking');
+
   const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
   const [heroImagePreview, setHeroImagePreview] = useState(siteSettings.heroImage);
   const [logoImageFile, setLogoImageFile] = useState<File | null>(null);
@@ -648,6 +655,12 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     setLabelShipping(siteSettings.labelShipping || 'Shipping');
     setBacklinksText(siteSettings.backlinksText || '');
     setFacebookUrl(siteSettings.facebookUrl || '');
+    setTrustBadge1Title(siteSettings.trustBadge1Title || '100% Authentic Handloom');
+    setTrustBadge1Desc(siteSettings.trustBadge1Desc || 'Certified traditional handwork and embroidery');
+    setTrustBadge2Title(siteSettings.trustBadge2Title || 'Secure WhatsApp Checkout');
+    setTrustBadge2Desc(siteSettings.trustBadge2Desc || 'Direct chat verification and order protection');
+    setTrustBadge3Title(siteSettings.trustBadge3Title || 'Global Express Shipping');
+    setTrustBadge3Desc(siteSettings.trustBadge3Desc || 'Safe delivery with international transit tracking');
     setHeroImageRemoved(false); setLogoImageRemoved(false); setAboutImageRemoved(false);
   }, [siteSettings]);
 
@@ -682,7 +695,13 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
       labelEmbroidery,
       labelShipping,
       backlinksText,
-      facebookUrl
+      facebookUrl,
+      trustBadge1Title,
+      trustBadge1Desc,
+      trustBadge2Title,
+      trustBadge2Desc,
+      trustBadge3Title,
+      trustBadge3Desc
     };
 
     if (heroImageRemoved) settingsPayload.heroImage = '';
@@ -864,6 +883,61 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
               <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Backlinks List (one link per line, format: Anchor Text | URL)</label>
               <textarea rows={4} value={backlinksText} onChange={(e) => setBacklinksText(e.target.value)} className={`${inputClass} resize-none font-mono`} placeholder="e.g.&#10;Rachit Creation | https://raccreation.com/&#10;Bridal Lehengas Surat | https://raccreation.com/category/Bridal" />
               <p className="text-[10px] text-gray-500 mt-1">Specify high-quality sitewide internal or partner backlinks to render in the footer. Use the format: <code className="text-gray-400">Anchor Text | URL</code> (one per line).</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+              <ShieldCheck size={18} className="text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white">Trust Badges</h3>
+              <p className="text-xs text-gray-500">Configure titles and descriptions for the three footer badges</p>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <div className="border-b border-gray-800/80 pb-5">
+              <h4 className="text-xs font-semibold text-[#C5A059] uppercase tracking-wider mb-3">Badge 1 (Authentic Handloom Icon)</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1.5 font-medium">Title</label>
+                  <input type="text" value={trustBadge1Title} onChange={(e) => setTrustBadge1Title(e.target.value)} className={inputClass} placeholder="e.g. 100% Authentic Handloom" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1.5 font-medium">Description</label>
+                  <input type="text" value={trustBadge1Desc} onChange={(e) => setTrustBadge1Desc(e.target.value)} className={inputClass} placeholder="e.g. Certified traditional handwork and embroidery" />
+                </div>
+              </div>
+            </div>
+
+            <div className="border-b border-gray-800/80 pb-5">
+              <h4 className="text-xs font-semibold text-[#C5A059] uppercase tracking-wider mb-3">Badge 2 (Secure WhatsApp Lock Icon)</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1.5 font-medium">Title</label>
+                  <input type="text" value={trustBadge2Title} onChange={(e) => setTrustBadge2Title(e.target.value)} className={inputClass} placeholder="e.g. Secure WhatsApp Checkout" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1.5 font-medium">Description</label>
+                  <input type="text" value={trustBadge2Desc} onChange={(e) => setTrustBadge2Desc(e.target.value)} className={inputClass} placeholder="e.g. Direct chat verification and order protection" />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-semibold text-[#C5A059] uppercase tracking-wider mb-3">Badge 3 (Global Express Globe Icon)</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1.5 font-medium">Title</label>
+                  <input type="text" value={trustBadge3Title} onChange={(e) => setTrustBadge3Title(e.target.value)} className={inputClass} placeholder="e.g. Global Express Shipping" />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1.5 font-medium">Description</label>
+                  <input type="text" value={trustBadge3Desc} onChange={(e) => setTrustBadge3Desc(e.target.value)} className={inputClass} placeholder="e.g. Safe delivery with international transit tracking" />
+                </div>
+              </div>
             </div>
           </div>
         </section>
