@@ -44,6 +44,7 @@ export interface SiteSettings {
   trustBadge2Desc?: string;
   trustBadge3Title?: string;
   trustBadge3Desc?: string;
+  termsOfServiceText?: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -84,6 +85,20 @@ From opulent bridal ensembles to contemporary designer pieces, our collections a
   trustBadge2Desc: 'Direct chat verification and order protection',
   trustBadge3Title: 'Global Express Shipping',
   trustBadge3Desc: 'Safe delivery with international transit tracking',
+  termsOfServiceText: `## 1. Services and Orders
+Rachit Creation specializes in manufacturing premium, high-quality, handcrafted bridal, designer, girlish, and heavy lehengas. All products presented on our website are subject to availability. Orders initiated through our website are structured as catalogs of interest. Selecting "Order" or "Inquire" opens a communication link to finalize tailoring parameters, fabrics, sizing, and payment details directly on WhatsApp.
+
+## 2. Tailoring and Crafting Timelines
+Our custom and hand-embroidered outfits require time-intensive craftsmanship. Bridal and heavy lehengas typically require 4 to 8 weeks to tailor and assemble. We ask clients to plan and book orders well in advance of their ceremony dates to accommodate design schedules and transit windows.
+
+## 3. Fabric and Craft Handwork Variance
+Many of our collections utilize natural fibers, hand-loomed textiles, and hand-embroidered stone, Zardozi, and Zari details. Slight variations in color tones, embroidery layout, and finishing details are inherent to hand-tailored garments and represent a celebration of authentic Indian craftsmanship rather than a product defect.
+
+## 4. Deliveries and Shipping
+We provide domestic shipping within India and express international delivery. Delivery fees, transit timelines, and custom declarations are calculated during purchase checkout discussions on WhatsApp. International buyers are solely responsible for local custom duties, import taxes, or delivery clearance protocols requested in their home country.
+
+## 5. Returns, Cancellations, and Refunds
+Because custom-tailored lehengas are individually crafted to unique customer body sizes and bespoke design choices, customized lehengas cannot be canceled, returned, or refunded once production or fabric sourcing has commenced. For standard off-the-shelf catalog items, return eligibility is governed by individual agreements reached during WhatsApp checkout confirmation.`,
 };
 
 // ── Blogs ─────────────────────────────────────────────────────────────

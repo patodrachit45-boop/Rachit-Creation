@@ -114,6 +114,7 @@ export interface ExtraData {
   trustBadge2Desc?: string;
   trustBadge3Title?: string;
   trustBadge3Desc?: string;
+  termsOfServiceText?: string;
 }
 
 export function parseAboutText(dbAboutText: string): { aboutText: string; extraData: ExtraData } {
@@ -173,6 +174,7 @@ function dbToSettings(row: any): SiteSettings {
     trustBadge2Desc: extraData.trustBadge2Desc || 'Direct chat verification and order protection',
     trustBadge3Title: extraData.trustBadge3Title || 'Global Express Shipping',
     trustBadge3Desc: extraData.trustBadge3Desc || 'Safe delivery with international transit tracking',
+    termsOfServiceText: extraData.termsOfServiceText || '',
   };
 
   // Fallback for logo if column doesn't exist or is empty
@@ -488,6 +490,7 @@ export async function updateSiteSettingsInSupabase(
   if (settings.trustBadge2Desc !== undefined) existingExtra.trustBadge2Desc = settings.trustBadge2Desc;
   if (settings.trustBadge3Title !== undefined) existingExtra.trustBadge3Title = settings.trustBadge3Title;
   if (settings.trustBadge3Desc !== undefined) existingExtra.trustBadge3Desc = settings.trustBadge3Desc;
+  if (settings.termsOfServiceText !== undefined) existingExtra.termsOfServiceText = settings.termsOfServiceText;
 
   if (settings.aboutText !== undefined) {
     aboutTextVal = settings.aboutText;

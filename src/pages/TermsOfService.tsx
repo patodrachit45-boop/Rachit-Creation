@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useStore } from '../store';
 import { motion } from 'motion/react';
@@ -16,6 +16,43 @@ export default function TermsOfService() {
     injectJSONLD('terms-breadcrumb-schema', breadcrumbSchema);
     return () => removeJSONLD('terms-breadcrumb-schema');
   }, []);
+
+  const parsedContent = useMemo(() => {
+    const termsText = siteSettings.termsOfServiceText || '';
+    if (!termsText) return null;
+    return termsText.split('\n\n').map((paragraph, index) => {
+      const trimmed = paragraph.trim();
+      if (trimmed.startsWith('###')) {
+        return (
+          <h3 key={index} className="font-serif text-lg md:text-xl text-[#3D3D3D] mt-6 mb-3 font-semibold">
+            {trimmed.replace(/^###\s*/, '')}
+          </h3>
+        );
+      }
+      if (trimmed.startsWith('##')) {
+        return (
+          <h2 key={index} className="font-serif text-xl sm:text-2xl text-[#3D3D3D] mt-8 mb-4 font-semibold border-b border-[#C5A059]/10 pb-2">
+            {trimmed.replace(/^##\s*/, '')}
+          </h2>
+        );
+      }
+      if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
+        const items = trimmed.split('\n').map((item) => item.replace(/^[-*]\s*/, '').trim());
+        return (
+          <ul key={index} className="list-disc pl-6 my-4 space-y-2 text-[#3D3D3D]/80 text-sm md:text-base leading-relaxed font-sans">
+            {items.map((it, i) => (
+              <li key={i}>{it}</li>
+            ))}
+          </ul>
+        );
+      }
+      return (
+        <p key={index} className="text-[#3D3D3D]/80 text-sm md:text-base leading-relaxed my-4 font-sans">
+          {trimmed}
+        </p>
+      );
+    });
+  }, [siteSettings.termsOfServiceText]);
 
   return (
     <div className="min-h-screen bg-[#FCEEE9]/30">
@@ -40,31 +77,7 @@ export default function TermsOfService() {
           transition={{ duration: 0.5 }}
           className="bg-white rounded-2xl p-6 md:p-10 shadow-sm border border-[#C5A059]/10 space-y-8 text-[#3D3D3D]/80 font-sans text-sm sm:text-base leading-relaxed"
         >
-          <section className="space-y-3">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#3D3D3D]">1. Services and Orders</h2>
-            <p>Rachit Creation specializes in manufacturing premium, high-quality, handcrafted bridal, designer, girlish, and heavy lehengas. All products presented on our website are subject to availability.
-            Orders initiated through our website are structured as catalogs of interest. Selecting "Order" or "Inquire" opens a communication link to finalize tailoring parameters, fabrics, sizing, and payment details directly on WhatsApp.</p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#3D3D3D]">2. Tailoring and Crafting Timelines</h2>
-            <p>Our custom and hand-embroidered outfits require time-intensive craftsmanship. Bridal and heavy lehengas typically require **4 to 8 weeks** to tailor and assemble. We ask clients to plan and book orders well in advance of their ceremony dates to accommodate design schedules and transit windows.</p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#3D3D3D]">3. Fabric and Craft Handwork Variance</h2>
-            <p>Many of our collections utilize natural fibers, hand-loomed textiles, and hand-embroidered stone, Zardozi, and Zari details. Slight variations in color tones, embroidery layout, and finishing details are inherent to hand-tailored garments and represent a celebration of authentic Indian craftsmanship rather than a product defect.</p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#3D3D3D]">4. Deliveries and Shipping</h2>
-            <p>We provide domestic shipping within India and express international delivery. Delivery fees, transit timelines, and custom declarations are calculated during purchase checkout discussions on WhatsApp. International buyers are solely responsible for local custom duties, import taxes, or delivery clearance protocols requested in their home country.</p>
-          </section>
-
-          <section className="space-y-3">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#3D3D3D]">5. Returns, Cancellations, and Refunds</h2>
-            <p>Because custom-tailored lehengas are individually crafted to unique customer body sizes and bespoke design choices, **customized lehengas cannot be canceled, returned, or refunded** once production or fabric sourcing has commenced. For standard off-the-shelf catalog items, return eligibility is governed by individual agreements reached during WhatsApp checkout confirmation.</p>
-          </section>
+          {parsedContent}
 
           <section className="space-y-3 border-t border-[#C5A059]/10 pt-6">
             <h2 className="font-serif text-xl sm:text-2xl text-[#3D3D3D]">Legal Info & Contact</h2>

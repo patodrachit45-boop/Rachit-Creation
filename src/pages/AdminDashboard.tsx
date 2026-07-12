@@ -602,6 +602,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [showroomHours, setShowroomHours] = useState(siteSettings.showroomHours);
   const [instagramUrl, setInstagramUrl] = useState(siteSettings.instagramUrl);
   const [aboutText, setAboutText] = useState(siteSettings.aboutText);
+  const [termsOfServiceText, setTermsOfServiceText] = useState(siteSettings.termsOfServiceText || '');
   const [defaultCraftingTime, setDefaultCraftingTime] = useState(siteSettings.defaultCraftingTime || '4 - 8 Weeks');
   const [defaultOrigin, setDefaultOrigin] = useState(siteSettings.defaultOrigin || 'Surat, Gujarat, India');
   const [defaultCustomization, setDefaultCustomization] = useState(siteSettings.defaultCustomization || 'Available on Request');
@@ -640,7 +641,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     setWhatsappNumber(siteSettings.whatsappNumber); setPhone(siteSettings.phone); setEmail(siteSettings.email);
     setAddress(siteSettings.address); setGoogleMapsUrl(siteSettings.googleMapsUrl); setShowroomHours(siteSettings.showroomHours); setInstagramUrl(siteSettings.instagramUrl);
     setFacebookPixelId(siteSettings.facebookPixelId || ''); setPinterestUrl(siteSettings.pinterestUrl || ''); setTwitterUrl(siteSettings.twitterUrl || '');
-    setAboutText(siteSettings.aboutText); setHeroImagePreview(siteSettings.heroImage);
+    setAboutText(siteSettings.aboutText); setTermsOfServiceText(siteSettings.termsOfServiceText || ''); setHeroImagePreview(siteSettings.heroImage);
     setLogoImagePreview(siteSettings.logoImage); setAboutImagePreview(siteSettings.aboutHeroImage);
     setDefaultCraftingTime(siteSettings.defaultCraftingTime || '4 - 8 Weeks');
     setDefaultOrigin(siteSettings.defaultOrigin || 'Surat, Gujarat, India');
@@ -701,7 +702,8 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
       trustBadge2Title,
       trustBadge2Desc,
       trustBadge3Title,
-      trustBadge3Desc
+      trustBadge3Desc,
+      termsOfServiceText
     };
 
     if (heroImageRemoved) settingsPayload.heroImage = '';
@@ -965,6 +967,13 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
               <input ref={aboutInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAboutImage(f); }} />
             </div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">About Text</label><textarea rows={6} value={aboutText} onChange={(e) => setAboutText(e.target.value)} className={`${inputClass} resize-none`} placeholder="Tell your brand story..." /></div>
+          </div>
+        </section>
+
+        <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center"><FileText size={18} className="text-amber-400" /></div><div><h3 className="text-sm font-semibold text-white">Terms of Service</h3><p className="text-xs text-gray-500">Legal and operational guidelines</p></div></div>
+          <div className="space-y-5">
+            <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Terms of Service Text</label><textarea rows={10} value={termsOfServiceText} onChange={(e) => setTermsOfServiceText(e.target.value)} className={`${inputClass} resize-none`} placeholder="Write terms of service in markdown..." /></div>
           </div>
         </section>
 
