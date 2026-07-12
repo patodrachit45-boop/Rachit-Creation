@@ -19,6 +19,10 @@ export default function Blog() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    console.log('Active blogs list loaded:', blogs.length);
+  }, [blogs]);
+
+  useEffect(() => {
     const breadcrumbSchema = getBreadcrumbSchema([
       { name: 'Home', item: '/' },
       { name: 'Blogs', item: '/blog' }
