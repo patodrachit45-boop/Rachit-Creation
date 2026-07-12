@@ -1,11 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { useStore } from '../store';
 import { motion } from 'motion/react';
 import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
+import { PageSkeleton } from '../components/LoadingSkeleton';
 
 export default function About() {
-  const { siteSettings, teamMembers, isSettingsLoading } = useStore();
+  const { siteSettings, teamMembers, isSettingsLoading, fetchTeamMembers } = useStore();
+  const [loading, setLoading] = useState(teamMembers.length === 0);
+
+  useEffect(() => {
+    if (teamMembers.length === 0) {
+      fetchTeamMembers().finally(() => setLoading(false));
+    }
+  }, [teamMembers.length, fetchTeamMembers]);
 
   useEffect(() => {
     const breadcrumbSchema = getBreadcrumbSchema([
@@ -16,6 +24,10 @@ export default function About() {
     injectJSONLD('about-breadcrumb-schema', breadcrumbSchema);
     return () => removeJSONLD('about-breadcrumb-schema');
   }, []);
+  if (loading || isSettingsLoading) {
+    return <PageSkeleton />;
+  }
+
   const paragraphs = siteSettings.aboutText.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
 
   return (

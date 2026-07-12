@@ -1,13 +1,22 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useStore } from '../store';
 import { motion } from 'motion/react';
 import { Calendar, ArrowLeft, Share2, Facebook, Twitter, ShieldCheck, ChevronRight } from 'lucide-react';
 import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
+import { PageSkeleton } from '../components/LoadingSkeleton';
 
 export default function BlogPostDetail() {
   const { id } = useParams<{ id: string }>();
-  const { blogs } = useStore();
+  const { blogs, fetchBlogs } = useStore();
+  const [loading, setLoading] = useState(blogs.length === 0);
+
+  useEffect(() => {
+    if (blogs.length === 0) {
+      fetchBlogs().finally(() => setLoading(false));
+    }
+  }, [blogs.length, fetchBlogs]);
+
   const blog = useMemo(() => {
     const found = blogs.find((b) => b.id === id);
     if (found && found.createdAt > Date.now()) {
@@ -65,6 +74,10 @@ export default function BlogPostDetail() {
       );
     });
   }, [blog]);
+
+  if (loading) {
+    return <PageSkeleton />;
+  }
 
   if (!blog) {
     return (

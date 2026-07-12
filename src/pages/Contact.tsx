@@ -5,11 +5,20 @@ import { MapPin, Phone, Mail, Clock, Send, MessageCircle, ChevronDown, ChevronRi
 import { motion, AnimatePresence } from 'motion/react';
 import { injectJSONLD, removeJSONLD, getFAQSchema } from '../lib/seoService';
 import { useLocation, Link } from 'react-router';
+import { PageSkeleton } from '../components/LoadingSkeleton';
 
 const PRODUCT_INTERESTS = ['Bridal Lehenga', 'Designer Lehenga', 'Girlish Lehenga', 'Heavy Lehenga', 'Custom Design', 'Other'];
 
 export default function Contact() {
-  const { siteSettings, faqs } = useStore();
+  const { siteSettings, faqs, fetchFaqs } = useStore();
+  const [loading, setLoading] = useState(faqs.length === 0);
+
+  useEffect(() => {
+    if (faqs.length === 0) {
+      fetchFaqs().finally(() => setLoading(false));
+    }
+  }, [faqs.length, fetchFaqs]);
+
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
@@ -51,6 +60,10 @@ export default function Contact() {
     { icon: Mail, title: 'Email', detail: siteSettings.email },
     { icon: Clock, title: 'Showroom Hours', detail: siteSettings.showroomHours },
   ];
+
+  if (loading) {
+    return <PageSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-[#FCEEE9]/30">

@@ -4,9 +4,18 @@ import { useStore } from '../store';
 import { motion } from 'motion/react';
 import { Calendar, Search, ArrowRight, BookOpen, ChevronRight } from 'lucide-react';
 import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
+import { PageSkeleton } from '../components/LoadingSkeleton';
 
 export default function Blog() {
-  const { blogs } = useStore();
+  const { blogs, fetchBlogs } = useStore();
+  const [loading, setLoading] = useState(blogs.length === 0);
+
+  useEffect(() => {
+    if (blogs.length === 0) {
+      fetchBlogs().finally(() => setLoading(false));
+    }
+  }, [blogs.length, fetchBlogs]);
+
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -28,6 +37,10 @@ export default function Blog() {
       blog.content.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [blogs, searchQuery]);
+
+  if (loading) {
+    return <PageSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-[#FCEEE9]/30">
