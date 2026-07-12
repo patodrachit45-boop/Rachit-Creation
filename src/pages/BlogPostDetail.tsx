@@ -200,25 +200,7 @@ export default function BlogPostDetail() {
           {parsedContent}
         </article>
 
-        {/* Author Bio Card for E-E-A-T */}
-        <div className="mt-12 p-6 md:p-8 bg-[#FCEEE9]/15 border border-[#C5A059]/20 rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-sm" itemProp="author" itemScope itemType="https://schema.org/Person">
-          <img 
-            src="https://zffuxuykmxnaedjokddm.supabase.co/storage/v1/object/public/product-images/products/1781108838743_e57tpv.png" 
-            alt="Mahesh Patodiya" 
-            className="w-16 h-16 rounded-full object-cover border border-[#C5A059]/20 shadow-sm shrink-0" 
-            itemProp="image"
-          />
-          <div className="text-center sm:text-left space-y-2">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-              <h4 className="font-serif text-lg text-[#3D3D3D] font-semibold" itemProp="name">Mahesh Patodiya</h4>
-              <span className="hidden sm:inline text-gray-300">|</span>
-              <span className="text-xs uppercase tracking-wider text-[#C5A059] font-sans font-semibold" itemProp="jobTitle">Founder & Lead Designer</span>
-            </div>
-            <p className="text-xs sm:text-sm text-[#3D3D3D]/70 font-sans leading-relaxed" itemProp="description">
-              Mahesh Patodiya is the Founder & Master Craftsman of Rachit Creation. With over 15+ years of experience in handloom textiles and bridal Zardozi embroidery, Mahesh curates and reviews all design journals for accuracy.
-            </p>
-          </div>
-        </div>
+
 
         {/* Recommended Collections Internal Links */}
         <div className="mt-16 pt-10 border-t border-[#C5A059]/15">
