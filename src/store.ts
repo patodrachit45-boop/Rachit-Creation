@@ -134,9 +134,9 @@ export const useWishlistStore = create<WishlistStore>()(
 
 export const useStore = create<StoreState>()((set, get) => ({
   products: initialProducts,
-  blogs: DEFAULT_BLOGS,
-  teamMembers: DEFAULT_TEAM_MEMBERS,
-  faqs: DEFAULT_FAQS,
+  blogs: [],
+  teamMembers: [],
+  faqs: [],
   siteSettings: DEFAULT_SITE_SETTINGS,
   isLoading: true,
   isSettingsLoading: true,
