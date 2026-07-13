@@ -124,6 +124,12 @@ export default function Home() {
                 <meta itemProp="bestRating" content="5" />
                 {Array.from({ length: t.rating }).map((_, idx) => <Star key={idx} className="w-4 h-4 fill-[#C5A059] text-[#C5A059]" />)}
               </div>
+              <div className="hidden" itemProp="itemReviewed" itemScope itemType="https://schema.org/LocalBusiness">
+                <meta itemProp="name" content="Rachit Creation" />
+                <meta itemProp="image" content="https://raccreation.com/images/logo.jpg" />
+                <meta itemProp="telephone" content={siteSettings.phone} />
+                <meta itemProp="address" content={siteSettings.address} />
+              </div>
               <p className="text-[#3D3D3D]/80 text-sm font-sans leading-relaxed mb-4" itemProp="reviewBody">"{t.text}"</p>
               <div>
                 <p className="font-serif text-[#3D3D3D] text-base font-semibold" itemProp="author" itemScope itemType="https://schema.org/Person">
