@@ -62,7 +62,7 @@ export default function About() {
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20">
         {!isSettingsLoading && siteSettings.aboutHeroImage && (
           <motion.div initial={{ opacity: 0, scale: 0.98 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-12 rounded-2xl overflow-hidden shadow-lg border border-[#C5A059]/10 aspect-video bg-gray-100">
-            <img src={siteSettings.aboutHeroImage} alt="Rachit Creation Heritage Story" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+            <img src={siteSettings.aboutHeroImage} alt={siteSettings.aboutHeroImageAlt || "Rachit Creation Heritage Story"} className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </motion.div>
         )}
         <div className="space-y-6">

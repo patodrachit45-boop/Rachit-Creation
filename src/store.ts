@@ -60,6 +60,7 @@ export interface Product {
   highlights?: string;
   createdAt?: number;
   isSoldOut?: boolean;
+  imageAlt?: string;
   
   // Atelier Quick Facts (GEO / Search Optimization)
   craftingTime?: string;

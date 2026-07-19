@@ -123,7 +123,7 @@ export default function Blog() {
                 <Link to={`/blog/${blog.id}`} className="block relative aspect-[16/10] overflow-hidden bg-gray-100">
                   <img 
                     src={blog.imageUrl || '/images/products/regenerated_image_1779296299562.png'} 
-                    alt={blog.title} 
+                    alt={blog.imageAlt || blog.title} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" 
                     loading="lazy"
                     decoding="async"

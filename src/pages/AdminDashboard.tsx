@@ -483,6 +483,7 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
   const [description, setDescription] = useState(product?.description || '');
   const [highlights, setHighlights] = useState(product?.highlights || '');
   const [isSoldOut, setIsSoldOut] = useState(product?.isSoldOut || false);
+  const [imageAlt, setImageAlt] = useState(product?.imageAlt || '');
   const [craftingTime, setCraftingTime] = useState(product?.craftingTime || siteSettings?.defaultCraftingTime || '4 - 8 Weeks');
   const [origin, setOrigin] = useState(product?.origin || siteSettings?.defaultOrigin || 'Surat, Gujarat, India');
   const [customization, setCustomization] = useState(product?.customization || siteSettings?.defaultCustomization || 'Available on Request');
@@ -500,8 +501,8 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
     e.preventDefault(); setLoading(true);
     try {
       const success = isEditing && product
-        ? await onUpdate(product.id, { name, category, price, description, highlights, isSoldOut, imageUrl: product.imageUrl, craftingTime, origin, customization, embroidery, shipping }, imageFile || undefined)
-        : await onAdd({ name, category, price, description, highlights, isSoldOut, imageUrl: imagePreview, craftingTime, origin, customization, embroidery, shipping }, imageFile || undefined);
+        ? await onUpdate(product.id, { name, category, price, description, highlights, isSoldOut, imageUrl: product.imageUrl, craftingTime, origin, customization, embroidery, shipping, imageAlt }, imageFile || undefined)
+        : await onAdd({ name, category, price, description, highlights, isSoldOut, imageUrl: imagePreview, craftingTime, origin, customization, embroidery, shipping, imageAlt }, imageFile || undefined);
       showToast(success ? `"${name}" ${isEditing ? 'updated' : 'added'}` : `Failed to ${isEditing ? 'update' : 'add'}`, success ? 'success' : 'error');
       if (success) onClose();
     } catch { showToast('An error occurred', 'error'); }
@@ -524,6 +525,10 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
               : <div><Upload size={32} className="mx-auto text-gray-600 mb-3" /><p className="text-sm text-gray-400"><span className="text-[#C5A059] font-medium">Click to upload</span> or drag and drop</p></div>}
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageSelect(f); }} />
             </div>
+          </div>
+          <div>
+            <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Image Alt Text (for SEO)</label>
+            <input type="text" value={imageAlt} onChange={(e) => setImageAlt(e.target.value)} className={inputClass} placeholder="e.g., Royal maroon silk bridal lehenga with heavy Zardozi handwork" />
           </div>
           <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Product Name</label><input required type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="e.g., Royal Bridal Lehenga" /></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -634,6 +639,8 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [heroImageRemoved, setHeroImageRemoved] = useState(false);
   const [logoImageRemoved, setLogoImageRemoved] = useState(false);
   const [aboutImageRemoved, setAboutImageRemoved] = useState(false);
+  const [heroImageAlt, setHeroImageAlt] = useState(siteSettings.heroImageAlt || '');
+  const [aboutHeroImageAlt, setAboutHeroImageAlt] = useState(siteSettings.aboutHeroImageAlt || '');
 
   const [loading, setLoading] = useState(false);
 
@@ -643,6 +650,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     setFacebookPixelId(siteSettings.facebookPixelId || ''); setPinterestUrl(siteSettings.pinterestUrl || ''); setTwitterUrl(siteSettings.twitterUrl || '');
     setAboutText(siteSettings.aboutText); setTermsOfServiceText(siteSettings.termsOfServiceText || ''); setHeroImagePreview(siteSettings.heroImage);
     setLogoImagePreview(siteSettings.logoImage); setAboutImagePreview(siteSettings.aboutHeroImage);
+    setHeroImageAlt(siteSettings.heroImageAlt || ''); setAboutHeroImageAlt(siteSettings.aboutHeroImageAlt || '');
     setDefaultCraftingTime(siteSettings.defaultCraftingTime || '4 - 8 Weeks');
     setDefaultOrigin(siteSettings.defaultOrigin || 'Surat, Gujarat, India');
     setDefaultCustomization(siteSettings.defaultCustomization || 'Available on Request');
@@ -703,7 +711,9 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
       trustBadge2Desc,
       trustBadge3Title,
       trustBadge3Desc,
-      termsOfServiceText
+      termsOfServiceText,
+      heroImageAlt,
+      aboutHeroImageAlt
     };
 
     if (heroImageRemoved) settingsPayload.heroImage = '';
@@ -755,6 +765,10 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
                 </div>
               )}
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHeroImage(f); }} />
+              <div className="mt-4">
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Hero Image Alt Text (SEO)</label>
+                <input type="text" value={heroImageAlt} onChange={(e) => setHeroImageAlt(e.target.value)} className={inputClass} placeholder="e.g., Rachit Creation luxury bridal lehenga display" />
+              </div>
             </div>
           </section>
 
@@ -966,6 +980,10 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
               )}
               <input ref={aboutInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAboutImage(f); }} />
             </div>
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Story Photo Alt Text (SEO)</label>
+              <input type="text" value={aboutHeroImageAlt} onChange={(e) => setAboutHeroImageAlt(e.target.value)} className={inputClass} placeholder="e.g., Mahesh Patodiya designing luxury lehengas" />
+            </div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">About Text</label><textarea rows={6} value={aboutText} onChange={(e) => setAboutText(e.target.value)} className={`${inputClass} resize-none`} placeholder="Tell your brand story..." /></div>
           </div>
         </section>
@@ -1007,6 +1025,7 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
   const [imageUrl, setImageUrl] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
+  const [imageAlt, setImageAlt] = useState('');
   const [scheduleMode, setScheduleMode] = useState(false);
   const [scheduledDate, setScheduledDate] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -1025,6 +1044,7 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
     setImageUrl('');
     setImageFile(null);
     setImagePreview('');
+    setImageAlt('');
     setScheduleMode(false);
     setScheduledDate(formatDateTimeLocal(Date.now() + 60 * 60 * 1000)); // Default to 1 hour from now
     setModalOpen(true);
@@ -1038,6 +1058,7 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
     setImageUrl(post.imageUrl);
     setImageFile(null);
     setImagePreview(post.imageUrl);
+    setImageAlt(post.imageAlt || '');
     const isFuture = post.createdAt > Date.now();
     setScheduleMode(isFuture);
     setScheduledDate(formatDateTimeLocal(post.createdAt));
@@ -1071,7 +1092,7 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
 
     setLoading(true);
 
-    const payload = { title, excerpt, content, imageUrl, createdAt: postCreatedAt };
+    const payload = { title, excerpt, content, imageUrl, createdAt: postCreatedAt, imageAlt };
     let res: { success: boolean; error?: string };
 
     if (editingPost) {
@@ -1196,7 +1217,10 @@ function BlogsTab({ blogs, onAdd, onUpdate, onDelete, showToast }: BlogsTabProps
                 </div>
                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); }} />
               </div>
-
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Image Alt Text (SEO)</label>
+                <input type="text" value={imageAlt} onChange={(e) => setImageAlt(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50" placeholder="e.g. Elegant pastel bridal lehenga with delicate embroidery" />
+              </div>
               <div>
                 <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Content *</label>
                 <textarea required rows={8} value={content} onChange={(e) => setContent(e.target.value)} className="w-full bg-gray-850 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50 font-sans resize-none" placeholder="Write your article details here. You can use markdown like ### Headings or bullet points..." />

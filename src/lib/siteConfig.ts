@@ -45,6 +45,8 @@ export interface SiteSettings {
   trustBadge3Title?: string;
   trustBadge3Desc?: string;
   termsOfServiceText?: string;
+  heroImageAlt?: string;
+  aboutHeroImageAlt?: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -85,6 +87,8 @@ From opulent bridal ensembles to contemporary designer pieces, our collections a
   trustBadge2Desc: 'Direct chat verification and order protection',
   trustBadge3Title: 'Global Express Shipping',
   trustBadge3Desc: 'Safe delivery with international transit tracking',
+  heroImageAlt: 'Rachit Creation luxury bridal lehenga display',
+  aboutHeroImageAlt: 'Mahesh Patodiya designing luxury lehengas at Rachit Creation',
   termsOfServiceText: `## 1. Services and Orders
 Rachit Creation specializes in manufacturing premium, high-quality, handcrafted bridal, designer, girlish, and heavy lehengas. All products presented on our website are subject to availability. Orders initiated through our website are structured as catalogs of interest. Selecting "Order" or "Inquire" opens a communication link to finalize tailoring parameters, fabrics, sizing, and payment details directly on WhatsApp.
 
@@ -110,6 +114,7 @@ export interface BlogPost {
   excerpt: string;
   imageUrl: string;
   createdAt: number;
+  imageAlt?: string;
 }
 
 export const DEFAULT_BLOGS: BlogPost[] = [

@@ -57,6 +57,7 @@ function dbToProduct(row: any): Product {
     customization: extraData.customization || 'Available on Request',
     embroidery: extraData.embroidery || 'Zari, Zardozi, Resham & Stones',
     shipping: extraData.shipping || 'Worldwide Express Delivery',
+    imageAlt: extraData.imageAlt || '',
   };
 }
 
@@ -71,6 +72,7 @@ function productToDb(p: Partial<Product> & { imageUrl?: string }) {
     if (p.customization !== undefined) extraData.customization = p.customization;
     if (p.embroidery !== undefined) extraData.embroidery = p.embroidery;
     if (p.shipping !== undefined) extraData.shipping = p.shipping;
+    if (p.imageAlt !== undefined) extraData.imageAlt = p.imageAlt;
     
     obj.description = buildProductDescription(p.description, extraData);
   }
@@ -115,6 +117,8 @@ export interface ExtraData {
   trustBadge3Title?: string;
   trustBadge3Desc?: string;
   termsOfServiceText?: string;
+  heroImageAlt?: string;
+  aboutHeroImageAlt?: string;
 }
 
 export function parseAboutText(dbAboutText: string): { aboutText: string; extraData: ExtraData } {
@@ -175,6 +179,8 @@ function dbToSettings(row: any): SiteSettings {
     trustBadge3Title: extraData.trustBadge3Title || 'Global Express Shipping',
     trustBadge3Desc: extraData.trustBadge3Desc || 'Safe delivery with international transit tracking',
     termsOfServiceText: extraData.termsOfServiceText || '',
+    heroImageAlt: extraData.heroImageAlt || 'Rachit Creation luxury bridal lehenga display',
+    aboutHeroImageAlt: extraData.aboutHeroImageAlt || 'Mahesh Patodiya designing luxury lehengas at Rachit Creation',
   };
 
   // Fallback for logo if column doesn't exist or is empty
@@ -491,6 +497,8 @@ export async function updateSiteSettingsInSupabase(
   if (settings.trustBadge3Title !== undefined) existingExtra.trustBadge3Title = settings.trustBadge3Title;
   if (settings.trustBadge3Desc !== undefined) existingExtra.trustBadge3Desc = settings.trustBadge3Desc;
   if (settings.termsOfServiceText !== undefined) existingExtra.termsOfServiceText = settings.termsOfServiceText;
+  if (settings.heroImageAlt !== undefined) existingExtra.heroImageAlt = settings.heroImageAlt;
+  if (settings.aboutHeroImageAlt !== undefined) existingExtra.aboutHeroImageAlt = settings.aboutHeroImageAlt;
 
   if (settings.aboutText !== undefined) {
     aboutTextVal = settings.aboutText;

@@ -97,7 +97,7 @@ export default function BlogPostDetail() {
       <div className="relative h-[45vh] min-h-[300px] overflow-hidden bg-gray-950">
         <img 
           src={blog.imageUrl || '/images/products/regenerated_image_1779296299562.png'} 
-          alt={blog.title} 
+          alt={blog.imageAlt || blog.title} 
           className="absolute inset-0 w-full h-full object-cover opacity-80"
           fetchPriority="high"
           decoding="async"

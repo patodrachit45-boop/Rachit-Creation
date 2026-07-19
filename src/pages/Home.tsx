@@ -33,7 +33,7 @@ export default function Home() {
             animate={{ opacity: 1 }} 
             transition={{ duration: 0.5 }}
             src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} 
-            alt="Rachit Creation — Luxury Lehengas" 
+            alt={siteSettings.heroImageAlt || "Rachit Creation — Luxury Lehengas"} 
             className="absolute inset-0 w-full h-full object-cover" 
             fetchPriority="high"
           />
