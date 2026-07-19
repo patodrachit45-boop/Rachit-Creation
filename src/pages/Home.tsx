@@ -126,7 +126,7 @@ export default function Home() {
               </div>
               <div className="hidden" itemProp="itemReviewed" itemScope itemType="https://schema.org/LocalBusiness">
                 <meta itemProp="name" content="Rachit Creation" />
-                <meta itemProp="image" content="https://raccreation.com/images/logo.jpg" />
+                <meta itemProp="image" content="https://raccreation.com/images/logo.webp" />
                 <meta itemProp="telephone" content={siteSettings.phone} />
                 <meta itemProp="address" content={siteSettings.address} />
               </div>

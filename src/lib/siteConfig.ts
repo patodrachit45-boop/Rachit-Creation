@@ -49,7 +49,7 @@ export interface SiteSettings {
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroImage: '/images/products/regenerated_image_1779296299562.png',
-  logoImage: '/images/logo.jpg',
+  logoImage: '/images/logo.webp',
   whatsappNumber: '917359747911',
   instagramUrl: 'https://www.instagram.com/rachit__creation/',
   email: 'rachitcreation@gmail.com',

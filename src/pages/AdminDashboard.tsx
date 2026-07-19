@@ -102,7 +102,7 @@ export default function AdminDashboard() {
       <div className="lg:hidden flex items-center justify-between bg-gray-900 border-b border-gray-800 px-4 py-3 sticky top-0 z-40">
         <div className="flex items-center gap-3">
           {!logoError && (
-            <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Logo" className="w-8 h-8 rounded-lg object-cover" onError={() => setLogoError(true)} />
+            <img src={siteSettings.logoImage || '/images/logo.webp'} alt="Logo" className="w-8 h-8 rounded-lg object-cover" onError={() => setLogoError(true)} width="32" height="32" />
           )}
           <span className="font-serif text-sm text-white tracking-widest">RACHIT CREATION</span>
         </div>
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
         <div className="p-6 border-b border-gray-800">
           <div className="flex items-center gap-3">
             {!logoError && (
-              <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Logo" className="w-10 h-10 rounded-xl object-cover shadow-md" onError={() => setLogoError(true)} />
+              <img src={siteSettings.logoImage || '/images/logo.webp'} alt="Logo" className="w-10 h-10 rounded-xl object-cover shadow-md" onError={() => setLogoError(true)} width="40" height="40" />
             )}
             <div><h2 className="font-serif text-sm text-white tracking-widest leading-tight">RACHIT</h2><h2 className="font-serif text-sm text-[#C5A059] tracking-widest leading-tight">CREATION</h2></div>
           </div>

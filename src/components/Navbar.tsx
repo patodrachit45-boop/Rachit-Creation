@@ -34,7 +34,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto flex items-center justify-between h-18 sm:h-20 px-4 sm:px-6 lg:px-10">
           <Link to="/" className="flex items-center gap-2.5 group shrink-0">
             {!logoError && (
-              <img src={siteSettings.logoImage || '/images/logo.jpg'} alt="Rachit Creation" className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-1 ring-[#C5A059]/30 group-hover:ring-[#C5A059] transition-all" onError={() => setLogoError(true)} fetchPriority="high" decoding="async" />
+              <img src={siteSettings.logoImage || '/images/logo.webp'} srcSet={`${siteSettings.logoImage || '/images/logo.webp'} 1x, ${siteSettings.logoImage || '/images/logo.webp'} 2x`} alt="Rachit Creation" className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-1 ring-[#C5A059]/30 group-hover:ring-[#C5A059] transition-all" onError={() => setLogoError(true)} fetchPriority="high" decoding="async" width="44" height="44" />
             )}
             <span className="font-serif text-base sm:text-xl tracking-[0.1em] sm:tracking-[0.12em] uppercase text-[#3D3D3D]">Rachit <span className="font-semibold">Creation</span></span>
           </Link>

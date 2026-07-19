@@ -44,7 +44,7 @@ export function getLocalBusinessSchema(settings: SiteSettings) {
     '@type': 'LocalBusiness',
     '@id': 'https://raccreation.com/#store',
     'name': 'Rachit Creation',
-    'image': settings.logoImage ? `https://raccreation.com${settings.logoImage}` : 'https://raccreation.com/images/logo.jpg',
+    'image': settings.logoImage ? `https://raccreation.com${settings.logoImage}` : 'https://raccreation.com/images/logo.webp',
     'telephone': settings.phone,
     'email': settings.email,
     'url': 'https://raccreation.com',
