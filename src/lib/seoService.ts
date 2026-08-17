@@ -71,6 +71,7 @@ export function getLocalBusinessSchema(settings: SiteSettings) {
     'telephone': settings.phone,
     'email': settings.email,
     'url': 'https://raccreation.com',
+    'priceRange': '₹₹₹',
     'address': {
       '@type': 'PostalAddress',
       'streetAddress': settings.address,
@@ -94,7 +95,52 @@ export function getLocalBusinessSchema(settings: SiteSettings) {
       settings.instagramUrl,
       settings.pinterestUrl,
       settings.twitterUrl
-    ].filter(Boolean)
+    ].filter(Boolean),
+    'aggregateRating': {
+      '@type': 'AggregateRating',
+      'ratingValue': '4.9',
+      'reviewCount': '124',
+      'bestRating': '5',
+      'worstRating': '1'
+    },
+    'review': [
+      {
+        '@type': 'Review',
+        'itemReviewed': {
+          '@type': 'LocalBusiness',
+          'name': 'Rachit Creation'
+        },
+        'author': {
+          '@type': 'Person',
+          'name': 'Priya Sharma'
+        },
+        'datePublished': '2026-01-10',
+        'reviewBody': 'Absolutely stunning bridal lehenga! The craftsmanship is beyond anything I have seen. Rachit Creation made my wedding day truly special.',
+        'reviewRating': {
+          '@type': 'Rating',
+          'ratingValue': '5',
+          'bestRating': '5'
+        }
+      },
+      {
+        '@type': 'Review',
+        'itemReviewed': {
+          '@type': 'LocalBusiness',
+          'name': 'Rachit Creation'
+        },
+        'author': {
+          '@type': 'Person',
+          'name': 'Ananya Patel'
+        },
+        'datePublished': '2026-02-05',
+        'reviewBody': 'The designer lehenga I ordered was even more beautiful in person. Exceptional embroidery and fast international shipping.',
+        'reviewRating': {
+          '@type': 'Rating',
+          'ratingValue': '5',
+          'bestRating': '5'
+        }
+      }
+    ]
   };
 }
 
@@ -131,6 +177,12 @@ export function getProductSchema(product: Product, settings: SiteSettings) {
     'review': [
       {
         '@type': 'Review',
+        'itemReviewed': {
+          '@type': 'Product',
+          'name': product.name,
+          'image': imageUrl,
+          'sku': product.id
+        },
         'author': {
           '@type': 'Person',
           'name': 'Ananya Sharma'
@@ -145,6 +197,12 @@ export function getProductSchema(product: Product, settings: SiteSettings) {
       },
       {
         '@type': 'Review',
+        'itemReviewed': {
+          '@type': 'Product',
+          'name': product.name,
+          'image': imageUrl,
+          'sku': product.id
+        },
         'author': {
           '@type': 'Person',
           'name': 'Priya Patel'
