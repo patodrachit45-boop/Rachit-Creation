@@ -2,6 +2,27 @@ import { useEffect } from 'react';
 import type { SiteSettings } from './siteConfig';
 import type { Product } from '../store';
 
+// ── Meta Robots & Title Helpers for SEO & Soft 404 Prevention ─────────
+export function setMetaRobots(noindex: boolean) {
+  let meta = document.querySelector('meta[name="robots"]') as HTMLMetaElement;
+  if (noindex) {
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'robots');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', 'noindex, follow');
+  } else {
+    if (meta) {
+      meta.remove();
+    }
+  }
+}
+
+export function setPageTitle(title: string) {
+  document.title = title;
+}
+
 // ── Canonical URL hook ────────────────────────────────────────────────
 export function useCanonicalURL() {
   useEffect(() => {

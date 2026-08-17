@@ -25,6 +25,7 @@ const BlogPostDetail = lazy(() => import('./pages/BlogPostDetail'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const EditorialPolicy = lazy(() => import('./pages/EditorialPolicy'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -104,6 +105,7 @@ export default function App() {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/editorial-policy" element={<EditorialPolicy />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </main>

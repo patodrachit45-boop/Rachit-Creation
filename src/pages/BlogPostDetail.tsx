@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router';
 import { useStore } from '../store';
 import { motion } from 'motion/react';
 import { Calendar, ArrowLeft, Share2, Facebook, Twitter, ShieldCheck, ChevronRight } from 'lucide-react';
-import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
+import { injectJSONLD, removeJSONLD, getBreadcrumbSchema, setMetaRobots, setPageTitle } from '../lib/seoService';
 import { PageSkeleton } from '../components/LoadingSkeleton';
 
 export default function BlogPostDetail() {
@@ -28,7 +28,15 @@ export default function BlogPostDetail() {
   const currentUrl = typeof window !== 'undefined' ? window.location.href : `https://raccreation.com/blog/${id}`;
 
   useEffect(() => {
-    if (blog) {
+    if (loading) return;
+
+    if (!blog) {
+      setMetaRobots(true);
+      setPageTitle('Article Not Found | Rachit Creation');
+      removeJSONLD('blog-breadcrumb-schema');
+    } else {
+      setMetaRobots(false);
+      setPageTitle(`${blog.title} | Rachit Creation Blog`);
       const breadcrumbSchema = getBreadcrumbSchema([
         { name: 'Home', item: '/' },
         { name: 'Blog', item: '/blog' },
@@ -36,8 +44,11 @@ export default function BlogPostDetail() {
       ]);
       injectJSONLD('blog-breadcrumb-schema', breadcrumbSchema);
     }
-    return () => removeJSONLD('blog-breadcrumb-schema');
-  }, [blog]);
+    return () => {
+      setMetaRobots(false);
+      removeJSONLD('blog-breadcrumb-schema');
+    };
+  }, [loading, blog]);
 
   const parsedContent = useMemo(() => {
     if (!blog?.content) return null;

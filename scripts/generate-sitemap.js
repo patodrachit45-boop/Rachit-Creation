@@ -97,16 +97,22 @@ async function generate() {
     '/editorial-policy',
   ];
 
+  const FALLBACK_PRODUCTS = [
+    'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'b10', 'b11', 'b12', 'b13', 'b14', 'b21', 'b22', 'b23', 'b24',
+    'g21', 'g22', 'g23', 'g24', 'g25', 'g26', 'g27', 'g28', 'g29', 'g30', 'g31', 'g32', 'g33', 'g34', 'g35', 'g36', 'g37', 'g38', 'g39', 'g40',
+    'd41', 'd42', 'd44', 'd45', 'd46', 'd47', 'd48', 'd49', 'd50', 'd51', 'd52', 'd53', 'd100',
+    'h54', 'h55', 'h56', 'h57', 'h58', 'h59', 'h60', 'h61', 'h62', 'h63'
+  ].map(id => ({ id }));
+
   // 2. Fetch Dynamic Products
   let products = [];
   try {
     products = await fetchSupabaseData('products');
     if (products.length === 0) {
-      // Hardcoded fallback product IDs based on initialProducts.ts
-      products = [{ id: 'p1' }, { id: 'p2' }, { id: 'p3' }, { id: 'p4' }, { id: 'p5' }, { id: 'p6' }, { id: 'p7' }, { id: 'p8' }];
+      products = FALLBACK_PRODUCTS;
     }
   } catch (e) {
-    products = [{ id: 'p1' }, { id: 'p2' }, { id: 'p3' }, { id: 'p4' }, { id: 'p5' }, { id: 'p6' }, { id: 'p7' }, { id: 'p8' }];
+    products = FALLBACK_PRODUCTS;
   }
 
   // 3. Fetch Dynamic Blogs

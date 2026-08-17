@@ -4,30 +4,43 @@ import { useStore, useWishlistStore } from '../store';
 import { formatPrice, getWhatsAppOrderLink } from '../lib/siteConfig';
 import { Heart, ShoppingBag, ChevronRight, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { injectJSONLD, removeJSONLD, getProductSchema, getBreadcrumbSchema } from '../lib/seoService';
+import { injectJSONLD, removeJSONLD, getProductSchema, getBreadcrumbSchema, setMetaRobots, setPageTitle } from '../lib/seoService';
+import { PageSkeleton } from '../components/LoadingSkeleton';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
-  const { products, siteSettings } = useStore();
+  const { products, siteSettings, isLoading } = useStore();
   const { wishlistIds, toggleWishlist } = useWishlistStore();
   const product = useMemo(() => products.find((p) => p.id === id), [products, id]);
   
   useEffect(() => {
-    if (product && siteSettings) {
-      const productSchema = getProductSchema(product, siteSettings);
-      const breadcrumbSchema = getBreadcrumbSchema([
-        { name: 'Home', item: '/' },
-        { name: product.category, item: `/category/${product.category}` },
-        { name: product.name, item: `/product/${product.id}` }
-      ]);
-      injectJSONLD('product-schema', productSchema);
-      injectJSONLD('product-breadcrumb-schema', breadcrumbSchema);
+    if (isLoading) return;
+
+    if (!product) {
+      setMetaRobots(true);
+      setPageTitle('Product Not Found | Rachit Creation');
+      removeJSONLD('product-schema');
+      removeJSONLD('product-breadcrumb-schema');
+    } else {
+      setMetaRobots(false);
+      setPageTitle(`${product.name} — Luxury ${product.category} Lehenga | Rachit Creation`);
+      if (siteSettings) {
+        const productSchema = getProductSchema(product, siteSettings);
+        const breadcrumbSchema = getBreadcrumbSchema([
+          { name: 'Home', item: '/' },
+          { name: product.category, item: `/category/${product.category}` },
+          { name: product.name, item: `/product/${product.id}` }
+        ]);
+        injectJSONLD('product-schema', productSchema);
+        injectJSONLD('product-breadcrumb-schema', breadcrumbSchema);
+      }
     }
     return () => {
+      setMetaRobots(false);
       removeJSONLD('product-schema');
       removeJSONLD('product-breadcrumb-schema');
     };
-  }, [product, siteSettings]);
+  }, [isLoading, product, siteSettings]);
 
   const isWishlisted = product ? wishlistIds.includes(product.id) : false;
   const relatedProducts = useMemo(() => {
@@ -38,6 +51,10 @@ export default function ProductDetail() {
     if (!product?.highlights) return [];
     return product.highlights.split('\n').map((h) => h.trim()).filter(Boolean);
   }, [product]);
+
+  if (isLoading) {
+    return <PageSkeleton />;
+  }
 
   if (!product) {
     return (

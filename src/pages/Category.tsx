@@ -4,7 +4,7 @@ import { useStore } from '../store';
 import { formatPrice } from '../lib/siteConfig';
 import { motion } from 'motion/react';
 import { ChevronRight, SlidersHorizontal } from 'lucide-react';
-import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
+import { injectJSONLD, removeJSONLD, getBreadcrumbSchema, setMetaRobots, setPageTitle } from '../lib/seoService';
 
 type SortKey = 'newest' | 'price-asc' | 'price-desc' | 'name-asc';
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
@@ -14,22 +14,34 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'name-asc', label: 'Name: A → Z' },
 ];
 
+const VALID_CATEGORIES = ['bridal', 'designer', 'girlish', 'heavy', 'all'];
+
 export default function Category() {
   const { type } = useParams<{ type: string }>();
   const { products, isLoading } = useStore();
   const [sortBy, setSortBy] = useState<SortKey>('newest');
   const categoryName = type || 'All';
+  const isValidCategory = VALID_CATEGORIES.includes(categoryName.toLowerCase());
 
   useEffect(() => {
-    if (categoryName) {
+    if (!isValidCategory) {
+      setMetaRobots(true);
+      setPageTitle('Category Not Found | Rachit Creation');
+      removeJSONLD('category-breadcrumb-schema');
+    } else {
+      setMetaRobots(false);
+      setPageTitle(`${categoryName} Lehengas Collection | Rachit Creation`);
       const breadcrumbSchema = getBreadcrumbSchema([
         { name: 'Home', item: '/' },
         { name: categoryName, item: `/category/${categoryName}` }
       ]);
       injectJSONLD('category-breadcrumb-schema', breadcrumbSchema);
     }
-    return () => removeJSONLD('category-breadcrumb-schema');
-  }, [categoryName]);
+    return () => {
+      setMetaRobots(false);
+      removeJSONLD('category-breadcrumb-schema');
+    };
+  }, [categoryName, isValidCategory]);
 
   const filtered = useMemo(() => {
     const base = products.filter((p) => p.category.toLowerCase() === categoryName.toLowerCase());
