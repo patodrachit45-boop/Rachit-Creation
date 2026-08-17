@@ -23,7 +23,7 @@ export function setPageTitle(title: string) {
   document.title = title;
 }
 
-// ── Canonical URL hook ────────────────────────────────────────────────
+// ── Canonical URL hook (Enforces HTTPS raccreation.com) ────────────────
 export function useCanonicalURL() {
   useEffect(() => {
     let link = document.querySelector('link[rel="canonical"]');
@@ -32,8 +32,10 @@ export function useCanonicalURL() {
       link.setAttribute('rel', 'canonical');
       document.head.appendChild(link);
     }
-    // Set canonical link based on the current window location to ensure it is valid for all pages
-    const currentUrl = window.location.origin + window.location.pathname;
+    // Always enforce HTTPS base domain https://raccreation.com for GSC indexing
+    const pathname = window.location.pathname;
+    const cleanPath = pathname === '/' ? '' : pathname;
+    const currentUrl = `https://raccreation.com${cleanPath}`;
     link.setAttribute('href', currentUrl);
   }, []);
 }
