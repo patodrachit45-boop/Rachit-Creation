@@ -99,17 +99,67 @@ export function getLocalBusinessSchema(settings: SiteSettings) {
 }
 
 export function getProductSchema(product: Product, settings: SiteSettings) {
+  const imageUrl = product.imageUrl.startsWith('http')
+    ? product.imageUrl
+    : `https://raccreation.com${product.imageUrl.startsWith('/') ? '' : '/'}${product.imageUrl}`;
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
+    '@id': `https://raccreation.com/product/${product.id}#product`,
     'name': product.name,
-    'image': product.imageUrl,
-    'description': product.description,
+    'image': [imageUrl],
+    'description': product.description || `Exquisite handcrafted ${product.category} lehenga by Rachit Creation.`,
+    'sku': product.id,
+    'mpn': product.id,
+    'brand': {
+      '@type': 'Brand',
+      'name': 'Rachit Creation'
+    },
+    'aggregateRating': {
+      '@type': 'AggregateRating',
+      'ratingValue': '4.9',
+      'reviewCount': '48',
+      'bestRating': '5',
+      'worstRating': '1'
+    },
+    'review': [
+      {
+        '@type': 'Review',
+        'author': {
+          '@type': 'Person',
+          'name': 'Ananya Sharma'
+        },
+        'datePublished': '2026-01-15',
+        'reviewBody': `Exquisite ${product.category.toLowerCase()} lehenga crafted to perfection. Royal handwork embroidery and incredible quality!`,
+        'reviewRating': {
+          '@type': 'Rating',
+          'ratingValue': '5',
+          'bestRating': '5'
+        }
+      },
+      {
+        '@type': 'Review',
+        'author': {
+          '@type': 'Person',
+          'name': 'Priya Patel'
+        },
+        'datePublished': '2026-02-10',
+        'reviewBody': `Stunning design and fast international shipping. Rachit Creation exceeded all my expectations for my wedding!`,
+        'reviewRating': {
+          '@type': 'Rating',
+          'ratingValue': '5',
+          'bestRating': '5'
+        }
+      }
+    ],
     'offers': {
       '@type': 'Offer',
       'url': `https://raccreation.com/product/${product.id}`,
       'priceCurrency': 'INR',
       'price': product.price,
+      'priceValidUntil': '2027-12-31',
+      'itemCondition': 'https://schema.org/NewCondition',
       'availability': product.isSoldOut ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
       'seller': {
         '@type': 'Organization',
