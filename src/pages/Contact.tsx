@@ -3,7 +3,7 @@ import { useStore } from '../store';
 import { getWhatsAppLink } from '../lib/siteConfig';
 import { MapPin, Phone, Mail, Clock, Send, MessageCircle, ChevronDown, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { injectJSONLD, removeJSONLD, getFAQSchema } from '../lib/seoService';
+import { injectJSONLD, removeJSONLD, getFAQSchema, getBreadcrumbSchema } from '../lib/seoService';
 import { useLocation, Link } from 'react-router';
 import { PageSkeleton } from '../components/LoadingSkeleton';
 
@@ -12,6 +12,15 @@ const PRODUCT_INTERESTS = ['Bridal Lehenga', 'Designer Lehenga', 'Girlish Leheng
 export default function Contact() {
   const { siteSettings, faqs, fetchFaqs } = useStore();
   const [loading, setLoading] = useState(faqs.length === 0);
+
+  useEffect(() => {
+    const breadcrumbSchema = getBreadcrumbSchema([
+      { name: 'Home', item: '/' },
+      { name: 'Contact', item: '/contact' }
+    ]);
+    injectJSONLD('contact-breadcrumb-schema', breadcrumbSchema);
+    return () => removeJSONLD('contact-breadcrumb-schema');
+  }, []);
 
   useEffect(() => {
     if (faqs.length === 0) {

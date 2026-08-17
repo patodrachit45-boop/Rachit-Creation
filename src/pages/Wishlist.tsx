@@ -3,12 +3,22 @@ import { useStore, useWishlistStore } from '../store';
 import { formatPrice, getWhatsAppOrderLink } from '../lib/siteConfig';
 import { Heart, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
+import { injectJSONLD, removeJSONLD, getBreadcrumbSchema } from '../lib/seoService';
 
 export default function Wishlist() {
   const { products, siteSettings } = useStore();
   const { wishlistIds, toggleWishlist } = useWishlistStore();
   const wishlistProducts = useMemo(() => products.filter((p) => wishlistIds.includes(p.id)), [products, wishlistIds]);
+
+  useEffect(() => {
+    const breadcrumbSchema = getBreadcrumbSchema([
+      { name: 'Home', item: '/' },
+      { name: 'Wishlist', item: '/wishlist' }
+    ]);
+    injectJSONLD('wishlist-breadcrumb-schema', breadcrumbSchema);
+    return () => removeJSONLD('wishlist-breadcrumb-schema');
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#FCEEE9]/30">

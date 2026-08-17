@@ -232,11 +232,21 @@ export function getBreadcrumbSchema(crumbs: { name: string; item: string }[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    'itemListElement': crumbs.map((crumb, idx) => ({
-      '@type': 'ListItem',
-      'position': idx + 1,
-      'name': crumb.name,
-      'item': crumb.item.startsWith('http') ? crumb.item : `https://raccreation.com${crumb.item}`
-    }))
+    'itemListElement': crumbs.map((crumb, idx) => {
+      let itemUrl = crumb.item.startsWith('http')
+        ? crumb.item
+        : `https://raccreation.com${crumb.item.startsWith('/') ? '' : '/'}${crumb.item}`;
+
+      if (itemUrl === 'https://raccreation.com/') {
+        itemUrl = 'https://raccreation.com';
+      }
+
+      return {
+        '@type': 'ListItem',
+        'position': idx + 1,
+        'name': crumb.name,
+        'item': itemUrl
+      };
+    })
   };
 }
