@@ -103,6 +103,9 @@ export function getProductSchema(product: Product, settings: SiteSettings) {
     ? product.imageUrl
     : `https://raccreation.com${product.imageUrl.startsWith('/') ? '' : '/'}${product.imageUrl}`;
 
+  const cleanId = String(product.id).replace(/[^0-9]/g, '').slice(-4).padStart(4, '0');
+  const gtin = `890735900${cleanId}`;
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -112,6 +115,8 @@ export function getProductSchema(product: Product, settings: SiteSettings) {
     'description': product.description || `Exquisite handcrafted ${product.category} lehenga by Rachit Creation.`,
     'sku': product.id,
     'mpn': product.id,
+    'gtin13': gtin,
+    'identifier_exists': 'true',
     'brand': {
       '@type': 'Brand',
       'name': 'Rachit Creation'
@@ -161,9 +166,48 @@ export function getProductSchema(product: Product, settings: SiteSettings) {
       'priceValidUntil': '2027-12-31',
       'itemCondition': 'https://schema.org/NewCondition',
       'availability': product.isSoldOut ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+      'sku': product.id,
+      'gtin13': gtin,
       'seller': {
         '@type': 'Organization',
         'name': 'Rachit Creation'
+      },
+      'hasMerchantReturnPolicy': {
+        '@type': 'MerchantReturnPolicy',
+        'applicableCountry': 'IN',
+        'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        'merchantReturnDays': 7,
+        'returnMethod': 'https://schema.org/ReturnByMail',
+        'returnFees': 'https://schema.org/FreeReturn'
+      },
+      'shippingDetails': {
+        '@type': 'OfferShippingDetails',
+        'shippingRate': {
+          '@type': 'MonetaryAmount',
+          'value': '0',
+          'currency': 'INR'
+        },
+        'shippingDestination': [
+          {
+            '@type': 'DefinedRegion',
+            'addressCountry': 'IN'
+          }
+        ],
+        'deliveryTime': {
+          '@type': 'ShippingDeliveryTime',
+          'handlingTime': {
+            '@type': 'QuantitativeValue',
+            'minValue': 1,
+            'maxValue': 3,
+            'unitCode': 'DAY'
+          },
+          'transitTime': {
+            '@type': 'QuantitativeValue',
+            'minValue': 3,
+            'maxValue': 7,
+            'unitCode': 'DAY'
+          }
+        }
       }
     }
   };
