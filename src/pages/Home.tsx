@@ -4,7 +4,7 @@ import { DEFAULT_TESTIMONIALS, formatPrice, CATEGORIES, getWhatsAppLink } from '
 import { Star, MessageCircle, ArrowRight, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useMemo, useEffect } from 'react';
-import { injectJSONLD, removeJSONLD, getLocalBusinessSchema } from '../lib/seoService';
+import { injectJSONLD, removeJSONLD, getLocalBusinessSchema, getBreadcrumbSchema } from '../lib/seoService';
 
 export default function Home() {
   const { products, siteSettings, isSettingsLoading } = useStore();
@@ -14,7 +14,15 @@ export default function Home() {
       const schema = getLocalBusinessSchema(siteSettings);
       injectJSONLD('local-business-schema', schema);
     }
-    return () => removeJSONLD('local-business-schema');
+    const breadcrumbSchema = getBreadcrumbSchema([
+      { name: 'Home', item: '/' }
+    ]);
+    injectJSONLD('home-breadcrumb-schema', breadcrumbSchema);
+
+    return () => {
+      removeJSONLD('local-business-schema');
+      removeJSONLD('home-breadcrumb-schema');
+    };
   }, [siteSettings]);
 
   const categoryData = useMemo(() => CATEGORIES.map((cat) => {

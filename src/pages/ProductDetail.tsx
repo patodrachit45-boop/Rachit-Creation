@@ -24,15 +24,16 @@ export default function ProductDetail() {
     } else {
       setMetaRobots(false);
       setPageTitle(`${product.name} — Luxury ${product.category} Lehenga | Rachit Creation`);
+      const breadcrumbSchema = getBreadcrumbSchema([
+        { name: 'Home', item: '/' },
+        { name: product.category, item: `/category/${product.category}` },
+        { name: product.name, item: `/product/${product.id}` }
+      ]);
+      injectJSONLD('product-breadcrumb-schema', breadcrumbSchema);
+
       if (siteSettings) {
         const productSchema = getProductSchema(product, siteSettings);
-        const breadcrumbSchema = getBreadcrumbSchema([
-          { name: 'Home', item: '/' },
-          { name: product.category, item: `/category/${product.category}` },
-          { name: product.name, item: `/product/${product.id}` }
-        ]);
         injectJSONLD('product-schema', productSchema);
-        injectJSONLD('product-breadcrumb-schema', breadcrumbSchema);
       }
     }
     return () => {
