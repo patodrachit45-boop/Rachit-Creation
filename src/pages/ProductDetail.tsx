@@ -26,7 +26,7 @@ export default function ProductDetail() {
       setPageTitle(`${product.name} — Luxury ${product.category} Lehenga | Rachit Creation`);
       const breadcrumbSchema = getBreadcrumbSchema([
         { name: 'Home', item: '/' },
-        { name: product.category, item: `/category/${product.category}` },
+        { name: `${product.category} Lehengas`, item: `/category/${product.category}` },
         { name: product.name, item: `/product/${product.id}` }
       ]);
       injectJSONLD('product-breadcrumb-schema', breadcrumbSchema);

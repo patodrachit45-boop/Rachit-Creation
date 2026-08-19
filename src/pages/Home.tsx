@@ -15,7 +15,8 @@ export default function Home() {
       injectJSONLD('local-business-schema', schema);
     }
     const breadcrumbSchema = getBreadcrumbSchema([
-      { name: 'Home', item: '/' }
+      { name: 'Home', item: '/' },
+      { name: 'Luxury Collections', item: '/#collections' }
     ]);
     injectJSONLD('home-breadcrumb-schema', breadcrumbSchema);
 

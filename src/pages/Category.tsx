@@ -33,7 +33,8 @@ export default function Category() {
       setPageTitle(`${categoryName} Lehengas Collection | Rachit Creation`);
       const breadcrumbSchema = getBreadcrumbSchema([
         { name: 'Home', item: '/' },
-        { name: categoryName, item: `/category/${categoryName}` }
+        { name: 'Collections', item: '/#collections' },
+        { name: `${categoryName} Lehengas`, item: `/category/${categoryName}` }
       ]);
       injectJSONLD('category-breadcrumb-schema', breadcrumbSchema);
     }
