@@ -81,12 +81,13 @@ async function fetchSupabaseData(table) {
 async function generate() {
   console.log('Generating sitemap...');
   
+  const today = new Date().toISOString().split('T')[0];
+
   // 1. Static pages
   const pages = [
     '',
     '/about',
     '/contact',
-    '/wishlist',
     '/blog',
     '/category/Bridal',
     '/category/Designer',
@@ -131,17 +132,17 @@ async function generate() {
   
   // Add static URLs
   pages.forEach((page) => {
-    urls.push(`  <url>\n    <loc>${BASE_URL}${page}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>${page === '' ? '1.0' : '0.8'}</priority>\n  </url>`);
+    urls.push(`  <url>\n    <loc>${BASE_URL}${page}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>${page === '' ? '1.0' : '0.8'}</priority>\n  </url>`);
   });
 
   // Add Product URLs
   products.forEach((prod) => {
-    urls.push(`  <url>\n    <loc>${BASE_URL}/product/${prod.id}</loc>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+    urls.push(`  <url>\n    <loc>${BASE_URL}/product/${prod.id}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
   });
 
   // Add Blog URLs
   blogs.forEach((post) => {
-    urls.push(`  <url>\n    <loc>${BASE_URL}/blog/${post.id}</loc>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
+    urls.push(`  <url>\n    <loc>${BASE_URL}/blog/${post.id}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.6</priority>\n  </url>`);
   });
 
   // 5. Build XML Structure

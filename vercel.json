@@ -1,4 +1,5 @@
 {
+  "trailingSlash": false,
   "rewrites": [{ "source": "/((?!images|assets|favicon|sitemap\\.xml|robots\\.txt|llms\\.txt).*)", "destination": "/" }],
   "headers": [
     {

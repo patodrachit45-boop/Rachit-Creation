@@ -144,13 +144,24 @@ export function getLocalBusinessSchema(settings: SiteSettings) {
   };
 }
 
+export function calculateValidGTIN13(productId: string): string {
+  const cleanId = String(productId).replace(/[^0-9]/g, '').slice(-5).padStart(5, '0');
+  const first12 = `8907359${cleanId}`;
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    const digit = parseInt(first12[i], 10);
+    sum += i % 2 === 0 ? digit * 1 : digit * 3;
+  }
+  const checkDigit = (10 - (sum % 10)) % 10;
+  return `${first12}${checkDigit}`;
+}
+
 export function getProductSchema(product: Product, settings: SiteSettings) {
   const imageUrl = product.imageUrl.startsWith('http')
     ? product.imageUrl
     : `https://raccreation.com${product.imageUrl.startsWith('/') ? '' : '/'}${product.imageUrl}`;
 
-  const cleanId = String(product.id).replace(/[^0-9]/g, '').slice(-4).padStart(4, '0');
-  const gtin = `890735900${cleanId}`;
+  const gtin = calculateValidGTIN13(String(product.id));
 
   return {
     '@context': 'https://schema.org',
@@ -162,7 +173,6 @@ export function getProductSchema(product: Product, settings: SiteSettings) {
     'sku': product.id,
     'mpn': product.id,
     'gtin13': gtin,
-    'identifier_exists': 'true',
     'brand': {
       '@type': 'Brand',
       'name': 'Rachit Creation'
