@@ -23,21 +23,24 @@ export function setPageTitle(title: string) {
   document.title = title;
 }
 
-// ── Canonical URL hook (Enforces HTTPS raccreation.com) ────────────────
+// ── Canonical URL Helper & Hook (Enforces HTTPS raccreation.com) ──────
+export function setCanonicalURL(path?: string) {
+  let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+  if (!link) {
+    link = document.createElement('link');
+    link.setAttribute('rel', 'canonical');
+    document.head.appendChild(link);
+  }
+  const rawPath = path || window.location.pathname;
+  const cleanPath = (rawPath === '/' || !rawPath) ? '' : rawPath.replace(/\/+$/, '');
+  const canonicalUrl = `https://raccreation.com${cleanPath}`;
+  link.setAttribute('href', canonicalUrl);
+}
+
 export function useCanonicalURL() {
   useEffect(() => {
-    let link = document.querySelector('link[rel="canonical"]');
-    if (!link) {
-      link = document.createElement('link');
-      link.setAttribute('rel', 'canonical');
-      document.head.appendChild(link);
-    }
-    // Always enforce HTTPS base domain https://raccreation.com for GSC indexing
-    const pathname = window.location.pathname;
-    const cleanPath = pathname === '/' ? '' : pathname;
-    const currentUrl = `https://raccreation.com${cleanPath}`;
-    link.setAttribute('href', currentUrl);
-  }, []);
+    setCanonicalURL();
+  });
 }
 
 // ── JSON-LD Injection Helpers ─────────────────────────────────────────

@@ -4,7 +4,7 @@ import { useStore, useWishlistStore } from '../store';
 import { formatPrice, getWhatsAppOrderLink } from '../lib/siteConfig';
 import { Heart, ShoppingBag, ChevronRight, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { injectJSONLD, removeJSONLD, getProductSchema, getBreadcrumbSchema, setMetaRobots, setPageTitle } from '../lib/seoService';
+import { injectJSONLD, removeJSONLD, getProductSchema, getBreadcrumbSchema, setMetaRobots, setPageTitle, setCanonicalURL } from '../lib/seoService';
 import { PageSkeleton } from '../components/LoadingSkeleton';
 
 export default function ProductDetail() {
@@ -24,6 +24,7 @@ export default function ProductDetail() {
     } else {
       setMetaRobots(false);
       setPageTitle(`${product.name} — Luxury ${product.category} Lehenga | Rachit Creation`);
+      setCanonicalURL(`/product/${product.id}`);
       const breadcrumbSchema = getBreadcrumbSchema([
         { name: 'Home', item: '/' },
         { name: `${product.category} Lehengas`, item: `/category/${product.category}` },

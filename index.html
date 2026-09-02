@@ -13,8 +13,19 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/webp" href="/images/logo.webp" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rachit Creation — Premium Luxury Lehengas | Surat, India</title>
-  <link rel="canonical" href="https://raccreation.com" />
+  <script>
+    (function() {
+      var p = window.location.pathname;
+      var clean = (p === '/' || !p) ? '' : p.replace(/\/+$/, '');
+      var link = document.querySelector('link[rel="canonical"]');
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'canonical';
+        document.head.appendChild(link);
+      }
+      link.href = 'https://raccreation.com' + clean;
+    })();
+  </script>
   <meta name="description" content="Rachit Creation — Exquisite handcrafted bridal, designer, girlish, and heavy lehengas from Surat, Gujarat. Discover luxury craftsmanship for every celebration." />
   <meta name="keywords" content="Rachit Creation, luxury lehengas, bridal lehengas Surat, custom wedding lehengas, Indian designer couture, hand-embroidered Zardozi lehengas, heavy work bridal wear, girlish party wear lehengas" />
   <meta property="og:title" content="Rachit Creation — Premium Luxury Lehengas" />

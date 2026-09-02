@@ -4,7 +4,7 @@ import { useStore } from '../store';
 import { formatPrice } from '../lib/siteConfig';
 import { motion } from 'motion/react';
 import { ChevronRight, SlidersHorizontal } from 'lucide-react';
-import { injectJSONLD, removeJSONLD, getBreadcrumbSchema, setMetaRobots, setPageTitle } from '../lib/seoService';
+import { injectJSONLD, removeJSONLD, getBreadcrumbSchema, setMetaRobots, setPageTitle, setCanonicalURL } from '../lib/seoService';
 
 type SortKey = 'newest' | 'price-asc' | 'price-desc' | 'name-asc';
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
@@ -31,6 +31,7 @@ export default function Category() {
     } else {
       setMetaRobots(false);
       setPageTitle(`${categoryName} Lehengas Collection | Rachit Creation`);
+      setCanonicalURL(`/category/${categoryName}`);
       const breadcrumbSchema = getBreadcrumbSchema([
         { name: 'Home', item: '/' },
         { name: 'Collections', item: '/#collections' },
