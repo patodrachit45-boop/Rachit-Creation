@@ -47,10 +47,14 @@ export interface SiteSettings {
   termsOfServiceText?: string;
   heroImageAlt?: string;
   aboutHeroImageAlt?: string;
+  heroVideoUrl?: string;
+  heroVideoPoster?: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   heroImage: '/images/products/regenerated_image_1779296299562.png',
+  heroVideoUrl: 'https://cdn.coverr.co/videos/coverr-fashion-model-in-red-dress-5743/1080p.mp4',
+  heroVideoPoster: '/images/products/regenerated_image_1779296299562.png',
   logoImage: '/images/logo.webp',
   whatsappNumber: '917359747911',
   instagramUrl: 'https://www.instagram.com/rachit__creation/',
@@ -285,7 +289,73 @@ export const DEFAULT_TESTIMONIALS: Testimonial[] = [
     location: 'Bangalore',
     text: 'The girlish collection is perfect for young women. My daughter loved her lehenga for the engagement ceremony. Elegant yet modern.',
     rating: 5,
+  }
+];
+
+// ── Couture Reels (Instagram Reel 9:16 Video Showcase) ──────────────────
+
+export interface ReelItem {
+  id: string;
+  title: string;
+  videoUrl: string;
+  posterUrl: string;
+  category?: 'Bridal' | 'Girlish' | 'Designer' | 'Heavy';
+  productId?: string;
+  productName?: string;
+  price?: number;
+  instagramUrl?: string;
+  createdAt?: number;
+}
+
+export const DEFAULT_REELS: ReelItem[] = [
+  {
+    id: 'reel1',
+    title: 'Royal Velvet Zardozi Bridal Lehenga — AI Couture Showcase',
+    videoUrl: 'https://cdn.coverr.co/videos/coverr-fashion-model-in-red-dress-5743/1080p.mp4',
+    posterUrl: '/images/products/regenerated_image_1779296299562.png',
+    category: 'Bridal',
+    productId: 'b3',
+    productName: 'Royal Velvet Bridal Lehenga Vol 3',
+    price: 185000,
+    instagramUrl: 'https://www.instagram.com/rachit__creation/',
+    createdAt: Date.now() - 100000
   },
+  {
+    id: 'reel2',
+    title: 'Gold Heritage Handloom Embroidery & Velvet Flare',
+    videoUrl: 'https://cdn.coverr.co/videos/coverr-fashion-runway-show-6548/1080p.mp4',
+    posterUrl: '/images/products/regenerated_image_1779377157645.png',
+    category: 'Designer',
+    productId: 'd41',
+    productName: 'Gold Heritage Designer Lehenga',
+    price: 145000,
+    instagramUrl: 'https://www.instagram.com/rachit__creation/',
+    createdAt: Date.now() - 200000
+  },
+  {
+    id: 'reel3',
+    title: 'Twirling Pastels & Hand-Beaded Chiffon Flare',
+    videoUrl: 'https://cdn.coverr.co/videos/coverr-[#C5A059]-fashion-shoot-5142/1080p.mp4',
+    posterUrl: '/images/products/regenerated_image_1779296299562.png',
+    category: 'Girlish',
+    productId: 'g21',
+    productName: 'Blush Floral Girlish Lehenga',
+    price: 85000,
+    instagramUrl: 'https://www.instagram.com/rachit__creation/',
+    createdAt: Date.now() - 300000
+  },
+  {
+    id: 'reel4',
+    title: 'Opulent Crimson Wedding Ensemble — Signature Handwork',
+    videoUrl: 'https://cdn.coverr.co/videos/coverr-model-wearing-elegant-red-outfit-4321/1080p.mp4',
+    posterUrl: '/images/products/regenerated_image_1779377157645.png',
+    category: 'Heavy',
+    productId: 'h54',
+    productName: 'Crimson Opulence Heavy Lehenga',
+    price: 210000,
+    instagramUrl: 'https://www.instagram.com/rachit__creation/',
+    createdAt: Date.now() - 400000
+  }
 ];
 
 // ── Utility Functions ─────────────────────────────────────────────────

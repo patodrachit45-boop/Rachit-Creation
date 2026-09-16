@@ -12,7 +12,7 @@
 
 import { supabase, isSupabaseConfigured } from './supabase';
 import type { Product } from '../store';
-import type { SiteSettings, BlogPost, TeamMember, FAQ } from './siteConfig';
+import type { SiteSettings, BlogPost, TeamMember, FAQ, ReelItem } from './siteConfig';
 
 // ── Helpers: DB ↔ TypeScript mapping ──────────────────────────────────
 
@@ -97,6 +97,7 @@ export interface ExtraData {
   blogs?: BlogPost[];
   faqs?: FAQ[];
   teamMembers?: TeamMember[];
+  reels?: ReelItem[];
   defaultCraftingTime?: string;
   defaultOrigin?: string;
   defaultCustomization?: string;
@@ -414,6 +415,7 @@ export async function syncExtraDataToSupabase(data: {
   blogs?: BlogPost[];
   faqs?: FAQ[];
   teamMembers?: TeamMember[];
+  reels?: ReelItem[];
 }): Promise<boolean> {
   if (!supabase) throw new Error('Supabase is not configured');
   
@@ -438,6 +440,7 @@ export async function syncExtraDataToSupabase(data: {
   if (data.blogs !== undefined) existingExtra.blogs = data.blogs;
   if (data.faqs !== undefined) existingExtra.faqs = data.faqs;
   if (data.teamMembers !== undefined) existingExtra.teamMembers = data.teamMembers;
+  if (data.reels !== undefined) existingExtra.reels = data.reels;
 
   const updatedAboutText = buildAboutText(aboutTextVal, existingExtra);
 
@@ -727,6 +730,88 @@ export async function deleteFaqFromSupabase(id: string): Promise<boolean> {
   const currentFaqs = await fetchFaqsFromSupabase();
   const updatedFaqs = currentFaqs.filter((f) => f.id !== id);
   return await syncExtraDataToSupabase({ faqs: updatedFaqs });
+}
+
+// ── Couture Reels (Instagram Reel Videos) ────────────────────────────────
+
+export async function fetchReelsFromSupabase(): Promise<ReelItem[]> {
+  if (!supabase) return [];
+  const settings = await fetchSiteSettingsFromSupabase();
+  return (settings as any).reels || [];
+}
+
+export async function addReelToSupabase(
+  reel: Omit<ReelItem, 'id' | 'createdAt'>,
+  videoFile?: File,
+  posterFile?: File
+): Promise<ReelItem> {
+  let videoUrl = reel.videoUrl || '';
+  let posterUrl = reel.posterUrl || '';
+
+  if (videoFile) {
+    videoUrl = await uploadImageToSupabase(videoFile);
+  }
+  if (posterFile) {
+    posterUrl = await uploadImageToSupabase(posterFile);
+  }
+
+  const id = Math.random().toString(36).substring(2, 9);
+  const newReel: ReelItem = {
+    id,
+    title: reel.title,
+    videoUrl,
+    posterUrl: posterUrl || '/images/products/regenerated_image_1779296299562.png',
+    category: reel.category,
+    productId: reel.productId,
+    productName: reel.productName,
+    price: reel.price,
+    instagramUrl: reel.instagramUrl || 'https://www.instagram.com/rachit__creation/',
+    createdAt: Date.now(),
+  };
+
+  const currentReels = await fetchReelsFromSupabase();
+  const updatedReels = [newReel, ...currentReels];
+  await syncExtraDataToSupabase({ reels: updatedReels });
+  return newReel;
+}
+
+export async function updateReelInSupabase(
+  id: string,
+  fields: Partial<ReelItem>,
+  videoFile?: File,
+  posterFile?: File
+): Promise<boolean> {
+  if (!supabase) throw new Error('Supabase not configured');
+  let videoUrl = fields.videoUrl;
+  let posterUrl = fields.posterUrl;
+
+  if (videoFile) {
+    videoUrl = await uploadImageToSupabase(videoFile);
+  }
+  if (posterFile) {
+    posterUrl = await uploadImageToSupabase(posterFile);
+  }
+
+  const currentReels = await fetchReelsFromSupabase();
+  const updatedReels = currentReels.map((r) => {
+    if (r.id === id) {
+      return {
+        ...r,
+        ...fields,
+        ...(videoUrl ? { videoUrl } : {}),
+        ...(posterUrl ? { posterUrl } : {}),
+      };
+    }
+    return r;
+  });
+  return await syncExtraDataToSupabase({ reels: updatedReels });
+}
+
+export async function deleteReelFromSupabase(id: string): Promise<boolean> {
+  if (!supabase) throw new Error('Supabase not configured');
+  const currentReels = await fetchReelsFromSupabase();
+  const updatedReels = currentReels.filter((r) => r.id !== id);
+  return await syncExtraDataToSupabase({ reels: updatedReels });
 }
 
 export { isSupabaseConfigured };

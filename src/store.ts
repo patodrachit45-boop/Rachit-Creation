@@ -35,6 +35,10 @@ import {
   addFaqToSupabase,
   updateFaqInSupabase,
   deleteFaqFromSupabase,
+  fetchReelsFromSupabase,
+  addReelToSupabase,
+  updateReelInSupabase,
+  deleteReelFromSupabase,
 } from './lib/supabaseService';
 import {
   DEFAULT_SITE_SETTINGS,
@@ -42,9 +46,11 @@ import {
   type BlogPost,
   type TeamMember,
   type FAQ,
+  type ReelItem,
   DEFAULT_BLOGS,
   DEFAULT_TEAM_MEMBERS,
   DEFAULT_FAQS,
+  DEFAULT_REELS,
 } from './lib/siteConfig';
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -75,6 +81,7 @@ interface StoreState {
   blogs: BlogPost[];
   teamMembers: TeamMember[];
   faqs: FAQ[];
+  reels: ReelItem[];
   siteSettings: SiteSettings;
   isLoading: boolean;
   isSettingsLoading: boolean;
@@ -86,6 +93,7 @@ interface StoreState {
   fetchBlogs: () => Promise<void>;
   fetchTeamMembers: () => Promise<void>;
   fetchFaqs: () => Promise<void>;
+  fetchReels: () => Promise<void>;
   fetchSiteSettings: () => Promise<void>;
   addProduct: (product: Omit<Product, 'id'>, imageFile?: File) => Promise<boolean>;
   updateProduct: (id: string, fields: Partial<Product>, imageFile?: File) => Promise<boolean>;
@@ -99,6 +107,9 @@ interface StoreState {
   addFaq: (faq: Omit<FAQ, 'id' | 'createdAt'>) => Promise<{ success: boolean; error?: string }>;
   updateFaq: (id: string, fields: Partial<FAQ>) => Promise<{ success: boolean; error?: string }>;
   deleteFaq: (id: string) => Promise<{ success: boolean; error?: string }>;
+  addReel: (reel: Omit<ReelItem, 'id' | 'createdAt'>, videoFile?: File, posterFile?: File) => Promise<{ success: boolean; error?: string }>;
+  updateReel: (id: string, fields: Partial<ReelItem>, videoFile?: File, posterFile?: File) => Promise<{ success: boolean; error?: string }>;
+  deleteReel: (id: string) => Promise<{ success: boolean; error?: string }>;
   updateSiteSettings: (
     settings: Partial<SiteSettings>,
     heroImageFile?: File,
@@ -138,6 +149,7 @@ export const useStore = create<StoreState>()((set, get) => ({
   blogs: [],
   teamMembers: [],
   faqs: [],
+  reels: DEFAULT_REELS,
   siteSettings: DEFAULT_SITE_SETTINGS,
   isLoading: true,
   isSettingsLoading: true,
@@ -529,6 +541,96 @@ export const useStore = create<StoreState>()((set, get) => ({
       return { success: true };
     } catch (error: any) {
       console.error('Failed to delete FAQ:', error);
+      return { success: false, error: error?.message || 'Database error' };
+    }
+  },
+
+  fetchReels: async () => {
+    try {
+      if (isSupabaseConfigured) {
+        const reels = await fetchReelsFromSupabase();
+        if (reels.length > 0) {
+          set({ reels });
+          return;
+        }
+      }
+      const local = localStorage.getItem('rachit_reels_fallback');
+      if (local) {
+        try { set({ reels: JSON.parse(local) }); return; } catch (e) {}
+      }
+      set({ reels: DEFAULT_REELS });
+    } catch (e) {
+      set({ reels: DEFAULT_REELS });
+    }
+  },
+
+  addReel: async (reel, videoFile, posterFile) => {
+    try {
+      if (isSupabaseConfigured) {
+        const newReel = await addReelToSupabase(reel, videoFile, posterFile);
+        set((s) => ({ reels: [newReel, ...s.reels] }));
+        return { success: true };
+      } else {
+        const id = Math.random().toString(36).substring(2, 9);
+        const newReel: ReelItem = {
+          id,
+          title: reel.title,
+          videoUrl: reel.videoUrl || '',
+          posterUrl: reel.posterUrl || '/images/products/regenerated_image_1779296299562.png',
+          category: reel.category,
+          productId: reel.productId,
+          productName: reel.productName,
+          price: reel.price,
+          instagramUrl: reel.instagramUrl || 'https://www.instagram.com/rachit__creation/',
+          createdAt: Date.now(),
+        };
+        set((s) => {
+          const updated = [newReel, ...s.reels];
+          localStorage.setItem('rachit_reels_fallback', JSON.stringify(updated));
+          return { reels: updated };
+        });
+        return { success: true };
+      }
+    } catch (error: any) {
+      console.error('Failed to add Reel:', error);
+      return { success: false, error: error?.message || 'Database error' };
+    }
+  },
+
+  updateReel: async (id, fields, videoFile, posterFile) => {
+    try {
+      if (isSupabaseConfigured) {
+        await updateReelInSupabase(id, fields, videoFile, posterFile);
+      }
+      set((s) => {
+        const updated = s.reels.map((r) => r.id === id ? { ...r, ...fields } : r);
+        if (!isSupabaseConfigured) {
+          localStorage.setItem('rachit_reels_fallback', JSON.stringify(updated));
+        }
+        return { reels: updated };
+      });
+      return { success: true };
+    } catch (error: any) {
+      console.error('Failed to update Reel:', error);
+      return { success: false, error: error?.message || 'Database error' };
+    }
+  },
+
+  deleteReel: async (id) => {
+    try {
+      if (isSupabaseConfigured) {
+        await deleteReelFromSupabase(id);
+      }
+      set((s) => {
+        const updated = s.reels.filter((r) => r.id !== id);
+        if (!isSupabaseConfigured) {
+          localStorage.setItem('rachit_reels_fallback', JSON.stringify(updated));
+        }
+        return { reels: updated };
+      });
+      return { success: true };
+    } catch (error: any) {
+      console.error('Failed to delete Reel:', error);
       return { success: false, error: error?.message || 'Database error' };
     }
   },

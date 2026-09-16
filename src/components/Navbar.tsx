@@ -50,6 +50,7 @@ export default function Navbar() {
             <Link to="/about" className="hover:text-[#C5A059] transition-colors">The Story</Link>
             <Link to="/blog" className="hover:text-[#C5A059] transition-colors">Blogs</Link>
             <Link to="/contact#faqs" className="hover:text-[#C5A059] transition-colors">FAQs</Link>
+            <Link to="/#reels" className="hover:text-[#C5A059] transition-colors flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#C5A059] animate-pulse"></span>Reels</Link>
             <Link to="/contact" className="hover:text-[#C5A059] transition-colors">Contact</Link>
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
@@ -87,6 +88,7 @@ export default function Navbar() {
             <Link to="/about" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">The Story</Link>
             <Link to="/blog" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">Blogs</Link>
             <Link to="/contact#faqs" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">FAQs</Link>
+            <Link to="/#reels" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059] flex items-center justify-between">Reels Showcase <span className="w-2 h-2 rounded-full bg-[#C5A059]"></span></Link>
             <Link to="/contact" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059]">Contact</Link>
             <Link to="/wishlist" className="py-3 text-[12px] uppercase tracking-[0.18em] text-[#3D3D3D] hover:text-[#C5A059] flex items-center gap-3">
               <Heart className="w-4 h-4" /> Wishlist {wishlistCount > 0 && <span className="bg-[#C5A059] text-white text-[9px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{wishlistCount}</span>}
