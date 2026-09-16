@@ -384,7 +384,7 @@ export async function uploadImageToSupabase(file: File): Promise<string> {
 
   const { error } = await supabase.storage
     .from('product-images')
-    .upload(filePath, file, { cacheControl: '31536000', upsert: false });
+    .upload(filePath, file, { cacheControl: '31536000', upsert: false, contentType: file.type || 'application/octet-stream' });
 
   if (error) throw error;
 

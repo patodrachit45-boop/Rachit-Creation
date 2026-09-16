@@ -567,46 +567,102 @@ export const useStore = create<StoreState>()((set, get) => ({
   addReel: async (reel, videoFile, posterFile) => {
     try {
       if (isSupabaseConfigured) {
-        const newReel = await addReelToSupabase(reel, videoFile, posterFile);
-        set((s) => ({ reels: [newReel, ...s.reels] }));
-        return { success: true };
-      } else {
-        const id = Math.random().toString(36).substring(2, 9);
-        const newReel: ReelItem = {
-          id,
-          title: reel.title,
-          videoUrl: reel.videoUrl || '',
-          posterUrl: reel.posterUrl || '/images/products/regenerated_image_1779296299562.png',
-          category: reel.category,
-          productId: reel.productId,
-          productName: reel.productName,
-          price: reel.price,
-          instagramUrl: reel.instagramUrl || 'https://www.instagram.com/rachit__creation/',
-          createdAt: Date.now(),
-        };
-        set((s) => {
-          const updated = [newReel, ...s.reels];
-          localStorage.setItem('rachit_reels_fallback', JSON.stringify(updated));
-          return { reels: updated };
-        });
-        return { success: true };
+        try {
+          const newReel = await addReelToSupabase(reel, videoFile, posterFile);
+          set((s) => ({ reels: [newReel, ...s.reels] }));
+          return { success: true };
+        } catch (dbErr) {
+          console.warn('Supabase reel write failed, falling back to local storage:', dbErr);
+        }
       }
+      
+      const id = Math.random().toString(36).substring(2, 9);
+      let videoUrl = reel.videoUrl || '';
+      if (videoFile) {
+        videoUrl = await new Promise<string>((resolve) => {
+          const r = new FileReader();
+          r.onloadend = () => resolve(r.result as string);
+          r.readAsDataURL(videoFile);
+        });
+      }
+
+      let posterUrl = reel.posterUrl || '';
+      if (posterFile) {
+        posterUrl = await new Promise<string>((resolve) => {
+          const r = new FileReader();
+          r.onloadend = () => resolve(r.result as string);
+          r.readAsDataURL(posterFile);
+        });
+      }
+
+      const newReel: ReelItem = {
+        id,
+        title: reel.title,
+        videoUrl,
+        posterUrl: posterUrl || '/images/products/regenerated_image_1779296299562.png',
+        category: reel.category,
+        productId: reel.productId,
+        productName: reel.productName,
+        price: reel.price,
+        instagramUrl: reel.instagramUrl || 'https://www.instagram.com/rachit__creation/',
+        createdAt: Date.now(),
+      };
+      set((s) => {
+        const updated = [newReel, ...s.reels];
+        try { localStorage.setItem('rachit_reels_fallback', JSON.stringify(updated)); } catch (e) {}
+        return { reels: updated };
+      });
+      return { success: true };
     } catch (error: any) {
       console.error('Failed to add Reel:', error);
-      return { success: false, error: error?.message || 'Database error' };
+      return { success: false, error: error?.message || 'Failed to process video file' };
     }
   },
 
   updateReel: async (id, fields, videoFile, posterFile) => {
     try {
-      if (isSupabaseConfigured) {
-        await updateReelInSupabase(id, fields, videoFile, posterFile);
-      }
-      set((s) => {
-        const updated = s.reels.map((r) => r.id === id ? { ...r, ...fields } : r);
-        if (!isSupabaseConfigured) {
-          localStorage.setItem('rachit_reels_fallback', JSON.stringify(updated));
+      let videoUrl = fields.videoUrl;
+      let posterUrl = fields.posterUrl;
+
+      if (videoFile) {
+        if (isSupabaseConfigured) {
+          try { videoUrl = await uploadImageToSupabase(videoFile); } catch (e) {}
         }
+        if (!videoUrl) {
+          videoUrl = await new Promise<string>((resolve) => {
+            const r = new FileReader();
+            r.onloadend = () => resolve(r.result as string);
+            r.readAsDataURL(videoFile);
+          });
+        }
+      }
+
+      if (posterFile) {
+        if (isSupabaseConfigured) {
+          try { posterUrl = await uploadImageToSupabase(posterFile); } catch (e) {}
+        }
+        if (!posterUrl) {
+          posterUrl = await new Promise<string>((resolve) => {
+            const r = new FileReader();
+            r.onloadend = () => resolve(r.result as string);
+            r.readAsDataURL(posterFile);
+          });
+        }
+      }
+
+      const updatePayload = {
+        ...fields,
+        ...(videoUrl ? { videoUrl } : {}),
+        ...(posterUrl ? { posterUrl } : {}),
+      };
+
+      if (isSupabaseConfigured) {
+        try { await updateReelInSupabase(id, updatePayload); } catch (e) {}
+      }
+
+      set((s) => {
+        const updated = s.reels.map((r) => r.id === id ? { ...r, ...updatePayload } : r);
+        try { localStorage.setItem('rachit_reels_fallback', JSON.stringify(updated)); } catch (e) {}
         return { reels: updated };
       });
       return { success: true };

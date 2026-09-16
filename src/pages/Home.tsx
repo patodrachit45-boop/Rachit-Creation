@@ -17,6 +17,35 @@ export default function Home() {
   const modalVideoRef = useRef<HTMLVideoElement>(null);
   const [modalMuted, setModalMuted] = useState(false);
 
+  const handleToggleSound = () => {
+    const nextMuted = !modalMuted;
+    setModalMuted(nextMuted);
+    if (modalVideoRef.current) {
+      modalVideoRef.current.muted = nextMuted;
+      if (!nextMuted) {
+        modalVideoRef.current.play().catch((err) => console.warn('Play audio prevented:', err));
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (activeReelModal && modalVideoRef.current) {
+      modalVideoRef.current.currentTime = 0;
+      modalVideoRef.current.muted = modalMuted;
+      const p = modalVideoRef.current.play();
+      if (p !== undefined) {
+        p.catch((err) => {
+          console.warn('Autoplay with sound prevented by browser policy. Retrying muted...', err);
+          if (modalVideoRef.current) {
+            modalVideoRef.current.muted = true;
+            setModalMuted(true);
+            modalVideoRef.current.play().catch(() => {});
+          }
+        });
+      }
+    }
+  }, [activeReelModal]);
+
   useEffect(() => {
     fetchReels();
   }, [fetchReels]);
@@ -359,7 +388,7 @@ export default function Home() {
 
               {/* Sound Toggle Button */}
               <button
-                onClick={() => setModalMuted(!modalMuted)}
+                onClick={handleToggleSound}
                 className="absolute top-4 left-4 z-30 p-2.5 rounded-full bg-black/60 text-white hover:bg-[#C5A059] transition-colors border border-white/20 shadow-lg flex items-center gap-1.5 text-xs font-sans"
               >
                 {modalMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-green-400" />}
