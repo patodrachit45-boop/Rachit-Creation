@@ -220,13 +220,6 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* Price Tag if linked */}
-                  {reel.price && (
-                    <div className="absolute top-3 right-3 bg-[#C5A059] text-white font-sans text-xs font-bold px-3 py-1 rounded-full shadow">
-                      {formatPrice(reel.price)}
-                    </div>
-                  )}
-
                   {/* Bottom Caption & Action */}
                   <div className="absolute bottom-0 left-0 right-0 p-4 text-left">
                     <h3 className="font-serif text-white text-base leading-snug line-clamp-2 group-hover:text-[#C5A059] transition-colors">
@@ -242,7 +235,7 @@ export default function Home() {
                         href={getWhatsAppOrderLink(
                           siteSettings.whatsappNumber,
                           reel.productName || reel.title,
-                          reel.price || 150000
+                          reel.price
                         )}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -394,11 +387,6 @@ export default function Home() {
                   <span className="px-2.5 py-0.5 bg-[#C5A059] text-white text-[10px] font-sans uppercase font-bold tracking-widest rounded-full">
                     {activeReelModal.category || 'Luxury Couture'}
                   </span>
-                  {activeReelModal.price && (
-                    <span className="px-2.5 py-0.5 bg-white/20 backdrop-blur-md text-white font-sans text-xs font-semibold rounded-full border border-white/20">
-                      {formatPrice(activeReelModal.price)}
-                    </span>
-                  )}
                 </div>
 
                 <h3 className="font-serif text-white text-xl sm:text-2xl font-medium leading-snug mb-2">
@@ -416,7 +404,7 @@ export default function Home() {
                     href={getWhatsAppOrderLink(
                       siteSettings.whatsappNumber,
                       activeReelModal.productName || activeReelModal.title,
-                      activeReelModal.price || 150000
+                      activeReelModal.price
                     )}
                     target="_blank"
                     rel="noopener noreferrer"

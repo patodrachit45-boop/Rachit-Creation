@@ -1038,58 +1038,34 @@ function ReelsTab({ reels, products, onAdd, onUpdate, onDelete, showToast }: Ree
   const [loading, setLoading] = useState(false);
 
   const [title, setTitle] = useState('');
-  const [videoUrl, setVideoUrl] = useState('');
-  const [posterUrl, setPosterUrl] = useState('');
   const [category, setCategory] = useState<'Bridal' | 'Girlish' | 'Designer' | 'Heavy'>('Bridal');
   const [productId, setProductId] = useState('');
   const [productName, setProductName] = useState('');
-  const [price, setPrice] = useState<number | undefined>(undefined);
   const [instagramUrl, setInstagramUrl] = useState('');
 
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [posterFile, setPosterFile] = useState<File | null>(null);
-  const [posterPreview, setPosterPreview] = useState('');
-
-  const posterInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   const openAddModal = () => {
     setEditingReel(null);
     setTitle('');
-    setVideoUrl('https://cdn.coverr.co/videos/coverr-fashion-model-in-red-dress-5743/1080p.mp4');
-    setPosterUrl('');
     setCategory('Bridal');
     setProductId('');
     setProductName('');
-    setPrice(undefined);
     setInstagramUrl('https://www.instagram.com/rachit__creation/');
     setVideoFile(null);
-    setPosterFile(null);
-    setPosterPreview('');
     setModalOpen(true);
   };
 
   const openEditModal = (reel: ReelItem) => {
     setEditingReel(reel);
     setTitle(reel.title);
-    setVideoUrl(reel.videoUrl || '');
-    setPosterUrl(reel.posterUrl || '');
     setCategory(reel.category || 'Bridal');
     setProductId(reel.productId || '');
     setProductName(reel.productName || '');
-    setPrice(reel.price);
     setInstagramUrl(reel.instagramUrl || '');
     setVideoFile(null);
-    setPosterFile(null);
-    setPosterPreview(reel.posterUrl || '');
     setModalOpen(true);
-  };
-
-  const handlePosterSelect = (file: File) => {
-    setPosterFile(file);
-    const r = new FileReader();
-    r.onloadend = () => setPosterPreview(r.result as string);
-    r.readAsDataURL(file);
   };
 
   const handleProductSelect = (selectedId: string) => {
@@ -1098,7 +1074,6 @@ function ReelsTab({ reels, products, onAdd, onUpdate, onDelete, showToast }: Ree
     const found = products.find((p) => p.id === selectedId);
     if (found) {
       setProductName(found.name);
-      setPrice(found.price);
       if (found.category) setCategory(found.category);
     }
   };
@@ -1113,20 +1088,19 @@ function ReelsTab({ reels, products, onAdd, onUpdate, onDelete, showToast }: Ree
 
     const payload = {
       title,
-      videoUrl,
-      posterUrl,
+      videoUrl: editingReel?.videoUrl || '',
+      posterUrl: editingReel?.posterUrl || '',
       category,
       productId: productId || undefined,
       productName: productName || undefined,
-      price: price ? Number(price) : undefined,
       instagramUrl,
     };
 
     let res: { success: boolean; error?: string };
     if (editingReel) {
-      res = await onUpdate(editingReel.id, payload, videoFile || undefined, posterFile || undefined);
+      res = await onUpdate(editingReel.id, payload, videoFile || undefined);
     } else {
-      res = await onAdd(payload, videoFile || undefined, posterFile || undefined);
+      res = await onAdd(payload, videoFile || undefined);
     }
 
     setLoading(false);
@@ -1189,7 +1163,6 @@ function ReelsTab({ reels, products, onAdd, onUpdate, onDelete, showToast }: Ree
                   </div>
                   <div>
                     <h4 className="text-xs font-serif text-white font-bold line-clamp-2 leading-tight">{reel.title}</h4>
-                    {reel.price && <p className="text-[#C5A059] text-xs font-bold mt-1">{formatPrice(reel.price)}</p>}
                   </div>
                 </div>
               </div>
@@ -1212,20 +1185,14 @@ function ReelsTab({ reels, products, onAdd, onUpdate, onDelete, showToast }: Ree
                 <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} placeholder="e.g. Royal Velvet Zardozi Bridal Lehenga" />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Category</label>
-                  <select value={category} onChange={(e) => setCategory(e.target.value as any)} className={`${inputClass} appearance-none`}>
-                    <option value="Bridal">Bridal</option>
-                    <option value="Designer">Designer</option>
-                    <option value="Girlish">Girlish</option>
-                    <option value="Heavy">Heavy</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Price (₹)</label>
-                  <input type="number" value={price || ''} onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : undefined)} className={inputClass} placeholder="185000" />
-                </div>
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Category</label>
+                <select value={category} onChange={(e) => setCategory(e.target.value as any)} className={`${inputClass} appearance-none`}>
+                  <option value="Bridal">Bridal</option>
+                  <option value="Designer">Designer</option>
+                  <option value="Girlish">Girlish</option>
+                  <option value="Heavy">Heavy</option>
+                </select>
               </div>
 
               <div>
@@ -1233,30 +1200,15 @@ function ReelsTab({ reels, products, onAdd, onUpdate, onDelete, showToast }: Ree
                 <select value={productId} onChange={(e) => handleProductSelect(e.target.value)} className={`${inputClass} appearance-none`}>
                   <option value="">-- Custom Reel (No Product Link) --</option>
                   {products.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name} ({formatPrice(p.price)})</option>
+                    <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Video URL (.mp4 9:16 vertical)</label>
-                <input type="url" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} className={inputClass} placeholder="https://.../video.mp4" />
-                <div className="mt-2">
-                  <span className="text-[10px] text-gray-500">Or upload MP4 file:</span>
-                  <input ref={videoInputRef} type="file" accept="video/*" className="mt-1 block text-xs text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Poster / Thumbnail Image</label>
-                {posterPreview ? (
-                  <div className="relative w-28 aspect-[9/16] rounded-xl overflow-hidden border border-gray-700 mb-2">
-                    <img src={posterPreview} alt="Poster" className="w-full h-full object-cover" />
-                    <button type="button" onClick={() => { setPosterPreview(''); setPosterFile(null); setPosterUrl(''); }} className="absolute top-1 right-1 bg-black/70 text-white p-1 rounded-full"><X size={12} /></button>
-                  </div>
-                ) : null}
-                <input ref={posterInputRef} type="file" accept="image/*" className="block text-xs text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700" onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePosterSelect(f); }} />
-                <input type="url" value={posterUrl} onChange={(e) => { setPosterUrl(e.target.value); setPosterPreview(e.target.value); }} className={`${inputClass} mt-2`} placeholder="Or enter poster image URL" />
+                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Upload Video File (.mp4 9:16 vertical)</label>
+                <input ref={videoInputRef} type="file" accept="video/*" className="block w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700 cursor-pointer" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
+                {videoFile && <p className="text-xs text-[#C5A059] mt-1 font-medium">Selected: {videoFile.name}</p>}
               </div>
 
               <div>

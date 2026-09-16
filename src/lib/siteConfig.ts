@@ -377,8 +377,9 @@ export function getWhatsAppLink(number: string, message?: string): string {
 export function getWhatsAppOrderLink(
   number: string,
   productName: string,
-  price: number
+  price?: number
 ): string {
-  const msg = `Hi! I'm interested in ordering:\n\n*${productName}*\nPrice: ${formatPrice(price)}\n\nPlease share more details.`;
+  const priceStr = price ? `\nPrice: ${formatPrice(price)}` : '';
+  const msg = `Hi! I'm interested in ordering:\n\n*${productName}*${priceStr}\n\nPlease share more details.`;
   return getWhatsAppLink(number, msg);
 }
