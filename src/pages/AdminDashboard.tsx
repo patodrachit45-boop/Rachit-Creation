@@ -15,7 +15,7 @@ import {
   HelpCircle, Play, Video,
 } from 'lucide-react';
 
-type Tab = 'overview' | 'products' | 'reels' | 'blogs' | 'team' | 'faqs' | 'settings';
+type Tab = 'overview' | 'products' | 'blogs' | 'team' | 'faqs' | 'settings';
 type ProductCategory = Product['category'];
 interface Toast { id: number; message: string; type: 'success' | 'error'; }
 let toastCounter = 0;
@@ -95,7 +95,6 @@ export default function AdminDashboard() {
   const navItems: { id: Tab; icon: typeof LayoutDashboard; label: string }[] = [
     { id: 'overview', icon: LayoutDashboard, label: 'Overview' },
     { id: 'products', icon: Package, label: 'Products' },
-    { id: 'reels', icon: Play, label: 'Reels Showcase' },
     { id: 'blogs', icon: FileText, label: 'Blog Posts' },
     { id: 'team', icon: Users, label: 'Our Team' },
     { id: 'faqs', icon: HelpCircle, label: 'FAQs' },
@@ -149,7 +148,6 @@ export default function AdminDashboard() {
         <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
           {activeTab === 'overview' && <OverviewTab products={products} isLoading={isLoading} showToast={showToast} />}
           {activeTab === 'products' && <ProductsTab products={products} isLoading={isLoading} onAdd={addProduct} onUpdate={updateProduct} onDelete={deleteProduct} showToast={showToast} />}
-          {activeTab === 'reels' && <ReelsTab reels={reels} products={products} onAdd={addReel} onUpdate={updateReel} onDelete={deleteReel} showToast={showToast} />}
           {activeTab === 'blogs' && <BlogsTab blogs={blogs} onAdd={addBlogPost} onUpdate={updateBlogPost} onDelete={deleteBlogPost} showToast={showToast} />}
           {activeTab === 'team' && <TeamTab team={teamMembers} onAdd={addTeamMember} onUpdate={updateTeamMember} onDelete={deleteTeamMember} showToast={showToast} />}
           {activeTab === 'faqs' && <FaqsTab faqs={faqs} onAdd={addFaq} onUpdate={updateFaq} onDelete={deleteFaq} showToast={showToast} />}
@@ -1016,229 +1014,6 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
           <button type="submit" disabled={loading} className="inline-flex items-center gap-2 bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white px-8 py-3.5 rounded-xl text-sm font-semibold hover:brightness-110 disabled:opacity-50 transition-all shadow-lg shadow-[#C5A059]/20">{loading ? <><Loader2 size={16} className="animate-spin" />Saving...</> : <><Save size={16} />Save Settings</>}</button>
         </div>
       </form>
-    </div>
-  );
-}
-
-// ── REELS TAB ──────────────────────────────────────────────────────────
-
-interface ReelsTabProps {
-  reels: ReelItem[];
-  products: Product[];
-  onAdd: (reel: Omit<ReelItem, 'id'>, videoFile?: File, posterFile?: File) => Promise<{ success: boolean; error?: string }>;
-  onUpdate: (id: string, fields: Partial<ReelItem>, videoFile?: File, posterFile?: File) => Promise<{ success: boolean; error?: string }>;
-  onDelete: (id: string) => Promise<{ success: boolean; error?: string }>;
-  showToast: (m: string, t: 'success' | 'error') => void;
-}
-
-function ReelsTab({ reels, products, onAdd, onUpdate, onDelete, showToast }: ReelsTabProps) {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingReel, setEditingReel] = useState<ReelItem | null>(null);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<'Bridal' | 'Girlish' | 'Designer' | 'Heavy'>('Bridal');
-  const [productId, setProductId] = useState('');
-  const [productName, setProductName] = useState('');
-  const [instagramUrl, setInstagramUrl] = useState('');
-
-  const [videoFile, setVideoFile] = useState<File | null>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
-
-  const openAddModal = () => {
-    setEditingReel(null);
-    setTitle('');
-    setCategory('Bridal');
-    setProductId('');
-    setProductName('');
-    setInstagramUrl('https://www.instagram.com/rachit__creation/');
-    setVideoFile(null);
-    setModalOpen(true);
-  };
-
-  const openEditModal = (reel: ReelItem) => {
-    setEditingReel(reel);
-    setTitle(reel.title);
-    setCategory(reel.category || 'Bridal');
-    setProductId(reel.productId || '');
-    setProductName(reel.productName || '');
-    setInstagramUrl(reel.instagramUrl || '');
-    setVideoFile(null);
-    setModalOpen(true);
-  };
-
-  const handleProductSelect = (selectedId: string) => {
-    setProductId(selectedId);
-    if (!selectedId) return;
-    const found = products.find((p) => p.id === selectedId);
-    if (found) {
-      setProductName(found.name);
-      if (found.category) setCategory(found.category);
-    }
-  };
-
-  const handleSave = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) {
-      showToast('Title is required', 'error');
-      return;
-    }
-    setLoading(true);
-
-    const payload = {
-      title,
-      videoUrl: editingReel?.videoUrl || '',
-      posterUrl: editingReel?.posterUrl || '',
-      category,
-      productId: productId || undefined,
-      productName: productName || undefined,
-      instagramUrl,
-    };
-
-    let res: { success: boolean; error?: string };
-    if (editingReel) {
-      res = await onUpdate(editingReel.id, payload, videoFile || undefined);
-    } else {
-      res = await onAdd(payload, videoFile || undefined);
-    }
-
-    setLoading(false);
-    if (res.success) {
-      showToast(editingReel ? 'Reel updated successfully' : 'Reel added successfully', 'success');
-      setModalOpen(false);
-    } else {
-      showToast(res.error ? `Failed to save: ${res.error}` : 'Failed to save Reel', 'error');
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!deleteId) return;
-    setLoading(true);
-    const res = await onDelete(deleteId);
-    setLoading(false);
-    setDeleteId(null);
-    if (res.success) {
-      showToast('Reel deleted', 'success');
-    } else {
-      showToast(res.error ? `Failed to delete: ${res.error}` : 'Failed to delete Reel', 'error');
-    }
-  };
-
-  const inputClass = 'w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C5A059]/50 focus:border-[#C5A059] transition-all';
-
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800 pb-5">
-        <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2"><Play className="text-[#C5A059]" /> Couture Reels 9:16 Showcase</h2>
-          <p className="text-xs text-gray-500">Manage vertical 9:16 Instagram Reel video cards displayed on your home page</p>
-        </div>
-        <button onClick={openAddModal} className="inline-flex items-center gap-2 bg-[#C5A059] hover:bg-[#b08d47] text-white px-5 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer"><Plus size={15} /> Add Reel Showcase</button>
-      </div>
-
-      {reels.length === 0 ? (
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-12 text-center">
-          <Play className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-          <h3 className="text-sm font-semibold text-white">No Reels Added Yet</h3>
-          <p className="text-xs text-gray-500 mt-1">Create 9:16 video showcases for your couture lehengas.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {reels.map((reel) => (
-            <div key={reel.id} className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden flex flex-col group relative">
-              <div className="aspect-[9/16] relative bg-gray-950 overflow-hidden">
-                {reel.videoUrl ? (
-                  <video src={reel.videoUrl} poster={reel.posterUrl} muted loop playsInline className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
-                ) : (
-                  <img src={reel.posterUrl} alt={reel.title} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40 p-3 flex flex-col justify-between">
-                  <div className="flex justify-between items-start">
-                    <span className="px-2 py-0.5 bg-[#C5A059] text-white text-[9px] font-bold uppercase tracking-wider rounded">{reel.category || 'Bridal'}</span>
-                    <div className="flex gap-1">
-                      <button onClick={() => openEditModal(reel)} className="w-7 h-7 rounded-lg bg-black/60 hover:bg-[#C5A059] text-white flex items-center justify-center transition-all cursor-pointer"><Pencil size={12} /></button>
-                      <button onClick={() => setDeleteId(reel.id)} className="w-7 h-7 rounded-lg bg-black/60 hover:bg-red-650 text-white flex items-center justify-center transition-all cursor-pointer"><Trash2 size={12} /></button>
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-serif text-white font-bold line-clamp-2 leading-tight">{reel.title}</h4>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Add / Edit Reel Modal */}
-      {modalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-lg w-full max-h-[90vh] flex flex-col shadow-2xl">
-            <div className="flex items-center justify-between p-5 border-b border-gray-800">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-white">{editingReel ? 'Edit Reel Showcase' : 'Add Reel Showcase'}</h3>
-              <button onClick={() => setModalOpen(false)} className="text-gray-500 hover:text-white transition-all cursor-pointer"><X size={18} /></button>
-            </div>
-            <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-6 space-y-4">
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Title / Headline *</label>
-                <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} placeholder="e.g. Royal Velvet Zardozi Bridal Lehenga" />
-              </div>
-
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Category</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value as any)} className={`${inputClass} appearance-none`}>
-                  <option value="Bridal">Bridal</option>
-                  <option value="Designer">Designer</option>
-                  <option value="Girlish">Girlish</option>
-                  <option value="Heavy">Heavy</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Link to Store Product (Optional)</label>
-                <select value={productId} onChange={(e) => handleProductSelect(e.target.value)} className={`${inputClass} appearance-none`}>
-                  <option value="">-- Custom Reel (No Product Link) --</option>
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Upload Video File (.mp4 9:16 vertical)</label>
-                <input ref={videoInputRef} type="file" accept="video/*" className="block w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-gray-800 file:text-gray-300 hover:file:bg-gray-700 cursor-pointer" onChange={(e) => setVideoFile(e.target.files?.[0] || null)} />
-                {videoFile && <p className="text-xs text-[#C5A059] mt-1 font-medium">Selected: {videoFile.name}</p>}
-              </div>
-
-              <div>
-                <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Instagram Post / Reel Link</label>
-                <input type="url" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} className={inputClass} placeholder="https://www.instagram.com/reel/..." />
-              </div>
-
-              <div className="flex gap-3 pt-3 border-t border-gray-800 justify-end">
-                <button type="button" onClick={() => setModalOpen(false)} className="px-5 py-2.5 border border-gray-700 hover:bg-gray-800 text-gray-300 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer">Cancel</button>
-                <button type="submit" disabled={loading} className="px-5 py-2.5 bg-gradient-to-r from-[#C5A059] to-[#A8864A] text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center gap-1.5 cursor-pointer">{loading ? <><Loader2 size={12} className="animate-spin" />Saving...</> : 'Save Reel'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Reel Confirmation */}
-      {deleteId && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
-            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-            <h3 className="font-serif text-lg text-white">Remove Reel Showcase?</h3>
-            <p className="text-xs text-gray-400 mt-2">Are you sure you want to remove this 9:16 reel? This action cannot be undone.</p>
-            <div className="flex gap-3 mt-6 justify-center">
-              <button onClick={() => setDeleteId(null)} className="px-4 py-2 border border-gray-700 text-gray-300 hover:bg-gray-850 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer">Cancel</button>
-              <button onClick={handleDelete} disabled={loading} className="px-4 py-2 bg-red-650 hover:bg-red-550 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all disabled:opacity-50 flex items-center gap-1 cursor-pointer">{loading ? 'Removing...' : 'Remove'}</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
