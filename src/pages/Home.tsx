@@ -1,16 +1,13 @@
 import { Link } from 'react-router';
 import { useStore } from '../store';
 import { DEFAULT_TESTIMONIALS, formatPrice, CATEGORIES, getWhatsAppLink } from '../lib/siteConfig';
-import { Star, MessageCircle, ArrowRight, ChevronRight, Play, Pause, Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { Star, MessageCircle, ArrowRight, ChevronRight, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useMemo, useEffect, useState, useRef } from 'react';
+import { useMemo, useEffect } from 'react';
 import { injectJSONLD, removeJSONLD, getLocalBusinessSchema, getBreadcrumbSchema } from '../lib/seoService';
 
 export default function Home() {
   const { products, siteSettings, isSettingsLoading } = useStore();
-  const [heroMuted, setHeroMuted] = useState(true);
-  const [heroPlaying, setHeroPlaying] = useState(true);
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (siteSettings) {
@@ -35,77 +32,21 @@ export default function Home() {
   }), [products]);
   const newArrivals = useMemo(() => [...products].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0)).slice(0, 8), [products]);
 
-  const toggleHeroPlay = () => {
-    if (heroVideoRef.current) {
-      if (heroPlaying) {
-        heroVideoRef.current.pause();
-      } else {
-        heroVideoRef.current.play();
-      }
-      setHeroPlaying(!heroPlaying);
-    }
-  };
-
-  const toggleHeroMute = () => {
-    if (heroVideoRef.current) {
-      heroVideoRef.current.muted = !heroMuted;
-      setHeroMuted(!heroMuted);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#FCEEE9]/30">
       {/* Hero */}
       <section className="relative h-[85vh] min-h-[540px] overflow-hidden bg-gray-950">
-        {/* Background AI Video / Poster Image */}
-        {siteSettings.heroVideoUrl ? (
-          <div className="absolute inset-0 w-full h-full overflow-hidden">
-            <video
-              ref={heroVideoRef}
-              src={siteSettings.heroVideoUrl}
-              poster={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'}
-              autoPlay
-              loop
-              muted={heroMuted}
-              playsInline
-              className="w-full h-full object-cover transition-opacity duration-700"
-            />
-          </div>
-        ) : (
-          !isSettingsLoading && (
-            <motion.img 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              transition={{ duration: 0.5 }}
-              src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} 
-              alt={siteSettings.heroImageAlt || "Rachit Creation — Luxury Lehengas"} 
-              className="absolute inset-0 w-full h-full object-cover" 
-              fetchPriority="high"
-            />
-          )
-        )}
-
-        {/* Video Overlay controls */}
-        {siteSettings.heroVideoUrl && (
-          <div className="absolute top-6 right-6 z-20 flex items-center gap-2">
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 bg-black/40 backdrop-blur-md rounded-full text-[10px] font-sans uppercase tracking-widest text-white/90 border border-white/20">
-              <Sparkles className="w-3 h-3 text-[#C5A059]" /> AI Couture Motion
-            </span>
-            <button
-              onClick={toggleHeroPlay}
-              className="p-2.5 rounded-full bg-black/50 backdrop-blur-md text-white hover:bg-[#C5A059] transition-colors border border-white/20"
-              title={heroPlaying ? 'Pause Video' : 'Play Video'}
-            >
-              {heroPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current ml-0.5" />}
-            </button>
-            <button
-              onClick={toggleHeroMute}
-              className="p-2.5 rounded-full bg-black/50 backdrop-blur-md text-white hover:bg-[#C5A059] transition-colors border border-white/20"
-              title={heroMuted ? 'Unmute Sound' : 'Mute Sound'}
-            >
-              {heroMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-green-400" />}
-            </button>
-          </div>
+        {/* Background Image */}
+        {!isSettingsLoading && (
+          <motion.img 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            transition={{ duration: 0.5 }}
+            src={siteSettings.heroImage || '/images/products/regenerated_image_1779296299562.png'} 
+            alt={siteSettings.heroImageAlt || "Rachit Creation — Luxury Lehengas"} 
+            className="absolute inset-0 w-full h-full object-cover" 
+            fetchPriority="high"
+          />
         )}
 
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70" />

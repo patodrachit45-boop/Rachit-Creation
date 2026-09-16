@@ -635,7 +635,6 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [trustBadge3Title, setTrustBadge3Title] = useState(siteSettings.trustBadge3Title || 'Global Express Shipping');
   const [trustBadge3Desc, setTrustBadge3Desc] = useState(siteSettings.trustBadge3Desc || 'Safe delivery with international transit tracking');
 
-  const [heroVideoUrl, setHeroVideoUrl] = useState(siteSettings.heroVideoUrl || '');
   const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
   const [heroImagePreview, setHeroImagePreview] = useState(siteSettings.heroImage);
   const [logoImageFile, setLogoImageFile] = useState<File | null>(null);
@@ -671,7 +670,6 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     setLabelShipping(siteSettings.labelShipping || 'Shipping');
     setBacklinksText(siteSettings.backlinksText || '');
     setFacebookUrl(siteSettings.facebookUrl || '');
-    setHeroVideoUrl(siteSettings.heroVideoUrl || '');
     setTrustBadge1Title(siteSettings.trustBadge1Title || '100% Authentic Handloom');
     setTrustBadge1Desc(siteSettings.trustBadge1Desc || 'Certified traditional handwork and embroidery');
     setTrustBadge2Title(siteSettings.trustBadge2Title || 'Secure WhatsApp Checkout');
@@ -689,7 +687,6 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     e.preventDefault(); setLoading(true);
     
     const settingsPayload: Partial<typeof siteSettings> = { 
-      heroVideoUrl,
       whatsappNumber, 
       phone, 
       email, 
@@ -756,7 +753,7 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center"><Video size={18} className="text-violet-400" /></div><div><h3 className="text-sm font-semibold text-white">Hero Background Video & Image</h3><p className="text-xs text-gray-500">The main AI background video or banner image</p></div></div>
+              <div className="flex items-center gap-3 mb-5"><div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center"><Image size={18} className="text-violet-400" /></div><div><h3 className="text-sm font-semibold text-white">Hero Banner Image</h3><p className="text-xs text-gray-500">The main homepage hero banner image</p></div></div>
               {heroImagePreview ? (
                 <div className="relative border-2 border-dashed border-gray-700 rounded-xl overflow-hidden group h-40 bg-gray-850">
                   <img src={heroImagePreview} alt="Hero" className="w-full h-full object-cover" />
@@ -775,10 +772,6 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
               )}
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleHeroImage(f); }} />
               <div className="mt-4 space-y-3">
-                <div>
-                  <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Hero AI Video URL (.mp4 / WebM)</label>
-                  <input type="url" value={heroVideoUrl} onChange={(e) => setHeroVideoUrl(e.target.value)} className={inputClass} placeholder="https://cdn.coverr.co/... or /videos/hero.mp4" />
-                </div>
                 <div>
                   <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">Hero Image Alt Text (SEO)</label>
                   <input type="text" value={heroImageAlt} onChange={(e) => setHeroImageAlt(e.target.value)} className={inputClass} placeholder="e.g., Rachit Creation luxury bridal lehenga display" />
