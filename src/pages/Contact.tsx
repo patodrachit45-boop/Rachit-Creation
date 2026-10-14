@@ -7,7 +7,7 @@ import { injectJSONLD, removeJSONLD, getFAQSchema, getBreadcrumbSchema } from '.
 import { useLocation, Link } from 'react-router';
 import { PageSkeleton } from '../components/LoadingSkeleton';
 
-const PRODUCT_INTERESTS = ['Bridal Lehenga', 'Designer Lehenga', 'Girlish Lehenga', 'Heavy Lehenga', 'Custom Design', 'Other'];
+const PRODUCT_INTERESTS = ['Saree', 'Silk Saree', 'Bridal Saree', 'Designer Saree', 'Heavy Saree', 'Party Wear Saree', 'Custom Design', 'Other'];
 
 export default function Contact() {
   const { siteSettings, faqs, fetchFaqs } = useStore();
@@ -85,7 +85,7 @@ export default function Contact() {
           </nav>
           <motion.p initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="text-[#C5A059] tracking-[0.3em] uppercase text-xs font-sans mb-2">Get in Touch</motion.p>
           <motion.h1 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="font-serif text-3xl md:text-5xl text-[#3D3D3D]">Contact Us</motion.h1>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="text-[#3D3D3D]/50 text-sm font-sans mt-3 max-w-md mx-auto">We'd love to help you find the perfect lehenga for your special occasion.</motion.p>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="text-[#3D3D3D]/50 text-sm font-sans mt-3 max-w-md mx-auto">We'd love to help you find the perfect saree for your special occasion.</motion.p>
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">

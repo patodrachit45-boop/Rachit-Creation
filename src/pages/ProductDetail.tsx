@@ -23,11 +23,12 @@ export default function ProductDetail() {
       removeJSONLD('product-breadcrumb-schema');
     } else {
       setMetaRobots(false);
-      setPageTitle(`${product.name} — Luxury ${product.category} Lehenga | Rachit Creation`);
+      setPageTitle(`${product.name} — Luxury ${product.category} | Rachit Creation`);
       setCanonicalURL(`/product/${product.id}`);
       const breadcrumbSchema = getBreadcrumbSchema([
         { name: 'Home', item: '/' },
-        { name: `${product.category} Lehengas`, item: `/category/${product.category}` },
+        { name: 'Saree Collection', item: '/#sarees' },
+        { name: `${product.category}`, item: `/category/${product.category}` },
         { name: product.name, item: `/product/${product.id}` }
       ]);
       injectJSONLD('product-breadcrumb-schema', breadcrumbSchema);
@@ -112,7 +113,7 @@ export default function ProductDetail() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs font-sans">
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
                   <span className="text-[#3D3D3D]/50 uppercase tracking-wider">Category</span>
-                  <span className="text-[#3D3D3D] font-medium">{product.category} Lehenga</span>
+                  <span className="text-[#3D3D3D] font-medium">{product.category}</span>
                 </div>
                 <div className="flex justify-between border-b border-[#C5A059]/5 pb-2">
                   <span className="text-[#3D3D3D]/50 uppercase tracking-wider">{siteSettings?.labelCraftingTime || 'Crafting Time'}</span>

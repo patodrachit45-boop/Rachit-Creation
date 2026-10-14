@@ -121,12 +121,12 @@ export default function About() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <h3 className="font-serif text-2xl md:text-3xl text-[#3D3D3D] mb-2">Explore Our Heritage Collections</h3>
-          <p className="text-[#3D3D3D]/55 text-sm font-sans max-w-md mx-auto mb-8">Begin your bridal journey by exploring our carefully curated categories.</p>
+          <h3 className="font-serif text-2xl md:text-3xl text-[#3D3D3D] mb-2">Explore Our Saree Collections</h3>
+          <p className="text-[#3D3D3D]/55 text-sm font-sans max-w-md mx-auto mb-8">Begin your journey by exploring our handwoven saree categories.</p>
         </motion.div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {['Bridal', 'Designer', 'Girlish', 'Heavy'].map((cat, idx) => (
+          {['Saree', 'Silk Saree', 'Bridal Saree', 'Designer Saree'].map((cat, idx) => (
             <motion.div
               key={cat}
               initial={{ opacity: 0, scale: 0.95 }}
