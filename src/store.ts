@@ -60,7 +60,7 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  category: 'Bridal' | 'Girlish' | 'Designer' | 'Heavy';
+  category: string;
   imageUrl: string;
   images?: string[];
   highlights?: string;
@@ -145,7 +145,7 @@ export const useWishlistStore = create<WishlistStore>()(
 // ── Main store ────────────────────────────────────────────────────────
 
 export const useStore = create<StoreState>()((set, get) => ({
-  products: initialProducts,
+  products: [],
   blogs: [],
   teamMembers: [],
   faqs: [],
@@ -163,18 +163,21 @@ export const useStore = create<StoreState>()((set, get) => ({
     try {
       if (isSupabaseConfigured) {
         const products = await fetchProductsFromSupabase();
-        if (products.length > 0) {
-          set({ products, isLoading: false, isDatabaseEmpty: false });
-          return;
-        } else {
-          set({ products: initialProducts, isLoading: false, isDatabaseEmpty: true });
-          return;
-        }
+        set({ products, isLoading: false, isDatabaseEmpty: products.length === 0 });
+        return;
       }
-      set({ products: initialProducts, isLoading: false, isDatabaseEmpty: false });
+      const local = typeof window !== 'undefined' ? localStorage.getItem('rachit_products_fallback') : null;
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          set({ products: parsed, isLoading: false, isDatabaseEmpty: parsed.length === 0 });
+          return;
+        } catch {}
+      }
+      set({ products: [], isLoading: false, isDatabaseEmpty: true });
     } catch (error) {
       console.error('Failed to fetch products:', error);
-      set({ products: initialProducts, isLoading: false, error: 'Failed to load products', isDatabaseEmpty: false });
+      set({ products: [], isLoading: false, error: 'Failed to load products', isDatabaseEmpty: true });
     }
   },
 
@@ -262,6 +265,12 @@ export const useStore = create<StoreState>()((set, get) => ({
       }
       if (isSupabaseConfigured) {
         await updateSiteSettingsInSupabase(us);
+      }
+      if (us.isUnderMaintenance !== undefined && typeof window !== 'undefined') {
+        localStorage.setItem('rachit_maintenance_fallback', us.isUnderMaintenance ? 'true' : 'false');
+      }
+      if (us.maintenanceMessage !== undefined && typeof window !== 'undefined') {
+        localStorage.setItem('rachit_maintenance_message_fallback', us.maintenanceMessage);
       }
       set((s) => ({ siteSettings: { ...s.siteSettings, ...us } }));
       return { success: true };
@@ -699,16 +708,6 @@ export const useStore = create<StoreState>()((set, get) => ({
         
         // Ensure site settings main row exists in database
         await ensureSiteSettingsRowExists();
-        
-        // Auto-seed if database is empty!
-        const state = get();
-        if (state.isDatabaseEmpty) {
-          console.log('Database is empty. Auto-seeding initial products...');
-          const success = await seedProductsInSupabase(initialProducts);
-          if (success) {
-            await get().fetchProducts();
-          }
-        }
       }
     } else {
       if (password === 'admin123') set({ isAdmin: true, adminEmail: email || 'admin@local' });

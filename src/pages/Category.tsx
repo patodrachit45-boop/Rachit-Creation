@@ -14,7 +14,10 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: 'name-asc', label: 'Name: A → Z' },
 ];
 
-const VALID_CATEGORIES = ['bridal', 'designer', 'girlish', 'heavy', 'all'];
+const VALID_CATEGORIES = [
+  'saree', 'sarees', 'silk saree', 'bridal saree', 'designer saree', 'heavy saree', 'party wear saree',
+  'bridal', 'designer', 'girlish', 'heavy', 'all'
+];
 
 export default function Category() {
   const { type } = useParams<{ type: string }>();
@@ -30,12 +33,12 @@ export default function Category() {
       removeJSONLD('category-breadcrumb-schema');
     } else {
       setMetaRobots(false);
-      setPageTitle(`${categoryName} Lehengas Collection | Rachit Creation`);
+      setPageTitle(`${categoryName} Collection | Rachit Creation`);
       setCanonicalURL(`/category/${categoryName}`);
       const breadcrumbSchema = getBreadcrumbSchema([
         { name: 'Home', item: '/' },
-        { name: 'Collections', item: '/#collections' },
-        { name: `${categoryName} Lehengas`, item: `/category/${categoryName}` }
+        { name: 'Saree Collection', item: '/#sarees' },
+        { name: `${categoryName}`, item: `/category/${categoryName}` }
       ]);
       injectJSONLD('category-breadcrumb-schema', breadcrumbSchema);
     }

@@ -5,7 +5,14 @@
 
 // ── Categories ────────────────────────────────────────────────────────
 
-export const CATEGORIES = ['Bridal', 'Designer', 'Girlish', 'Heavy'] as const;
+export const CATEGORIES = [
+  'Saree',
+  'Silk Saree',
+  'Bridal Saree',
+  'Designer Saree',
+  'Heavy Saree',
+  'Party Wear Saree',
+] as const;
 export type Category = (typeof CATEGORIES)[number];
 
 // ── Site Settings ─────────────────────────────────────────────────────
@@ -49,6 +56,8 @@ export interface SiteSettings {
   aboutHeroImageAlt?: string;
   heroVideoUrl?: string;
   heroVideoPoster?: string;
+  isUnderMaintenance?: boolean;
+  maintenanceMessage?: string;
 }
 
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -62,6 +71,8 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   phone: '+91 73597 47911',
   address: 'Surat, Gujarat, India',
   showroomHours: 'Mon - Sat: 10:00 AM - 8:00 PM',
+  isUnderMaintenance: false,
+  maintenanceMessage: 'We are currently curating our exclusive new saree collection and updating the website. Please check back shortly or connect with us directly on WhatsApp.',
   aboutText: `RACHIT CREATION is a premier luxury lehenga brand based in Surat, Gujarat. We specialize in crafting exquisite bridal, designer, girlish, and heavy lehengas that celebrate the artistry of Indian craftsmanship.
 
 Each piece is meticulously handcrafted using premium fabrics and adorned with intricate Zari, Zardozi, Kundan, and stone work. Our master artisans pour their heart and soul into every stitch, ensuring that each lehenga is a masterpiece worthy of your most special celebrations.

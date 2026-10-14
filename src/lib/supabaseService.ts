@@ -94,6 +94,8 @@ export interface ExtraData {
   facebookPixelId?: string;
   pinterestUrl?: string;
   twitterUrl?: string;
+  isUnderMaintenance?: boolean;
+  maintenanceMessage?: string;
   blogs?: BlogPost[];
   faqs?: FAQ[];
   teamMembers?: TeamMember[];
@@ -182,10 +184,14 @@ function dbToSettings(row: any): SiteSettings {
     termsOfServiceText: extraData.termsOfServiceText || '',
     heroImageAlt: extraData.heroImageAlt || 'Rachit Creation luxury bridal lehenga display',
     aboutHeroImageAlt: extraData.aboutHeroImageAlt || 'Mahesh Patodiya designing luxury lehengas at Rachit Creation',
+    isUnderMaintenance: extraData.isUnderMaintenance !== undefined
+      ? extraData.isUnderMaintenance
+      : (typeof window !== 'undefined' ? localStorage.getItem('rachit_maintenance_fallback') === 'true' : false),
+    maintenanceMessage: extraData.maintenanceMessage || (typeof window !== 'undefined' ? localStorage.getItem('rachit_maintenance_message_fallback') : '') || 'We are currently curating our exclusive new saree collection and updating the website. Please check back shortly or connect with us directly on WhatsApp.',
   };
 
   // Fallback for logo if column doesn't exist or is empty
-  if (!settings.logoImage) {
+  if (!settings.logoImage && typeof window !== 'undefined') {
     const localFallback = localStorage.getItem('rachit_logo_fallback');
     if (localFallback) {
       settings.logoImage = localFallback;
@@ -502,6 +508,8 @@ export async function updateSiteSettingsInSupabase(
   if (settings.termsOfServiceText !== undefined) existingExtra.termsOfServiceText = settings.termsOfServiceText;
   if (settings.heroImageAlt !== undefined) existingExtra.heroImageAlt = settings.heroImageAlt;
   if (settings.aboutHeroImageAlt !== undefined) existingExtra.aboutHeroImageAlt = settings.aboutHeroImageAlt;
+  if (settings.isUnderMaintenance !== undefined) existingExtra.isUnderMaintenance = settings.isUnderMaintenance;
+  if (settings.maintenanceMessage !== undefined) existingExtra.maintenanceMessage = settings.maintenanceMessage;
 
   if (settings.aboutText !== undefined) {
     aboutTextVal = settings.aboutText;

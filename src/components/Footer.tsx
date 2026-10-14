@@ -4,7 +4,7 @@ import { useStore } from '../store';
 import { getWhatsAppLink } from '../lib/siteConfig';
 import { Instagram, MessageCircle, Mail, Phone, MapPin, Twitter, Facebook, ShieldCheck, Lock, Globe } from 'lucide-react';
 
-const categories = ['Bridal', 'Designer', 'Girlish', 'Heavy'] as const;
+const categories = ['Saree', 'Silk Saree', 'Bridal Saree', 'Designer Saree', 'Heavy Saree', 'Party Wear Saree'] as const;
 
 export default function Footer() {
   const { siteSettings } = useStore();
@@ -37,12 +37,12 @@ export default function Footer() {
               )}
               <span className="font-serif text-xl tracking-[0.1em] uppercase text-white">Rachit <span className="font-semibold">Creation</span></span>
             </Link>
-            <p className="text-sm leading-relaxed text-gray-400 max-w-xs">Crafting exquisite lehengas that blend timeless tradition with modern elegance. Every piece tells a story of artistry and passion.</p>
+            <p className="text-sm leading-relaxed text-gray-400 max-w-xs">Crafting exquisite sarees that blend timeless tradition with modern elegance. Every piece tells a story of artistry and passion.</p>
           </div>
           <div>
-            <h4 className="text-[11px] font-sans uppercase tracking-[0.2em] text-[#C5A059] mb-5 font-semibold">Collections</h4>
+            <h4 className="text-[11px] font-sans uppercase tracking-[0.2em] text-[#C5A059] mb-5 font-semibold">Saree Collection</h4>
             <ul className="space-y-3">
-              {categories.map((cat) => <li key={cat}><Link to={`/category/${cat}`} className="text-sm text-gray-400 hover:text-[#C5A059] transition-colors inline-block">{cat} Lehenga</Link></li>)}
+              {categories.map((cat) => <li key={cat}><Link to={`/category/${cat}`} className="text-sm text-gray-400 hover:text-[#C5A059] transition-colors inline-block">{cat}</Link></li>)}
             </ul>
           </div>
           <div>

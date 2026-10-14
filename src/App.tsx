@@ -4,12 +4,12 @@
  */
 
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router';
+import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react-router';
 import { useEffect } from 'react';
-import { useLocation } from 'react-router';
 import { useStore } from './store';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import MaintenanceScreen from './components/MaintenanceScreen';
 import { PageSkeleton } from './components/LoadingSkeleton';
 import { useCanonicalURL } from './lib/seoService';
 
@@ -82,35 +82,56 @@ function AppInit() {
   return null;
 }
 
+function MainContent() {
+  const { siteSettings, isAdmin } = useStore();
+  const location = useLocation();
+
+  const isMaintenanceActive = Boolean(siteSettings.isUnderMaintenance) && location.pathname !== '/admin' && !isAdmin;
+
+  if (isMaintenanceActive) {
+    return <MaintenanceScreen siteSettings={siteSettings} />;
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen font-sans antialiased text-[#3D3D3D] selection:bg-[#C5A059] selection:text-white">
+      {siteSettings.isUnderMaintenance && isAdmin && (
+        <div className="bg-amber-600 text-white px-4 py-2 text-xs font-semibold text-center flex items-center justify-center gap-2 sticky top-0 z-[100] shadow-md">
+          <span>⚠️ Website is currently in Maintenance Mode (Visitors are blocked from browsing).</span>
+          <Link to="/admin" className="underline font-bold hover:text-amber-100">Manage in Admin Panel</Link>
+        </div>
+      )}
+      <Navbar />
+      <main className="flex-grow">
+        <Suspense fallback={<PageSkeleton />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/category/:type" element={<Category />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:id" element={<BlogPostDetail />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+            <Route path="/editorial-policy" element={<EditorialPolicy />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <Router>
       <AppInit />
       <ScrollToTop />
       <AnalyticsTracker />
-      <div className="flex flex-col min-h-screen font-sans antialiased text-[#3D3D3D] selection:bg-[#C5A059] selection:text-white">
-        <Navbar />
-        <main className="flex-grow">
-          <Suspense fallback={<PageSkeleton />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/category/:type" element={<Category />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:id" element={<BlogPostDetail />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/editorial-policy" element={<EditorialPolicy />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </main>
-        <Footer />
-      </div>
+      <MainContent />
     </Router>
   );
 }

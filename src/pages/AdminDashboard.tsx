@@ -145,7 +145,42 @@ export default function AdminDashboard() {
       </aside>
       {/* Main content */}
       <main className="flex-1 lg:ml-64 min-h-screen">
-        <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto">
+        <div className="p-6 md:p-8 lg:p-10 max-w-7xl mx-auto space-y-6">
+          {/* Quick Maintenance Mode Banner */}
+          <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
+            siteSettings.isUnderMaintenance 
+              ? 'bg-amber-950/40 border-amber-500/50 text-amber-200' 
+              : 'bg-emerald-950/25 border-emerald-800/40 text-emerald-200'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full shrink-0 ${siteSettings.isUnderMaintenance ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider">
+                  Website Status: {siteSettings.isUnderMaintenance ? 'Under Maintenance (Visitors are blocked)' : 'Live & Active (Visitors can browse)'}
+                </p>
+                <p className="text-[11px] opacity-75 mt-0.5">
+                  {siteSettings.isUnderMaintenance 
+                    ? 'Public visitors see the maintenance screen and cannot click or browse any sections.' 
+                    : 'The website is live and publicly accessible to customers.'}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                const nextVal = !siteSettings.isUnderMaintenance;
+                const res = await updateSiteSettings({ isUnderMaintenance: nextVal });
+                showToast(nextVal ? 'Website is now Under Maintenance' : 'Website is now LIVE', res.success ? 'success' : 'error');
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-md shrink-0 ${
+                siteSettings.isUnderMaintenance
+                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                  : 'bg-amber-600 hover:bg-amber-500 text-white'
+              }`}
+            >
+              {siteSettings.isUnderMaintenance ? 'Make Website Live' : 'Enable Maintenance'}
+            </button>
+          </div>
+
           {activeTab === 'overview' && <OverviewTab products={products} isLoading={isLoading} showToast={showToast} />}
           {activeTab === 'products' && <ProductsTab products={products} isLoading={isLoading} onAdd={addProduct} onUpdate={updateProduct} onDelete={deleteProduct} showToast={showToast} />}
           {activeTab === 'blogs' && <BlogsTab blogs={blogs} onAdd={addBlogPost} onUpdate={updateBlogPost} onDelete={deleteBlogPost} showToast={showToast} />}
@@ -347,11 +382,11 @@ function SyncDatabaseButton({ showToast }: { showToast: (msg: string, type: 'suc
 
 function OverviewTab({ products, isLoading, showToast }: { products: Product[]; isLoading: boolean; showToast: (msg: string, type: 'success' | 'error') => void }) {
   const stats = [
-    { label: 'Total Products', count: products.length, icon: Package, bg: 'bg-violet-500/10' },
-    { label: 'Bridal', count: products.filter((p) => p.category === 'Bridal').length, icon: Crown, bg: 'bg-rose-500/10' },
-    { label: 'Designer', count: products.filter((p) => p.category === 'Designer').length, icon: Sparkles, bg: 'bg-amber-500/10' },
-    { label: 'Girlish', count: products.filter((p) => p.category === 'Girlish').length, icon: Heart, bg: 'bg-pink-500/10' },
-    { label: 'Heavy', count: products.filter((p) => p.category === 'Heavy').length, icon: Gem, bg: 'bg-emerald-500/10' },
+    { label: 'Total Sarees', count: products.length, icon: Package, bg: 'bg-violet-500/10' },
+    { label: 'Silk Saree', count: products.filter((p) => p.category.toLowerCase().includes('silk')).length, icon: Sparkles, bg: 'bg-rose-500/10' },
+    { label: 'Bridal Saree', count: products.filter((p) => p.category.toLowerCase().includes('bridal')).length, icon: Crown, bg: 'bg-amber-500/10' },
+    { label: 'Designer Saree', count: products.filter((p) => p.category.toLowerCase().includes('designer')).length, icon: Gem, bg: 'bg-pink-500/10' },
+    { label: 'Heavy Saree', count: products.filter((p) => p.category.toLowerCase().includes('heavy')).length, icon: Heart, bg: 'bg-emerald-500/10' },
   ];
   return (
     <div>
@@ -484,7 +519,7 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const siteSettings = useStore((s) => s.siteSettings);
   const [name, setName] = useState(product?.name || '');
-  const [category, setCategory] = useState<ProductCategory>(product?.category || 'Bridal');
+  const [category, setCategory] = useState<ProductCategory>(product?.category || 'Saree');
   const [price, setPrice] = useState<number>(product?.price || 0);
   const [description, setDescription] = useState(product?.description || '');
   const [highlights, setHighlights] = useState(product?.highlights || '');
@@ -534,9 +569,9 @@ function ProductModal({ product, onClose, onAdd, onUpdate, showToast }: {
           </div>
           <div>
             <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Image Alt Text (for SEO)</label>
-            <input type="text" value={imageAlt} onChange={(e) => setImageAlt(e.target.value)} className={inputClass} placeholder="e.g., Royal maroon silk bridal lehenga with heavy Zardozi handwork" />
+            <input type="text" value={imageAlt} onChange={(e) => setImageAlt(e.target.value)} className={inputClass} placeholder="e.g., Royal maroon pure silk saree with heavy Zari handwork" />
           </div>
-          <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Product Name</label><input required type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="e.g., Royal Bridal Lehenga" /></div>
+          <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Product Name</label><input required type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="e.g., Pure Kanjivaram Silk Saree" /></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Category</label><div className="relative"><select value={category} onChange={(e) => setCategory(e.target.value as ProductCategory)} className={`${inputClass} appearance-none`}>{CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}</select><ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" /></div></div>
             <div><label className="block text-xs uppercase tracking-widest text-gray-400 mb-2 font-medium">Price (₹)</label><input required type="number" min={0} value={price || ''} onChange={(e) => setPrice(Number(e.target.value))} className={inputClass} placeholder="15000" /></div>
@@ -602,6 +637,8 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const aboutInputRef = useRef<HTMLInputElement>(null);
 
+  const [isUnderMaintenance, setIsUnderMaintenance] = useState(siteSettings.isUnderMaintenance || false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState(siteSettings.maintenanceMessage || '');
   const [whatsappNumber, setWhatsappNumber] = useState(siteSettings.whatsappNumber);
   const [phone, setPhone] = useState(siteSettings.phone);
   const [email, setEmail] = useState(siteSettings.email);
@@ -651,6 +688,8 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setIsUnderMaintenance(siteSettings.isUnderMaintenance || false);
+    setMaintenanceMessage(siteSettings.maintenanceMessage || '');
     setWhatsappNumber(siteSettings.whatsappNumber); setPhone(siteSettings.phone); setEmail(siteSettings.email);
     setAddress(siteSettings.address); setGoogleMapsUrl(siteSettings.googleMapsUrl); setShowroomHours(siteSettings.showroomHours); setInstagramUrl(siteSettings.instagramUrl);
     setFacebookPixelId(siteSettings.facebookPixelId || ''); setPinterestUrl(siteSettings.pinterestUrl || ''); setTwitterUrl(siteSettings.twitterUrl || '');
@@ -687,6 +726,8 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     e.preventDefault(); setLoading(true);
     
     const settingsPayload: Partial<typeof siteSettings> = { 
+      isUnderMaintenance,
+      maintenanceMessage,
       whatsappNumber, 
       phone, 
       email, 
@@ -750,6 +791,51 @@ function SettingsTab({ siteSettings, onUpdate, showToast }: {
     <div>
       <div className="mb-8"><h1 className="text-2xl font-semibold text-white">Site Settings</h1><p className="text-gray-500 text-sm mt-1">Manage your website content and contact information</p></div>
       <form onSubmit={handleSave} className="space-y-8 max-w-3xl">
+        {/* Maintenance Mode Section */}
+        <section className={`border rounded-2xl p-6 transition-all ${isUnderMaintenance ? 'bg-amber-950/25 border-amber-600/50' : 'bg-gray-900 border-gray-800'}`}>
+          <div className="flex items-center gap-3 mb-5">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isUnderMaintenance ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-800 text-gray-400'}`}>
+              <ShieldCheck size={18} />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white">Website Maintenance Mode</h3>
+              <p className="text-xs text-gray-500">Temporarily close the storefront to visitors while updating collections</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <label className="flex items-start gap-3 p-4 rounded-xl bg-gray-800/40 border border-gray-700/60 cursor-pointer hover:bg-gray-800/70 transition-colors">
+              <input
+                type="checkbox"
+                checked={isUnderMaintenance}
+                onChange={(e) => setIsUnderMaintenance(e.target.checked)}
+                className="mt-0.5 w-5 h-5 rounded border-gray-600 text-[#C5A059] focus:ring-[#C5A059]/40 bg-gray-750 cursor-pointer"
+              />
+              <div className="select-none">
+                <span className="text-sm font-medium text-white block">
+                  Put Website Under Maintenance
+                </span>
+                <span className="text-xs text-gray-400 mt-0.5 block leading-relaxed">
+                  When enabled, any visitor who opens the website will be shown the Under Maintenance screen and cannot browse, view products, or click any sections. You can uncheck this box anytime to restore public browsing. (The /admin route remains accessible to you).
+                </span>
+              </div>
+            </label>
+
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-gray-400 mb-1.5 font-medium">
+                Custom Maintenance Notice Message (Optional)
+              </label>
+              <textarea
+                rows={3}
+                value={maintenanceMessage}
+                onChange={(e) => setMaintenanceMessage(e.target.value)}
+                className={`${inputClass} resize-none`}
+                placeholder="We are currently enhancing our showroom experience and updating our exclusive saree collections. Please check back shortly or connect directly with our atelier on WhatsApp."
+              />
+            </div>
+          </div>
+        </section>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <section className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col justify-between">
             <div>

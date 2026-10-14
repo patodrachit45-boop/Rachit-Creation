@@ -89,31 +89,25 @@ async function generate() {
     '/about',
     '/contact',
     '/blog',
-    '/category/Bridal',
-    '/category/Designer',
-    '/category/Girlish',
-    '/category/Heavy',
+    '/category/Saree',
+    '/category/Silk%20Saree',
+    '/category/Bridal%20Saree',
+    '/category/Designer%20Saree',
+    '/category/Heavy%20Saree',
+    '/category/Party%20Wear%20Saree',
     '/privacy-policy',
     '/terms-of-service',
     '/editorial-policy',
   ];
 
-  const FALLBACK_PRODUCTS = [
-    'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'b9', 'b10', 'b11', 'b12', 'b13', 'b14', 'b21', 'b22', 'b23', 'b24',
-    'g21', 'g22', 'g23', 'g24', 'g25', 'g26', 'g27', 'g28', 'g29', 'g30', 'g31', 'g32', 'g33', 'g34', 'g35', 'g36', 'g37', 'g38', 'g39', 'g40',
-    'd41', 'd42', 'd44', 'd45', 'd46', 'd47', 'd48', 'd49', 'd50', 'd51', 'd52', 'd53', 'd100',
-    'h54', 'h55', 'h56', 'h57', 'h58', 'h59', 'h60', 'h61', 'h62', 'h63'
-  ].map(id => ({ id }));
+  const FALLBACK_PRODUCTS = [];
 
   // 2. Fetch Dynamic Products
   let products = [];
   try {
     products = await fetchSupabaseData('products');
-    if (products.length === 0) {
-      products = FALLBACK_PRODUCTS;
-    }
   } catch (e) {
-    products = FALLBACK_PRODUCTS;
+    products = [];
   }
 
   // 3. Fetch Dynamic Blogs
